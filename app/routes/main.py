@@ -353,8 +353,10 @@ def founder_dashboard():
     
     total_revenue = total_subscription_revenue + total_enterprise_revenue
     
-    # Admin statistics (no personal user data)
+    # Admin statistics (aggregated only, no personal data)
     admin_users = User.query.filter_by(is_super_admin=True).count()
+    total_users = User.query.count()
+    verified_users = User.query.filter_by(is_email_verified=True).count()
     
     # Chamas by status
     pending_chamas = Chama.query.filter_by(status='pending').all()
@@ -378,6 +380,8 @@ def founder_dashboard():
                          active_chamas=active_chamas,
                          total_revenue=total_revenue,
                          admin_users=admin_users,
+                         total_users=total_users,
+                         verified_users=verified_users,
                          pending_chamas=pending_chamas,
                          flagged_chamas=flagged_chamas,
                          all_chamas=all_chamas,
@@ -580,3 +584,26 @@ def get_transaction_details(transaction_id):
         'success': True,
         'transaction': transaction_data
     })
+
+@main.route('/api/feature-interest', methods=['POST'])
+def feature_interest():
+    """Handle feature interest submissions"""
+    try:
+        data = request.get_json()
+        
+        # Log feature interest (in a real app, store in database)
+        print(f"Feature Interest: {data}")
+        
+        # Here you would typically save to database
+        # For now, just return success
+        
+        return jsonify({
+            'success': True,
+            'message': 'Thank you for your interest! We\'ll keep you updated.'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': 'Something went wrong. Please try again.'
+        }), 400

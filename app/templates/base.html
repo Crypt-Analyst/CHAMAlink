@@ -57,25 +57,39 @@
             min-width: 200px;
         }
         
+        /* Enhanced Dropdown Menu Styles */
+        .dropdown-menu-lg {
+            min-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .dropdown-header {
+            color: #0d6efd;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
         .dropdown-item {
-            padding: 0.75rem 1.5rem;
-            color: #495057;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border-radius: 0.375rem;
-            margin: 0.25rem 0.5rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
         }
         
         .dropdown-item:hover {
-            background: #f8f9fa;
-            color: #667eea;
+            background-color: #f8f9fa;
             transform: translateX(5px);
         }
         
         .dropdown-item i {
             width: 20px;
-            margin-right: 0.75rem;
+            margin-right: 8px;
             color: #6c757d;
+        }
+        
+        .dropdown-item:hover i {
+            color: #0d6efd;
         }
         
         .dropdown-divider {
@@ -101,7 +115,7 @@
             position: absolute;
             top: -5px;
             right: -5px;
-            background: #dc3545;
+            background-color: #dc3545;
             color: white;
             border-radius: 50%;
             width: 18px;
@@ -110,6 +124,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
         }
         
         .nav-item.position-relative {
@@ -127,6 +142,20 @@
             color: #fff;
         }
         
+        /* Feature Modal Enhancements */
+        .modal-lg {
+            max-width: 800px;
+        }
+        
+        .badge.fs-6 {
+            font-size: 0.875rem !important;
+        }
+        
+        .card.bg-light {
+            border: none;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
         @media (max-width: 991.98px) {
             .navbar-nav {
                 padding-top: 1rem;
@@ -140,6 +169,37 @@
                 box-shadow: none;
                 border: 1px solid #dee2e6;
                 margin-top: 0;
+            }
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .dropdown-menu-lg {
+                min-width: 280px;
+                margin-left: -100px;
+            }
+            
+            .navbar-nav .dropdown-menu {
+                border: none;
+                box-shadow: none;
+                background-color: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+            }
+        }
+        
+        /* Notification Toast Styles */
+        .alert.position-fixed {
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
             }
         }
     </style>
@@ -170,75 +230,90 @@
         <!-- Navigation -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
-                <!-- Public Navigation -->
                 {% if not current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.home') }}">
-                            <i class="fas fa-home me-1"></i>Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.features') }}">
-                            <i class="fas fa-star me-1"></i>Features
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.about') }}">
-                            <i class="fas fa-info-circle me-1"></i>About
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.chat') }}">
-                            <i class="fas fa-robot me-1"></i>LeeBot Chat
-                        </a>
-                    </li>
-                {% else %}
-                    <!-- Authenticated Navigation -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    {% if current_user.is_super_admin %}
-                    <!-- Founder Dashboard -->
-                    <li class="nav-item">
-                        <a class="nav-link text-warning fw-bold" href="{{ url_for('main.founder_dashboard') }}">
-                            <i class="fas fa-crown me-1"></i>Founder Dashboard
-                        </a>
-                    </li>
-                    {% endif %}
+                    <!-- Public Navigation - Single Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-users me-1"></i>Chama Management
+                        <a class="nav-link dropdown-toggle fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-compass me-1"></i>Explore ChamaLink
                         </a>
                         <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Get Started</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.home') }}">
+                                <i class="fas fa-home"></i>Home
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.features') }}">
+                                <i class="fas fa-star"></i>Features
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.about') }}">
+                                <i class="fas fa-info-circle"></i>About Us
+                            </a></li>
+                            <li><div class="dropdown-divider"></div></li>
+                            <li><h6 class="dropdown-header">Get Help</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.chat') }}">
+                                <i class="fas fa-robot"></i>LeeBot Chat Assistant
+                            </a></li>
+                            <li><div class="dropdown-divider"></div></li>
+                            <li><h6 class="dropdown-header">Roadmap Features</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('mobile-app')">
+                                <i class="fas fa-mobile-alt"></i>Mobile App (Coming Soon)
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('analytics')">
+                                <i class="fas fa-chart-bar"></i>Advanced Analytics
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('investment')">
+                                <i class="fas fa-chart-line"></i>Investment Tracking
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('banking')">
+                                <i class="fas fa-university"></i>Bank Integrations
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('api')">
+                                <i class="fas fa-code"></i>API Marketplace
+                            </a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <!-- Authenticated User Navigation - Everything in One Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-th-large me-1"></i>ChamaLink Menu
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-lg">
+                            <!-- Dashboard -->
+                            <li><h6 class="dropdown-header">Dashboard</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i>My Dashboard
+                            </a></li>
+                            {% if current_user.is_super_admin %}
+                            <li><a class="dropdown-item text-warning fw-bold" href="{{ url_for('main.founder_dashboard') }}">
+                                <i class="fas fa-crown"></i>Founder Dashboard
+                            </a></li>
+                            {% endif %}
+                            
+                            <!-- Chama Management -->
+                            <li><div class="dropdown-divider"></div></li>
+                            <li><h6 class="dropdown-header">Chama Management</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
                                 <i class="fas fa-users"></i>My Chamas
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('chama.search_chamas') }}">
                                 <i class="fas fa-search"></i>Search & Join Chamas
                             </a></li>
-                            <li><a class="dropdown-item" href="#">
+                            <li><a class="dropdown-item" href="#" onclick="createNewChama()">
                                 <i class="fas fa-plus-circle"></i>Create New Chama
                             </a></li>
-                            <li><div class="dropdown-divider"></div></li>
                             <li><a class="dropdown-item" href="{{ url_for('membership.membership_requests') }}">
                                 <i class="fas fa-user-plus"></i>Membership Requests
                             </a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-money-bill-wave me-1"></i>Financial
-                        </a>
-                        <ul class="dropdown-menu">
+
+                            <!-- Financial Services -->
+                            <li><div class="dropdown-divider"></div></li>
+                            <li><h6 class="dropdown-header">Financial Services</h6></li>
                             <li><a class="dropdown-item" href="{{ url_for('loans.loan_dashboard') }}">
-                                <i class="fas fa-coins"></i>Loans
+                                <i class="fas fa-coins"></i>Loans & Credit
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('penalties.penalty_dashboard') }}">
                                 <i class="fas fa-gavel"></i>Penalties
                             </a></li>
-                            <li><div class="dropdown-divider"></div></li>
                             <li><a class="dropdown-item" href="{{ url_for('receipts.my_receipts') }}">
                                 <i class="fas fa-receipt"></i>My Receipts
                             </a></li>
@@ -246,20 +321,48 @@
                                 <i class="fas fa-sync-alt"></i>Recurring Payments
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.reports') }}">
-                                <i class="fas fa-chart-line"></i>Reports
+                                <i class="fas fa-chart-line"></i>Reports & Analytics
+                            </a></li>
+
+                            <!-- Advanced Features -->
+                            <li><div class="dropdown-divider"></div></li>
+                            <li><h6 class="dropdown-header">Advanced Features</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('mobile-app')">
+                                <i class="fas fa-mobile-alt"></i>Mobile App
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('analytics')">
+                                <i class="fas fa-chart-bar"></i>Advanced Analytics
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('investment')">
+                                <i class="fas fa-chart-line"></i>Investment Tracking
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('banking')">
+                                <i class="fas fa-university"></i>Bank & SACCO Integration
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('api')">
+                                <i class="fas fa-code"></i>API Marketplace
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('compliance')">
+                                <i class="fas fa-shield-alt"></i>Automated Compliance
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('multilang')">
+                                <i class="fas fa-language"></i>Multi-language Support
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('advisory')">
+                                <i class="fas fa-user-tie"></i>Investment Advisory
+                            </a></li>
+
+                            <!-- Communication -->
+                            <li><div class="dropdown-divider"></div></li>
+                            <li><h6 class="dropdown-header">Communication</h6></li>
+                            <li><a class="dropdown-item position-relative" href="{{ url_for('notifications.notification_dashboard') }}">
+                                <i class="fas fa-bell"></i>Notifications
+                                <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.chat') }}">
+                                <i class="fas fa-robot"></i>LeeBot Assistant
                             </a></li>
                         </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="{{ url_for('notifications.notification_dashboard') }}">
-                            <i class="fas fa-bell me-1"></i>Notifications
-                            <span class="notification-badge" id="notificationBadge" style="display: none;"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.chat') }}">
-                            <i class="fas fa-robot me-1"></i>LeeBot
-                        </a>
                     </li>
                 {% endif %}
             </ul>
@@ -451,6 +554,355 @@
     // Refresh notification count every 30 seconds
     setInterval(loadNotificationCount, 30000);
     {% endif %}
+
+    // Feature Modal Functions for Roadmap Features
+function showFeatureModal(feature) {
+    const featureData = {
+        'mobile-app': {
+            title: '📱 Mobile Application',
+            status: 'Coming Q1 2025',
+            description: 'Native mobile app for iOS and Android with full chama management capabilities.',
+            features: [
+                '📲 Native iOS and Android apps',
+                '🔄 Offline sync capability',
+                '📱 Push notifications for transactions',
+                '📷 Receipt scanning and upload',
+                '🎯 Simplified mobile-first UI',
+                '🔐 Biometric authentication',
+                '📍 Location-based meeting reminders'
+            ],
+            timeline: 'Beta testing starts January 2025',
+            action: 'Join our mobile app beta testing program!',
+            actionBtn: 'Join Beta Program'
+        },
+        'analytics': {
+            title: '📊 Advanced Analytics Dashboard',
+            status: 'Available Now (Premium)',
+            description: 'Comprehensive analytics and insights for data-driven chama management.',
+            features: [
+                '📈 Real-time financial performance metrics',
+                '📊 Member contribution patterns',
+                '💰 Cash flow forecasting',
+                '🎯 Goal tracking and progress indicators',
+                '📉 Risk assessment and alerts',
+                '📋 Custom report builder',
+                '📱 Mobile analytics app'
+            ],
+            timeline: 'Continuously updated with new insights',
+            action: 'Available with Classic and Advanced plans',
+            actionBtn: 'Upgrade to Access'
+        },
+        'investment': {
+            title: '💰 Investment Portfolio Tracking',
+            status: 'Coming Q2 2025',
+            description: 'Track and manage chama investments across multiple asset classes.',
+            features: [
+                '📊 Portfolio performance tracking',
+                '💹 Stock market integration',
+                '🏠 Real estate investment tracking',
+                '💎 Government bonds monitoring',
+                '📈 ROI calculations and projections',
+                '⚖️ Risk assessment tools',
+                '📱 Investment alerts and notifications'
+            ],
+            timeline: 'Pilot program begins April 2025',
+            action: 'Express interest for early access',
+            actionBtn: 'Register Interest'
+        },
+        'banking': {
+            title: '🏦 Bank & SACCO Integration',
+            status: 'Pilot Phase',
+            description: 'Direct integration with major Kenyan banks and SACCOs for seamless transactions.',
+            features: [
+                '🏛️ Direct bank account integration',
+                '🤝 SACCO partnership programs',
+                '💳 Automated loan applications',
+                '📊 Real-time balance synchronization',
+                '💸 Bulk payment processing',
+                '📋 Automated reconciliation',
+                '🔐 Bank-grade security standards'
+            ],
+            timeline: 'Pilot with select banks active',
+            action: 'Available for Enterprise customers',
+            actionBtn: 'Contact Sales'
+        },
+        'api': {
+            title: '🔗 API Marketplace',
+            status: 'Developer Preview',
+            description: 'Comprehensive API platform for developers and third-party integrations.',
+            features: [
+                '⚡ RESTful API endpoints',
+                '🔑 Developer authentication system',
+                '📚 Comprehensive documentation',
+                '🛠️ SDK for popular languages',
+                '📊 API analytics and monitoring',
+                '💰 Revenue sharing for developers',
+                '🔒 Enterprise-grade security'
+            ],
+            timeline: 'Open beta launches Q2 2025',
+            action: 'Join our developer community',
+            actionBtn: 'Get API Access'
+        },
+        'compliance': {
+            title: '🛡️ Automated Compliance Reporting',
+            status: 'Coming Q3 2025',
+            description: 'Automated compliance with Kenyan financial regulations and tax requirements.',
+            features: [
+                '📋 Automated KRA tax reporting',
+                '📊 Financial compliance checks',
+                '📝 Regulatory document generation',
+                '⚠️ Compliance alerts and warnings',
+                '📈 Audit trail maintenance',
+                '🏛️ Government portal integration',
+                '📄 Digital certificate management'
+            ],
+            timeline: 'Development begins March 2025',
+            action: 'Express interest for early access',
+            actionBtn: 'Register Interest'
+        },
+        'multilang': {
+            title: '🌍 Multi-language Support',
+            status: 'Coming Q2 2025',
+            description: 'Full platform support for Swahili and other local languages.',
+            features: [
+                '🇰🇪 Complete Swahili translation',
+                '🌐 Localized number and date formats',
+                '💬 Multi-language support chat',
+                '📱 SMS notifications in local languages',
+                '📋 Localized report templates',
+                '🎯 Cultural adaptation features',
+                '🔊 Voice assistance in Swahili'
+            ],
+            timeline: 'Swahili version launches May 2025',
+            action: 'Help us with translation and testing',
+            actionBtn: 'Join Translation Team'
+        },
+        'advisory': {
+            title: '💼 Investment Advisory Services',
+            status: 'Coming Q4 2025',
+            description: 'Professional investment advisory and wealth management services for chamas.',
+            features: [
+                '👨‍💼 Certified financial advisors',
+                '📊 Personalized investment strategies',
+                '📈 Portfolio optimization recommendations',
+                '🎯 Goal-based financial planning',
+                '📞 Regular advisory consultations',
+                '📋 Investment research and insights',
+                '🏆 Performance benchmarking'
+            ],
+            timeline: 'Advisory partnerships being established',
+            action: 'Express interest for advisory services',
+            actionBtn: 'Request Advisory'
+        }
+    };
+
+    const data = featureData[feature];
+    if (!data) return;
+
+    // Create modal HTML
+    const modalHtml = `
+        <div class="modal fade" id="featureModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">${data.title}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <span class="badge bg-success fs-6">${data.status}</span>
+                                </div>
+                                <p class="lead">${data.description}</p>
+                                
+                                <h6 class="fw-bold mt-4 mb-3">🚀 Key Features:</h6>
+                                <ul class="list-unstyled">
+                                    ${data.features.map(f => `<li class="mb-2">✅ ${f}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">📅 Timeline</h6>
+                                        <p class="card-text">${data.timeline}</p>
+                                        
+                                        <h6 class="card-title mt-3">🎯 Next Steps</h6>
+                                        <p class="card-text">${data.action}</p>
+                                        
+                                        <button class="btn btn-primary w-100" onclick="handleFeatureAction('${feature}')">
+                                            ${data.actionBtn}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="showFeatureInterest('${feature}')">
+                            💌 Get Notified About Updates
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remove existing modal if any
+    const existingModal = document.getElementById('featureModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('featureModal'));
+    modal.show();
+}
+
+function handleFeatureAction(feature) {
+    const actions = {
+        'mobile-app': () => showFeatureInterest(feature, 'Join Beta Program'),
+        'analytics': () => window.location.href = '/subscription/upgrade',
+        'investment': () => showFeatureInterest(feature, 'Register Interest'),
+        'banking': () => window.location.href = '/contact?inquiry=enterprise',
+        'api': () => window.location.href = '/api/developer',
+        'compliance': () => showFeatureInterest(feature, 'Register Interest'),
+        'multilang': () => showFeatureInterest(feature, 'Join Translation Team'),
+        'advisory': () => showFeatureInterest(feature, 'Request Advisory')
+    };
+
+    if (actions[feature]) {
+        actions[feature]();
+    }
+}
+
+function showFeatureInterest(feature, actionType = 'Get Updates') {
+    const interestModal = `
+        <div class="modal fade" id="interestModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">📧 Stay Updated</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>We'll notify you when this feature becomes available!</p>
+                        <form id="interestForm" onsubmit="submitInterest(event, '${feature}', '${actionType}')">
+                            <div class="mb-3">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control" name="email" 
+                                       value="${typeof current_user !== 'undefined' && current_user.is_authenticated ? current_user.email : ''}" 
+                                       required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Interest Level</label>
+                                <select class="form-select" name="interest_level" required>
+                                    <option value="">Select your interest level</option>
+                                    <option value="high">🔥 Very Interested - Contact me first!</option>
+                                    <option value="medium">👍 Interested - Keep me updated</option>
+                                    <option value="low">📧 Just notify me when it's ready</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Comments (Optional)</label>
+                                <textarea class="form-control" name="comments" rows="2" 
+                                          placeholder="Any specific requirements or questions?"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                📧 Notify Me About Updates
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Remove existing interest modal
+    const existingInterestModal = document.getElementById('interestModal');
+    if (existingInterestModal) {
+        existingInterestModal.remove();
+    }
+
+    // Add and show interest modal
+    document.body.insertAdjacentHTML('beforeend', interestModal);
+    const modal = new bootstrap.Modal(document.getElementById('interestModal'));
+    modal.show();
+}
+
+function submitInterest(event, feature, actionType) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const data = {
+        feature: feature,
+        action_type: actionType,
+        email: formData.get('email'),
+        interest_level: formData.get('interest_level'),
+        comments: formData.get('comments')
+    };
+
+    fetch('/api/feature-interest', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Close modals
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) bsModal.hide();
+            });
+
+            // Show success message
+            showNotification('✅ Thank you! We\'ll keep you updated on this feature.', 'success');
+        } else {
+            showNotification('❌ Something went wrong. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting interest:', error);
+        showNotification('❌ Something went wrong. Please try again.', 'error');
+    });
+}
+
+function createNewChama() {
+    // Open create chama modal or redirect to creation page
+    window.location.href = '/chama/create';
+}
+
+function showNotification(message, type = 'info') {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+    const notificationHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('afterbegin', notificationHtml);
+    
+    // Auto dismiss after 5 seconds
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = bootstrap.Alert.getInstance(alert);
+            if (bsAlert) bsAlert.close();
+        });
+    }, 5000);
+}
+
+// ...existing code...
 </script>
 
 <!-- Floating Chat Button -->

@@ -1,6 +1,7 @@
 from app import db
 from datetime import datetime, timedelta
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.hybrid import hybrid_property
 import uuid
 
 class Chama(db.Model):
@@ -400,9 +401,13 @@ class LoanApplication(db.Model):
     def formatted_amount(self):
         return f"KES {self.amount:,.0f}"
     
-    @property
+    @hybrid_property
     def remaining_amount(self):
         return self.amount - self.amount_paid
+    
+    @remaining_amount.expression
+    def remaining_amount(cls):
+        return cls.amount - cls.amount_paid
     
     @property
     def is_overdue(self):

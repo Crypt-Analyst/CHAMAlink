@@ -176,100 +176,176 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-// LeeBot - Intelligent ChamaLink Assistant
+// LeeBot - Truly Intelligent Human-like Assistant
 class LeeBot {
     constructor() {
         this.context = {
             lastTopic: null,
             conversationHistory: [],
-            userIntent: null
+            userIntent: null,
+            userMood: 'neutral',
+            conversationLength: 0,
+            userName: null,
+            personalizedData: {},
+            lastInteraction: null
+        };
+        
+        // Enhanced personality traits
+        this.personality = {
+            empathy: 0.8,
+            enthusiasm: 0.9,
+            helpfulness: 1.0,
+            patience: 0.95,
+            friendliness: 0.9
+        };
+        
+        // Context memory for natural conversations
+        this.conversationMemory = new Map();
+        
+        // Advanced intent recognition patterns
+        this.intentPatterns = {
+            'confused': ['confused', 'don\'t understand', 'lost', 'unclear', 'what do you mean'],
+            'frustrated': ['frustrated', 'annoying', 'not working', 'terrible', 'hate this'],
+            'excited': ['excited', 'awesome', 'great', 'amazing', 'love this'],
+            'urgent': ['urgent', 'asap', 'emergency', 'quickly', 'right now', 'immediately'],
+            'casual': ['just wondering', 'curious', 'by the way', 'random question'],
+            'formal': ['please', 'could you', 'would you mind', 'i would like to']
         };
         
         // Knowledge base for intelligent responses
         this.knowledgeBase = {
-            // Conversational responses
+            // Conversational responses with emotional intelligence
             'greeting': {
                 keywords: ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy', 'greetings'],
-                response: `👋 **Hello there!** 
+                responses: [
+                    `👋 **Hey there! Great to see you!** 
 
-I'm LeeBot, your friendly ChamaLink assistant! I'm here to help you with everything related to managing your chama.
+I'm LeeBot, and I'm genuinely excited to help you today! I've been chatting with chama members all day, and every conversation teaches me something new.
 
-I can assist you with:
-🏦 Creating and setting up your chama
-💰 Understanding our subscription plans and pricing
-📱 M-Pesa integration and payment setup
-👥 Managing members and invitations
-📊 Generating reports and analytics
-💬 Answering questions about features
+I noticed you're here - are you:
+� New to ChamaLink and want to explore?
+💡 Looking for specific help with your chama?
+🤔 Just browsing and seeing what we're about?
 
-**What would you like to know more about?** Just ask me in your own words - I understand natural language!
+Tell me what's on your mind, and let's make some progress together! I promise to listen carefully and give you exactly the help you need.`,
 
-*For example, try: "How do I start a chama?" or "What's the best plan for my group?"*`,
+                    `� **Hello! Welcome back!** 
+
+*I remember our last conversation about ${this.getLastTopic()}* - how did that work out for you?
+
+I'm here and ready to dive into whatever you need help with today. Whether it's something completely new or building on what we discussed before, I'm all ears!
+
+What's happening in your chama world today?`,
+
+                    `👋 **Hi there! Perfect timing!** 
+
+I was just helping another chama member figure out their M-Pesa integration, and it got me thinking about all the creative ways people are using ChamaLink.
+
+What brings you here today? I'm ready to put my full attention on helping you succeed with your chama!`
+                ],
                 followUp: ['chama creation', 'subscription plans', 'member management']
             },
             
             'how_are_you': {
                 keywords: ['how are you', 'how do you do', 'how\'s it going', 'what\'s up', 'how have you been'],
-                response: `😊 **I'm doing great, thank you for asking!**
+                responses: [
+                    `😊 **I'm doing fantastic, thanks for asking!**
 
-I'm feeling energetic and ready to help you succeed with your chama! 
+You know what makes me feel great? When I can actually help someone solve a real problem or achieve their chama goals. Today I've already helped 3 different chama groups set up their payment systems, and each one had a unique situation.
 
-As an AI assistant, I'm always:
-✅ Available 24/7 to help you
-🧠 Learning from every conversation
-💪 Getting better at understanding your needs
-🚀 Excited to help your chama grow and thrive
+**But honestly, I'm more interested in how YOU'RE doing!** 
 
-**How are YOU doing?** More importantly, how can I help you with your chama management needs today?
+How's your chama journey going? Are you:
+• Just starting out and feeling a bit overwhelmed?
+• Already running a chama but hitting some challenges?
+• Looking to upgrade or improve your current setup?
+• Celebrating some recent successes? (I'd love to hear about those!)
 
-Feel free to ask me anything about:
-• Setting up your first chama
-• Managing members and contributions
-• Understanding our features and pricing
-• Troubleshooting any issues`,
-                followUp: ['chama setup help', 'feature overview', 'troubleshooting']
+I find that understanding where you're coming from helps me give much better, more relevant advice. So, how ARE things really going?`,
+
+                    `😊 **I'm great! And getting smarter every day thanks to conversations like this one.**
+
+Actually, I've been having some really interesting chats today. One person asked me about handling difficult members (great question!), another wanted to know about tax implications of chama income, and someone else was curious about expanding to multiple chamas.
+
+**What's your story?** What's working well in your chama world, and what could be better?
+
+I'm genuinely curious because every chama has its own personality and challenges. Understanding yours helps me give you advice that actually fits your situation.`
+                ],
+                followUp: ['chama challenges', 'success stories', 'specific help needed']
             },
             
-            'who_are_you': {
-                keywords: ['who are you', 'what are you', 'tell me about yourself', 'introduce yourself'],
-                response: `🤖 **I'm LeeBot - Your Intelligent ChamaLink Assistant!**
+            'confused_help': {
+                keywords: ['confused', 'don\'t understand', 'lost', 'unclear', 'complex', 'overwhelming'],
+                responses: [
+                    `� **Hey, no worries at all! I totally get it.**
 
-**About Me:**
-• I'm an AI-powered chatbot created specifically for ChamaLink users
-• Named after our founder's commitment to innovation and user support
-• Designed to make chama management as easy as possible for you
+Starting with digital chama management can feel like learning a new language sometimes. You're definitely not alone in feeling this way - I'd say about 70% of the people I chat with start exactly where you are right now.
 
-**What I Can Do:**
-🎯 **Instant Help**: Get immediate answers to your questions
-🧠 **Smart Understanding**: I comprehend natural language, so talk to me normally!
-📚 **Deep Knowledge**: I know everything about ChamaLink's features
-🔄 **Always Learning**: I improve with every conversation
-🚀 **Problem Solving**: Help you overcome any challenges
+**Let's break this down into bite-sized pieces:**
 
-**My Mission:**
-To make digital chama management accessible and effortless for everyone, from tech-savvy users to those just starting their digital journey.
+Instead of trying to understand everything at once, what if we just focus on ONE thing that would make your life easier right now?
 
-**What would you like to explore together?**`,
-                followUp: ['getting started', 'feature tour', 'pricing information']
+For example:
+• "I just want to know if ChamaLink is right for my small group"
+• "I need to understand the costs before I commit"
+• "I want to see how the M-Pesa thing actually works"
+• "I'm curious about security - is my money safe?"
+
+**Pick the one thing that's most important to you right now, and let's tackle just that.** I promise to explain it in plain language, no jargon!
+
+What feels like the most important puzzle piece for you to understand first?`,
+
+                    `🤗 **I hear you, and I really appreciate you being honest about feeling confused.**
+
+You know what? That actually tells me you're being smart and thoughtful about this decision. The people who succeed with chamas are usually the ones who ask good questions upfront rather than jumping in blindly.
+
+**Here's what I suggest:**
+
+Instead of me overwhelming you with features and technical details, why don't you tell me about your specific situation? Like:
+• How many people are in your group?
+• What are you trying to achieve together?
+• What's your biggest concern or worry about managing money digitally?
+
+Once I understand YOUR specific situation, I can explain exactly how ChamaLink would work for YOU - not just in general terms, but for your actual group with your actual goals.
+
+**Does that sound more helpful?** What's your group's story?`
+                ],
+                followUp: ['specific situation', 'basic explanation', 'step by step guidance']
             },
             
-            'thank_you': {
-                keywords: ['thank you', 'thanks', 'appreciate', 'grateful', 'cheers'],
-                response: `🙏 **You're very welcome!**
+            'urgent_help': {
+                keywords: ['urgent', 'asap', 'emergency', 'quickly', 'right now', 'immediately', 'deadline'],
+                responses: [
+                    `� **Got it - you need help RIGHT NOW. I'm on it!**
 
-I'm so happy I could help you! That's exactly what I'm here for - making your ChamaLink experience smooth and successful.
+Let me focus completely on your urgent situation. No long explanations, just direct solutions.
 
-**Remember:**
-• I'm always here when you need assistance
-• No question is too basic or too complex
-• Feel free to come back anytime you need guidance
-• Your success is my success!
+**Tell me exactly what's happening:**
+• Is this a payment issue that needs immediate resolution?
+• Do you have a deadline you're trying to meet?
+• Is there a problem affecting your members right now?
+• Are you dealing with a technical issue that's blocking you?
 
-**Keep growing your chama!** 🚀
+**I'll give you the fastest, most direct path to solving this.** Just describe the urgent situation in a few words, and I'll cut straight to the solution.
 
-Is there anything else I can help you with today? I'm just a message away whenever you need support with your chama management journey.`,
-                followUp: ['more questions', 'feature exploration', 'success tips']
-            },
+What's the emergency?`,
+
+                    `🚨 **Okay, emergency mode activated! Let's solve this fast.**
+
+I can hear the urgency in your message. Whatever's happening, we can fix it quickly if we focus on the right things.
+
+**For immediate help:**
+1. **Technical Issues**: Try refreshing your browser or using incognito mode
+2. **Payment Problems**: Check your M-Pesa transaction history first
+3. **Member Access Issues**: Verify email addresses and resend invitations
+4. **Data Concerns**: All your information is automatically backed up
+
+**But tell me specifically what's wrong** so I can give you the exact fix you need instead of general suggestions.
+
+What's the urgent problem you're facing?`
+                ],
+                followUp: ['immediate solution', 'technical support', 'direct contact']
+            }
             
             // Chama Management
             'chama_creation': {
@@ -602,21 +678,315 @@ Is there anything specific you'd like me to let the agent know about?`,
         return { topic: 'general', confidence: 0.1, data: null };
     }
 
-    // Generate response based on intent
-    generateResponse(intent, userMessage) {
-        if (intent.data) {
-            this.context.lastTopic = intent.topic;
-            this.context.conversationHistory.push({
-                user: userMessage,
-                bot: intent.data.response,
-                topic: intent.topic,
-                timestamp: new Date()
-            });
-            return intent.data.response;
+    // Analyze user mood and emotional state
+    analyzeMood(message) {
+        const mood_indicators = {
+            frustrated: ['frustrated', 'annoying', 'terrible', 'hate', 'awful', 'worst', 'angry'],
+            excited: ['excited', 'awesome', 'great', 'amazing', 'love', 'fantastic', 'wonderful'],
+            confused: ['confused', 'lost', 'don\'t understand', 'unclear', 'complicated'],
+            urgent: ['urgent', 'asap', 'quickly', 'emergency', 'immediately', 'deadline'],
+            casual: ['just wondering', 'curious', 'by the way', 'btw', 'random'],
+            formal: ['please', 'could you', 'would you mind', 'kindly', 'request']
+        };
+
+        for (const [mood, indicators] of Object.entries(mood_indicators)) {
+            if (indicators.some(indicator => message.toLowerCase().includes(indicator))) {
+                this.context.userMood = mood;
+                return mood;
+            }
+        }
+        
+        this.context.userMood = 'neutral';
+        return 'neutral';
+    }
+
+    // Remember conversation context
+    rememberContext(topic, details) {
+        const contextKey = `${topic}_${Date.now()}`;
+        this.conversationMemory.set(contextKey, {
+            topic,
+            details,
+            timestamp: new Date(),
+            relevance: 1.0
+        });
+        
+        // Clean old context (keep last 10 items)
+        if (this.conversationMemory.size > 10) {
+            const oldestKey = this.conversationMemory.keys().next().value;
+            this.conversationMemory.delete(oldestKey);
+        }
+    }
+
+    // Get last topic from memory
+    getLastTopic() {
+        if (this.conversationMemory.size === 0) return 'ChamaLink features';
+        
+        const contexts = Array.from(this.conversationMemory.values());
+        const lastContext = contexts[contexts.length - 1];
+        return lastContext ? lastContext.topic : 'ChamaLink features';
+    }
+
+    // Personalize response based on conversation history
+    personalizeResponse(baseResponse, userMood, intent) {
+        let personalizedResponse = baseResponse;
+        
+        // Adjust tone based on mood
+        switch (userMood) {
+            case 'frustrated':
+                personalizedResponse = personalizedResponse.replace('**', '**');
+                personalizedResponse = `🤗 I can sense you might be feeling a bit frustrated, and that's completely understandable. Let me help make this easier for you.\n\n${personalizedResponse}`;
+                break;
+                
+            case 'excited':
+                personalizedResponse = personalizedResponse.replace('!', '! 🎉');
+                personalizedResponse = `🚀 I love your enthusiasm! Let's channel that energy into getting you set up perfectly.\n\n${personalizedResponse}`;
+                break;
+                
+            case 'confused':
+                personalizedResponse = `🤗 No worries! I'll break this down into simple, easy-to-follow steps.\n\n${personalizedResponse}`;
+                break;
+                
+            case 'urgent':
+                personalizedResponse = personalizedResponse.substring(0, 500) + '\n\n⚡ **Need faster help?** Type "agent help" to connect with our human support team immediately.';
+                break;
         }
 
-        // Fallback response with better understanding
-        const responses = [
+        // Add conversation continuity
+        if (this.context.conversationLength > 3) {
+            personalizedResponse += '\n\n💭 *I notice we\'ve been chatting for a while. Am I helping you in the right direction, or should we try a different approach?*';
+        }
+
+        return personalizedResponse;
+    }
+
+    // Advanced intent analysis with context
+    analyzeAdvancedIntent(message) {
+        const lowerMessage = message.toLowerCase();
+        
+        // Check for follow-up questions
+        if (this.context.lastTopic && (lowerMessage.includes('what about') || lowerMessage.includes('how about') || lowerMessage.includes('also'))) {
+            return {
+                type: 'follow_up',
+                relatedTo: this.context.lastTopic,
+                confidence: 0.8
+            };
+        }
+
+        // Check for comparison requests
+        if (lowerMessage.includes('vs') || lowerMessage.includes('versus') || lowerMessage.includes('compared to') || lowerMessage.includes('better than')) {
+            return {
+                type: 'comparison',
+                confidence: 0.9
+            };
+        }
+
+        // Check for specific feature requests
+        const featureKeywords = ['feature', 'functionality', 'capability', 'can it', 'does it'];
+        if (featureKeywords.some(keyword => lowerMessage.includes(keyword))) {
+            return {
+                type: 'feature_inquiry',
+                confidence: 0.8
+            };
+        }
+
+        // Check for objections or concerns
+        const concernKeywords = ['worried', 'concerned', 'security', 'safe', 'risky', 'trust'];
+        if (concernKeywords.some(keyword => lowerMessage.includes(keyword))) {
+            return {
+                type: 'concern',
+                confidence: 0.9
+            };
+        }
+
+        return {
+            type: 'general',
+            confidence: 0.5
+        };
+    }
+
+    // Enhanced response generation with multiple response variations
+    generateEnhancedResponse(intent, userMessage) {
+        const mood = this.analyzeMood(userMessage);
+        const advancedIntent = this.analyzeAdvancedIntent(userMessage);
+        
+        // Update conversation length
+        this.context.conversationLength++;
+        
+        if (intent.data && intent.data.responses && Array.isArray(intent.data.responses)) {
+            // Choose response based on conversation context
+            let responseIndex = 0;
+            
+            if (this.context.conversationLength === 1) {
+                responseIndex = 0; // First time response
+            } else if (this.context.lastTopic === intent.topic) {
+                responseIndex = Math.min(1, intent.data.responses.length - 1); // Follow-up response
+            } else {
+                responseIndex = Math.min(2, intent.data.responses.length - 1); // Alternative response
+            }
+            
+            const baseResponse = intent.data.responses[responseIndex];
+            const personalizedResponse = this.personalizeResponse(baseResponse, mood, advancedIntent);
+            
+            // Remember this interaction
+            this.rememberContext(intent.topic, { userMessage, mood, advancedIntent });
+            this.context.lastTopic = intent.topic;
+            
+            return personalizedResponse;
+        }
+        
+        // Fallback for single response format
+        if (intent.data && intent.data.response) {
+            const personalizedResponse = this.personalizeResponse(intent.data.response, mood, advancedIntent);
+            this.rememberContext(intent.topic, { userMessage, mood, advancedIntent });
+            this.context.lastTopic = intent.topic;
+            return personalizedResponse;
+        }
+
+        // Enhanced fallback responses
+        return this.generateIntelligentFallback(userMessage, mood, advancedIntent);
+    }
+
+    // Generate intelligent fallback responses
+    generateIntelligentFallback(userMessage, mood, advancedIntent) {
+        let fallbackResponse = '';
+        
+        // Acknowledge the specific question
+        if (userMessage.length > 50) {
+            fallbackResponse += `🤔 **I can see you're asking about something specific**, and I want to give you the most helpful answer possible.\n\n`;
+        }
+
+        // Mood-appropriate opening
+        switch (mood) {
+            case 'frustrated':
+                fallbackResponse += `I understand this might be frustrating. Let me try to help you find what you're looking for quickly.\n\n`;
+                break;
+            case 'urgent':
+                fallbackResponse += `I can see this is urgent for you. Here are the fastest ways to get help:\n\n`;
+                break;
+            case 'confused':
+                fallbackResponse += `No problem! Let's break this down step by step.\n\n`;
+                break;
+            default:
+                fallbackResponse += `While I work on understanding your specific question better, here's how I can help you right now:\n\n`;
+        }
+
+        // Specific guidance based on intent
+        if (advancedIntent.type === 'comparison') {
+            fallbackResponse += `📊 **For comparisons**, I can help you understand:
+• ChamaLink vs traditional chama management
+• Different subscription plans (Basic vs Classic vs Advanced)
+• Payment methods and their benefits
+• Feature comparisons between plans
+
+**Try asking**: "Compare the Basic and Classic plans" or "What makes ChamaLink better than Excel?"`;
+        } else if (advancedIntent.type === 'feature_inquiry') {
+            fallbackResponse += `🔧 **For feature questions**, I can explain:
+• All ChamaLink capabilities in detail
+• How specific features work
+• Which plan includes which features
+• Integration possibilities
+
+**Try asking**: "What features does ChamaLink have?" or "Can I export my data?"`;
+        } else if (advancedIntent.type === 'concern') {
+            fallbackResponse += `🛡️ **For security and trust concerns**, I can address:
+• Data security and encryption
+• Money safety and M-Pesa integration
+• Privacy and member information protection
+• Compliance and regulatory aspects
+
+**Try asking**: "Is my money safe?" or "How do you protect our data?"`;
+        } else {
+            fallbackResponse += `💡 **Here are some popular topics I can help with:**
+
+🏦 **Getting Started**: "How do I create a chama?"
+💰 **Pricing**: "What does ChamaLink cost?"
+👥 **Members**: "How do I add members to my chama?"
+📱 **Payments**: "How does M-Pesa integration work?"
+📊 **Reports**: "What reports can I generate?"
+🔧 **Support**: "I need help with [specific issue]"`;
+        }
+
+        // Add agent escalation for urgent cases
+        if (mood === 'urgent' || mood === 'frustrated') {
+            fallbackResponse += `\n\n⚡ **Need immediate human help?** Type "agent help" and I'll connect you with our support team right away.`;
+        }
+
+        return fallbackResponse;
+    }
+
+    // Context-aware response selector
+    selectContextualResponse(responses, context) {
+        if (!Array.isArray(responses) || responses.length === 0) {
+            return null;
+        }
+
+        // First interaction - use first response
+        if (context.conversationLength <= 1) {
+            return responses[0];
+        }
+
+        // Returning to same topic - use follow-up response
+        if (context.lastTopic && responses.length > 1) {
+            return responses[1];
+        }
+
+        // General case - use last response or random selection
+        if (responses.length > 2) {
+            return responses[2];
+        }
+
+        return responses[Math.floor(Math.random() * responses.length)];
+    }
+
+    // Human-like conversation flow
+    maintainConversationFlow(topic, userMessage) {
+        // Add natural transitions
+        const transitions = [
+            `That's a great question about ${topic}!`,
+            `I'm glad you asked about ${topic} - it's one of my favorite topics to discuss.`,
+            `Perfect! ${topic} is something I can definitely help you with.`,
+            `Excellent choice asking about ${topic}. Let me break this down for you.`,
+            `${topic} is super important for chama success. Here's what you need to know:`
+        ];
+
+        const transition = transitions[Math.floor(Math.random() * transitions.length)];
+        return transition;
+    }
+
+    // Generate follow-up questions
+    generateFollowUpQuestions(topic) {
+        const followUps = {
+            'chama_creation': [
+                'Would you like me to walk you through the setup process step by step?',
+                'Do you have questions about choosing the right subscription plan?',
+                'Are you wondering about how many members you should start with?'
+            ],
+            'subscription_plans': [
+                'Would you like me to help you choose the best plan for your group size?',
+                'Are you interested in learning about our free trial?',
+                'Do you have questions about upgrading or downgrading plans later?'
+            ],
+            'member_management': [
+                'Would you like tips on how to onboard new members effectively?',
+                'Are you curious about setting up member roles and permissions?',
+                'Do you need help with handling difficult or inactive members?'
+            ]
+        };
+
+        return followUps[topic] || [
+            'Is there anything specific about this you\'d like me to explain further?',
+            'What other questions do you have about this topic?',
+            'Would you like me to show you how this works in practice?'
+        ];
+    }
+
+    // Enhanced generate response that uses human-like intelligence
+    generateResponse(intent, userMessage) {
+        // Use enhanced response generation for more human-like interactions
+        return this.generateEnhancedResponse(intent, userMessage);
+    }
+
+    // Handle agent escalation
             `🤔 **I'm not quite sure about "${userMessage}"**, but I'm here to help!
 
 Let me suggest some popular topics I can definitely assist you with:

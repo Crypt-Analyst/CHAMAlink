@@ -186,33 +186,23 @@
 
             <!-- Right Column -->
             <div class="col-lg-4">
-                <!-- Recent Users -->
+                <!-- User Statistics -->
                 <div class="card founder-card mb-4">
                     <div class="card-header">
                         <h5 class="mb-0">
-                            <i class="fas fa-user-plus me-2"></i>New Users
+                            <i class="fas fa-users me-2"></i>User Statistics
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div class="user-list">
-                            {% for user in recent_users[:8] %}
-                            <div class="user-item">
-                                <div class="user-avatar">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="user-info">
-                                    <h6 class="user-name">{{ user.username }}</h6>
-                                    <small class="user-email">{{ user.email }}</small>
-                                </div>
-                                <div class="user-status">
-                                    {% if user.is_email_verified %}
-                                    <i class="fas fa-check-circle text-success"></i>
-                                    {% else %}
-                                    <i class="fas fa-clock text-warning"></i>
-                                    {% endif %}
-                                </div>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h3 class="text-primary">{{ total_users or 0 }}</h3>
+                                <p class="mb-0">Total Users</p>
                             </div>
-                            {% endfor %}
+                            <div class="col-6">
+                                <h3 class="text-success">{{ verified_users or 0 }}</h3>
+                                <p class="mb-0">Verified Users</p>
+                            </div>
                         </div>
                     </div>
                 </div>
