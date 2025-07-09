@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Apply for Loan - {{ chama.name }} - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-coins me-2"></i>Apply for Loan - {{ chama.name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="text-primary">
+                                    <i class="fas fa-users me-2"></i>Chama Information
+                                </h6>
+                                <p class="mb-1"><strong>Name:</strong> {{ chama.name }}</p>
+                                <p class="mb-1"><strong>Available Balance:</strong> {{ chama.formatted_balance }}</p>
+                                <p class="mb-0"><strong>Members:</strong> {{ chama.member_count }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card">
+                                <h6 class="text-primary">
+                                    <i class="fas fa-info-circle me-2"></i>Loan Requirements
+                                </h6>
+                                <ul class="mb-0">
+                                    <li>Must be an active member</li>
+                                    <li>Requires 3 admin approvals</li>
+                                    <li>Maximum loan period: 12 months</li>
+                                    <li>Interest rate: 0% (configurable)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="loanApplicationForm">
+                        <input type="hidden" id="chamaId" value="{{ chama.id }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="loanAmount" class="form-label">
+                                        <i class="fas fa-money-bill-wave me-2"></i>Loan Amount
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">KES</span>
+                                        <input type="number" class="form-control" id="loanAmount" 
+                                               placeholder="50000" required min="1000" max="{{ chama.total_balance }}">
+                                    </div>
+                                    <small class="text-muted">Maximum available: {{ chama.formatted_balance }}</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="repaymentPeriod" class="form-label">
+                                        <i class="fas fa-calendar-alt me-2"></i>Repayment Period
+                                    </label>
+                                    <select class="form-select" id="repaymentPeriod" required>
+                                        <option value="">Select period</option>
+                                        <option value="1">1 Month</option>
+                                        <option value="2">2 Months</option>
+                                        <option value="3">3 Months</option>
+                                        <option value="6">6 Months</option>
+                                        <option value="12">12 Months</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="loanPurpose" class="form-label">
+                                <i class="fas fa-lightbulb me-2"></i>Purpose of Loan
+                            </label>
+                            <textarea class="form-control" id="loanPurpose" rows="4" 
+                                      placeholder="Describe the purpose of this loan and how it will be used..." 
+                                      required minlength="20"></textarea>
+                            <small class="text-muted">Please provide a detailed explanation (minimum 20 characters)</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="termsAgree" required>
+                                <label class="form-check-label" for="termsAgree">
+                                    I agree to the loan terms and conditions and understand that I am responsible for repaying the loan within the specified period.
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="submitLoanApplication()">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function submitLoanApplication() {
+    const chamaId = document.getElementById('chamaId').value;
+    const amount = document.getElementById('loanAmount').value;
+    const repaymentPeriod = document.getElementById('repaymentPeriod').value;
+    const purpose = document.getElementById('loanPurpose').value;
+    const termsAgree = document.getElementById('termsAgree').checked;
+    
+    // Validation
+    if (!amount || !repaymentPeriod || !purpose || !termsAgree) {
+        alert('Please fill in all required fields and agree to the terms');
+        return;
+    }
+    
+    if (parseFloat(amount) < 1000) {
+        alert('Minimum loan amount is KES 1,000');
+        return;
+    }
+    
+    if (parseFloat(amount) > {{ chama.total_balance }}) {
+        alert('Loan amount exceeds available balance');
+        return;
+    }
+    
+    if (purpose.length < 20) {
+        alert('Please provide a more detailed purpose (minimum 20 characters)');
+        return;
+    }
+    
+    // Disable submit button
+    const submitBtn = document.querySelector('[onclick="submitLoanApplication()"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    
+    fetch('/loans/submit_application', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            chama_id: parseInt(chamaId),
+            amount: parseFloat(amount),
+            repayment_period: parseInt(repaymentPeriod),
+            purpose: purpose.trim()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Loan application submitted successfully!');
+            window.location.href = '/loans/';
+        } else {
+            alert('Error: ' + data.message);
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Application';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Application';
+    });
+}
+</script>
+
+<style>
+.info-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    height: 100%;
+}
+
+.info-card h6 {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.info-card ul {
+    padding-left: 1.2rem;
+}
+
+.info-card li {
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Reports - {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="fas fa-chart-line text-primary me-2"></i>
+                                Financial Reports - {{ chama.name }}
+                            </h4>
+                            <p class="text-muted mt-1">Comprehensive financial analysis and reporting</p>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-download me-1"></i>Export
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="exportReport('csv')">
+                                    <i class="fas fa-file-csv me-2"></i>Export as CSV
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="exportReport('pdf')">
+                                    <i class="fas fa-file-pdf me-2"></i>Export as PDF
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Date Range Filter -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" value="{{ start_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" value="{{ end_date }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button class="btn btn-outline-primary" onclick="filterReports()">
+                                    <i class="fas fa-filter me-1"></i>Filter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button class="btn btn-outline-secondary" onclick="resetFilter()">
+                                    <i class="fas fa-times me-1"></i>Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-hand-holding-usd fa-2x text-success"></i>
+                                    </div>
+                                    <h5 class="text-success">KES {{ "{:,.0f}".format(total_contributions) }}</h5>
+                                    <p class="text-muted mb-0">Total Contributions</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-credit-card fa-2x text-info"></i>
+                                    </div>
+                                    <h5 class="text-info">KES {{ "{:,.0f}".format(total_loans) }}</h5>
+                                    <p class="text-muted mb-0">Loans Disbursed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                                    </div>
+                                    <h5 class="text-warning">KES {{ "{:,.0f}".format(total_penalties) }}</h5>
+                                    <p class="text-muted mb-0">Total Penalties</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <div class="mb-2">
+                                        <i class="fas fa-wallet fa-2x text-primary"></i>
+                                    </div>
+                                    <h5 class="text-primary">KES {{ "{:,.0f}".format(chama.total_balance) }}</h5>
+                                    <p class="text-muted mb-0">Current Balance</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-chart-bar me-2"></i>Monthly Contributions
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="contributionsChart" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-chart-pie me-2"></i>Member Contributions
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="memberChart" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-chart-line me-2"></i>Balance Trend
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="balanceChart" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Contributors -->
+                    {% if top_contributors %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-trophy me-2"></i>Top Contributors
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group list-group-flush">
+                                        {% for contributor in top_contributors %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <i class="fas fa-user-circle fa-2x text-muted"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">{{ contributor.user.username }}</h6>
+                                                    <small class="text-muted">{{ contributor.user.email }}</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-success rounded-pill">
+                                                KES {{ "{:,.0f}".format(contributor.amount) }}
+                                            </span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle me-2"></i>Report Summary
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="d-flex justify-content-between">
+                                                <span>Total Transactions:</span>
+                                                <strong>{{ transactions|length }}</strong>
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Active Loans:</span>
+                                                <strong>{{ loans|length }}</strong>
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Penalties Issued:</span>
+                                                <strong>{{ penalties|length }}</strong>
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Loan Repayments:</span>
+                                                <strong>KES {{ "{:,.0f}".format(total_loan_repayments) }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Recent Transactions -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-history me-2"></i>Recent Transactions
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if transactions %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Type</th>
+                                                    <th>Amount</th>
+                                                    <th>User</th>
+                                                    <th>Description</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for transaction in transactions[:20] %}
+                                                <tr>
+                                                    <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>
+                                                        <span class="badge bg-{{ 'success' if transaction.type == 'contribution' else 'info' if transaction.type == 'loan_repayment' else 'warning' if transaction.type == 'penalty_payment' else 'secondary' }}">
+                                                            {{ transaction.type.replace('_', ' ').title() }}
+                                                        </span>
+                                                    </td>
+                                                    <td>KES {{ "{:,.0f}".format(transaction.amount) }}</td>
+                                                    <td>{{ transaction.user.username if transaction.user else 'System' }}</td>
+                                                    <td>{{ transaction.description[:50] }}{{ '...' if transaction.description|length > 50 else '' }}</td>
+                                                    <td>
+                                                        <span class="badge bg-{{ 'success' if transaction.status == 'completed' else 'warning' if transaction.status == 'pending' else 'danger' }}">
+                                                            {{ transaction.status.title() }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                        <h6 class="text-muted">No transactions found</h6>
+                                        <p class="text-muted">No transactions found for the selected date range.</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load charts on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadChart('contributions');
+    loadChart('member_contributions');
+    loadChart('balance_trend');
+});
+
+function loadChart(chartType) {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    fetch(`/reports/chama/{{ chama.id }}/chart/${chartType}?start_date=${startDate}&end_date=${endDate}`)
+        .then(response => response.json())
+        .then(data => {
+            let containerId = '';
+            if (chartType === 'contributions') {
+                containerId = 'contributionsChart';
+            } else if (chartType === 'member_contributions') {
+                containerId = 'memberChart';
+            } else if (chartType === 'balance_trend') {
+                containerId = 'balanceChart';
+            }
+            
+            const container = document.getElementById(containerId);
+            if (data.image) {
+                container.innerHTML = `<img src="data:image/png;base64,${data.image}" class="img-fluid" alt="${chartType} chart">`;
+            } else {
+                container.innerHTML = '<p class="text-muted">No data available for chart</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading chart:', error);
+            const containerId = chartType === 'contributions' ? 'contributionsChart' : 
+                               chartType === 'member_contributions' ? 'memberChart' : 'balanceChart';
+            document.getElementById(containerId).innerHTML = '<p class="text-danger">Error loading chart</p>';
+        });
+}
+
+function filterReports() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    const url = new URL(window.location.href);
+    url.searchParams.set('start_date', startDate);
+    url.searchParams.set('end_date', endDate);
+    
+    window.location.href = url.toString();
+}
+
+function resetFilter() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('start_date');
+    url.searchParams.delete('end_date');
+    
+    window.location.href = url.toString();
+}
+
+function exportReport(format) {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    const url = `/reports/chama/{{ chama.id }}/export/${format}?start_date=${startDate}&end_date=${endDate}`;
+    
+    // Create a temporary link and click it to trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %}

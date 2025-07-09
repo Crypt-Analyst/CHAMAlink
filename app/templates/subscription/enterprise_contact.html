@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Enterprise Contact - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary">Enterprise Solutions</h1>
+                <p class="lead text-muted">Empower your SACCO, NGO, or large organization with ChamaLink Enterprise</p>
+                <div class="badge bg-warning text-dark fs-6 mb-4">
+                    <i class="fas fa-crown"></i> Custom Solutions Available
+                </div>
+            </div>
+
+            <!-- Enterprise Features Overview -->
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="fas fa-users-cog me-2"></i>Advanced Management
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Unlimited chamas and members</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Multi-signature approvals</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Advanced audit logs</li>
+                                <li><i class="fas fa-check text-success me-2"></i>White-label customization</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="fas fa-chart-line me-2"></i>Enterprise Analytics
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Advanced reporting dashboard</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Bulk operations and imports</li>
+                                <li><i class="fas fa-check text-success me-2"></i>API access for integrations</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Automated daily backups</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information & Team -->
+            <div class="row mb-5">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="fas fa-envelope me-2"></i>Contact Information
+                            </h5>
+                            <div class="contact-details">
+                                <p class="mb-2"><strong>📧 Support Email:</strong> rahasoft.app@gmail.com</p>
+                                <p class="mb-2"><strong>📞 Phone:</strong> 0722 206 805</p>
+                                <p class="mb-2"><strong>⏰ Response Time:</strong> Within 24 hours</p>
+                                <p class="mb-0"><strong>🕒 Business Hours:</strong> Mon-Fri, 8AM-6PM EAT</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">
+                                <i class="fas fa-users me-2"></i>Meet Our Leadership Team
+                            </h5>
+                            <div class="team-info">
+                                <div class="team-member mb-3">
+                                    <strong>👑 Founder & CEO:</strong> Bilford Bwire<br>
+                                    <small class="text-muted">Visionary behind ChamaLink's mission</small>
+                                </div>
+                                <div class="team-member mb-3">
+                                    <strong>💻 CTO:</strong> Judith Gendero<br>
+                                    <small class="text-muted">Leading technical innovation</small>
+                                </div>
+                                <div class="team-member">
+                                    <strong>🎯 COO:</strong> Daniel Ogutu<br>
+                                    <small class="text-muted">Ensuring operational excellence</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-handshake me-2"></i>Get Enterprise Pricing
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="organization" class="form-label">Organization Name *</label>
+                                <input type="text" class="form-control" id="organization" name="organization" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="organization_type" class="form-label">Organization Type *</label>
+                                <select class="form-select" id="organization_type" name="organization_type" required>
+                                    <option value="">Select type...</option>
+                                    <option value="sacco">SACCO</option>
+                                    <option value="ngo">NGO</option>
+                                    <option value="cooperative">Cooperative Society</option>
+                                    <option value="microfinance">Microfinance Institution</option>
+                                    <option value="government">Government Agency</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="members_count" class="form-label">Estimated Number of Members *</label>
+                                <select class="form-select" id="members_count" name="members_count" required>
+                                    <option value="">Select range...</option>
+                                    <option value="100-500">100 - 500 members</option>
+                                    <option value="500-1000">500 - 1,000 members</option>
+                                    <option value="1000-5000">1,000 - 5,000 members</option>
+                                    <option value="5000-10000">5,000 - 10,000 members</option>
+                                    <option value="10000+">10,000+ members</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="use_case" class="form-label">Primary Use Case</label>
+                            <select class="form-select" id="use_case" name="use_case">
+                                <option value="">Select primary use case...</option>
+                                <option value="member_management">Member Management</option>
+                                <option value="loan_management">Loan Management</option>
+                                <option value="savings_management">Savings Management</option>
+                                <option value="comprehensive">Comprehensive Financial Management</option>
+                                <option value="reporting">Advanced Reporting & Analytics</option>
+                                <option value="integration">Integration with Existing Systems</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="current_solution" class="form-label">Current Solution (if any)</label>
+                            <input type="text" class="form-control" id="current_solution" name="current_solution" 
+                                   placeholder="e.g., Excel sheets, manual records, other software">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="timeline" class="form-label">Implementation Timeline</label>
+                            <select class="form-select" id="timeline" name="timeline">
+                                <option value="">Select timeline...</option>
+                                <option value="immediate">Immediate (within 1 month)</option>
+                                <option value="short">Short term (1-3 months)</option>
+                                <option value="medium">Medium term (3-6 months)</option>
+                                <option value="long">Long term (6+ months)</option>
+                                <option value="exploring">Just exploring options</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Additional Requirements & Message</label>
+                            <textarea class="form-control" id="message" name="message" rows="4" 
+                                      placeholder="Tell us about your specific requirements, integration needs, or any questions you have..."></textarea>
+                        </div>
+                        
+                        <!-- Features of Interest -->
+                        <div class="mb-4">
+                            <label class="form-label">Features of Interest (select all that apply):</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="feature_api" name="features" value="api_access">
+                                        <label class="form-check-label" for="feature_api">API Access & Integrations</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="feature_white_label" name="features" value="white_labeling">
+                                        <label class="form-check-label" for="feature_white_label">White-label Customization</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="feature_multi_sig" name="features" value="multi_signature">
+                                        <label class="form-check-label" for="feature_multi_sig">Multi-signature Approvals</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="feature_reporting" name="features" value="advanced_reporting">
+                                        <label class="form-check-label" for="feature_reporting">Advanced Reporting</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="feature_support" name="features" value="priority_support">
+                                        <label class="form-check-label" for="feature_support">Priority Support</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="feature_training" name="features" value="training">
+                                        <label class="form-check-label" for="feature_training">Training & Onboarding</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="feature_backup" name="features" value="automated_backups">
+                                        <label class="form-check-label" for="feature_backup">Automated Backups</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="feature_manager" name="features" value="dedicated_manager">
+                                        <label class="form-check-label" for="feature_manager">Dedicated Account Manager</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-paper-plane me-2"></i>Send Enterprise Inquiry
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- What Happens Next -->
+            <div class="mt-5">
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 h-100">
+                            <div class="card-body">
+                                <div class="text-primary mb-3">
+                                    <i class="fas fa-clock fa-3x"></i>
+                                </div>
+                                <h5>Quick Response</h5>
+                                <p class="text-muted">Our enterprise team will contact you within 24 hours</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 h-100">
+                            <div class="card-body">
+                                <div class="text-primary mb-3">
+                                    <i class="fas fa-comments fa-3x"></i>
+                                </div>
+                                <h5>Consultation</h5>
+                                <p class="text-muted">Free consultation to understand your needs and requirements</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card border-0 h-100">
+                            <div class="card-body">
+                                <div class="text-primary mb-3">
+                                    <i class="fas fa-file-invoice-dollar fa-3x"></i>
+                                </div>
+                                <h5>Custom Proposal</h5>
+                                <p class="text-muted">Tailored pricing and implementation plan for your organization</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="mt-5 text-center">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h5>Need Immediate Assistance?</h5>
+                        <p class="mb-2">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            Call us: <strong>+254 700 000 000</strong>
+                        </p>
+                        <p class="mb-0">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            Email: <strong>enterprise@chamalink.co.ke</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

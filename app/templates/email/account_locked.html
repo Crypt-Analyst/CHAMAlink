@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Account Locked - ChamaLink</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #dc3545; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f8f9fa; }
+        .footer { padding: 20px; text-align: center; color: #666; }
+        .security-alert { background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Security Alert</h1>
+            <p>Your account has been temporarily locked</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello {{ user.first_name or user.username }}!</h2>
+            
+            <div class="security-alert">
+                <strong>🔒 Your account has been locked due to multiple failed login attempts.</strong>
+            </div>
+            
+            <p>For your security, your ChamaLink account has been temporarily locked after 3 failed login attempts.</p>
+            
+            <h3>What happens next?</h3>
+            <ul>
+                <li>Your account will be automatically unlocked after 24 hours</li>
+                <li>You can try logging in again after {{ unlock_time.strftime('%B %d, %Y at %I:%M %p') }}</li>
+                <li>If you forgot your password, you can reset it once the lock expires</li>
+            </ul>
+            
+            <h3>Security Tips:</h3>
+            <ul>
+                <li>Use a strong, unique password</li>
+                <li>Never share your login credentials</li>
+                <li>Contact support if you suspect unauthorized access</li>
+            </ul>
+            
+            <p>If you didn't attempt to log in, please contact our support team immediately.</p>
+            
+            <p>Best regards,<br>The ChamaLink Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 ChamaLink. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chama.name }} - Payment History{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>{{ chama.name }} - Payment History</h2>
+                <div>
+                    <a href="{{ url_for('receipts.export_payment_history', chama_id=chama.id) }}" 
+                       class="btn btn-success">
+                        <i class="fas fa-download"></i> Export CSV
+                    </a>
+                    <a href="{{ url_for('receipts.chama_receipts', chama_id=chama.id) }}" 
+                       class="btn btn-info">
+                        <i class="fas fa-receipt"></i> View Receipts
+                    </a>
+                    <a href="{{ url_for('chama.detail', chama_id=chama.id) }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Chama
+                    </a>
+                </div>
+            </div>
+            
+            {% if contributions %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history"></i> Payment History
+                        {% if member.role in ['admin', 'treasurer'] %}
+                            <span class="badge badge-info ml-2">{{ contributions|length }} total payments</span>
+                        {% else %}
+                            <span class="badge badge-info ml-2">{{ contributions|length }} your payments</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    {% if member.role in ['admin', 'treasurer'] %}
+                                    <th>Member</th>
+                                    {% endif %}
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Transaction ID</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contribution in contributions %}
+                                <tr>
+                                    <td>{{ contribution.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    {% if member.role in ['admin', 'treasurer'] %}
+                                    <td>{{ contribution.user.full_name }}</td>
+                                    {% endif %}
+                                    <td>
+                                        <span class="badge badge-info">{{ contribution.type.title() }}</span>
+                                    </td>
+                                    <td class="text-success font-weight-bold">
+                                        KES {{ "{:,.2f}".format(contribution.amount) }}
+                                    </td>
+                                    <td>
+                                        {% if contribution.status == 'confirmed' %}
+                                            <span class="badge badge-success">Confirmed</span>
+                                        {% elif contribution.status == 'pending' %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">{{ contribution.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if contribution.transaction_id %}
+                                            <code>{{ contribution.transaction_id }}</code>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if contribution.status == 'confirmed' %}
+                                            <button class="btn btn-sm btn-outline-primary generate-receipt-btn" 
+                                                    data-contribution-id="{{ contribution.id }}"
+                                                    title="Generate Receipt">
+                                                <i class="fas fa-receipt"></i>
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No payment history available</h4>
+                    <p class="text-muted">Payment history will appear here once contributions are made.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle receipt generation
+    document.querySelectorAll('.generate-receipt-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const contributionId = this.dataset.contributionId;
+            const icon = this.querySelector('i');
+            const originalText = icon.className;
+            
+            // Show loading state
+            icon.className = 'fas fa-spinner fa-spin';
+            this.disabled = true;
+            
+            fetch('/api/generate-receipt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contribution_id: contributionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.receipt_id) {
+                    // Redirect to receipt view
+                    window.location.href = `/receipt/${data.receipt_id}`;
+                } else {
+                    alert('Error generating receipt: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error generating receipt. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                icon.className = originalText;
+                this.disabled = false;
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

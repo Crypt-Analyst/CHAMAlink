@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Support - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary mb-4">Help & Support</h1>
+        <p class="lead text-muted">Find answers to common questions and get help with ChamaLink</p>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-book text-primary fs-1 mb-3"></i>
+                    <h5>User Guide</h5>
+                    <p class="text-muted small">Step-by-step instructions for using ChamaLink</p>
+                    <a href="#user-guide" class="btn btn-outline-primary btn-sm">Read Guide</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-video text-success fs-1 mb-3"></i>
+                    <h5>Video Tutorials</h5>
+                    <p class="text-muted small">Learn through interactive video lessons</p>
+                    <a href="#videos" class="btn btn-outline-success btn-sm">Watch Videos</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-question-circle text-warning fs-1 mb-3"></i>
+                    <h5>FAQ</h5>
+                    <p class="text-muted small">Frequently asked questions and answers</p>
+                    <a href="#faq" class="btn btn-outline-warning btn-sm">View FAQ</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm text-center h-100">
+                <div class="card-body p-4">
+                    <i class="fas fa-headset text-info fs-1 mb-3"></i>
+                    <h5>Contact Support</h5>
+                    <p class="text-muted small">Get direct help from our support team</p>
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-outline-info btn-sm">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Guide Section -->
+    <div id="user-guide" class="mb-5">
+        <h2 class="mb-4">User Guide</h2>
+        <div class="accordion" id="userGuideAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#getting-started">
+                        <i class="fas fa-play-circle text-primary me-3"></i>Getting Started
+                    </button>
+                </h2>
+                <div id="getting-started" class="accordion-collapse collapse show" data-bs-parent="#userGuideAccordion">
+                    <div class="accordion-body">
+                        <h5>1. Create Your Account</h5>
+                        <p>Sign up with your email and phone number. You'll receive a verification email.</p>
+                        
+                        <h5>2. Choose Your Plan</h5>
+                        <p>Select from Basic (KES 200), Classic (KES 250), or Advanced (KES 500) plans. All plans include a 30-day free trial.</p>
+                        
+                        <h5>3. Create Your First Chama</h5>
+                        <p>Click "Create Chama" and fill in the details including name, goal, and monthly contribution amount.</p>
+                        
+                        <h5>4. Invite Members</h5>
+                        <p>Send invitations to your chama members through email or SMS.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#managing-chama">
+                        <i class="fas fa-users text-success me-3"></i>Managing Your Chama
+                    </button>
+                </h2>
+                <div id="managing-chama" class="accordion-collapse collapse" data-bs-parent="#userGuideAccordion">
+                    <div class="accordion-body">
+                        <h5>Member Management</h5>
+                        <ul>
+                            <li>View all chama members and their roles</li>
+                            <li>Approve or reject membership requests</li>
+                            <li>Assign admin roles to trusted members</li>
+                            <li>Track member contributions and activity</li>
+                        </ul>
+                        
+                        <h5>Financial Tracking</h5>
+                        <ul>
+                            <li>Record monthly contributions</li>
+                            <li>Track chama balance and savings</li>
+                            <li>Generate financial reports</li>
+                            <li>Monitor loan repayments</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#loans-penalties">
+                        <i class="fas fa-coins text-warning me-3"></i>Loans & Penalties
+                    </button>
+                </h2>
+                <div id="loans-penalties" class="accordion-collapse collapse" data-bs-parent="#userGuideAccordion">
+                    <div class="accordion-body">
+                        <h5>Applying for Loans</h5>
+                        <ul>
+                            <li>Must be a member for at least 1 month</li>
+                            <li>No missed meetings or payments</li>
+                            <li>Loan amount cannot exceed your savings</li>
+                            <li>Requires approval from 3 admins</li>
+                        </ul>
+                        
+                        <h5>Loan Approval Process</h5>
+                        <ul>
+                            <li>All admins receive email notifications</li>
+                            <li>Admins approve via secure email links</li>
+                            <li>Links expire at the next meeting date</li>
+                            <li>Funds disbursed via M-Pesa after approval</li>
+                        </ul>
+                        
+                        <h5>Penalty System</h5>
+                        <ul>
+                            <li>Admins can assign penalties for rule violations</li>
+                            <li>Members receive notifications about penalties</li>
+                            <li>Penalties can be paid through M-Pesa</li>
+                            <li>Automatic tracking and reporting</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#payments">
+                        <i class="fas fa-mobile-alt text-info me-3"></i>M-Pesa Payments
+                    </button>
+                </h2>
+                <div id="payments" class="accordion-collapse collapse" data-bs-parent="#userGuideAccordion">
+                    <div class="accordion-body">
+                        <h5>Making Payments</h5>
+                        <ul>
+                            <li>All payments processed through M-Pesa</li>
+                            <li>Enter your M-Pesa registered phone number</li>
+                            <li>Confirm payment on your phone</li>
+                            <li>Receive instant confirmation</li>
+                        </ul>
+                        
+                        <h5>Payment Types</h5>
+                        <ul>
+                            <li><strong>Contributions:</strong> Monthly chama contributions</li>
+                            <li><strong>Loan Repayments:</strong> Repay loans with interest</li>
+                            <li><strong>Penalties:</strong> Pay assigned penalties</li>
+                            <li><strong>Subscriptions:</strong> Monthly platform fees</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div id="faq" class="mb-5">
+        <h2 class="mb-4">Frequently Asked Questions</h2>
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary mb-3">How do I reset my password?</h5>
+                        <p class="text-muted">
+                            Click "Forgot Password" on the login page and follow the instructions sent to your email.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary mb-3">Can I cancel my subscription?</h5>
+                        <p class="text-muted">
+                            Yes, you can cancel anytime. Your access continues until the end of your billing period.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary mb-3">What happens to my data if I cancel?</h5>
+                        <p class="text-muted">
+                            Your data is preserved for 30 days after cancellation. You can reactivate to restore access.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary mb-3">How do I invite new members?</h5>
+                        <p class="text-muted">
+                            Go to your chama dashboard and click "Invite Members" to send invitations via email or SMS.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary mb-3">Is my financial data secure?</h5>
+                        <p class="text-muted">
+                            Yes, we use bank-grade encryption and security measures to protect all your financial information.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary mb-3">Can I export my data?</h5>
+                        <p class="text-muted">
+                            Yes, Classic and Advanced plans include data export features for reports and member data.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Support -->
+    <div class="bg-light rounded p-5 text-center">
+        <h3 class="mb-4">Still Need Help?</h3>
+        <p class="text-muted mb-4">Our support team is ready to help you with any questions or issues.</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+                <i class="fas fa-envelope me-2"></i>Contact Support
+            </a>
+            <a href="tel:+254700000000" class="btn btn-outline-primary">
+                <i class="fas fa-phone me-2"></i>Call Us
+            </a>
+        </div>
+        <div class="mt-4">
+            <p class="text-muted small">
+                <i class="fas fa-clock me-2"></i>Support Hours: Monday - Friday, 8:00 AM - 6:00 PM EAT
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

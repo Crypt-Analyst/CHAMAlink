@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ announcement.title }} - {{ chama.name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+            color: #374151;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            {% if announcement.priority == 'urgent' %}
+                background: linear-gradient(135deg, #dc2626, #ef4444);
+            {% elif announcement.priority == 'high' %}
+                background: linear-gradient(135deg, #ea580c, #f97316);
+            {% else %}
+                background: linear-gradient(135deg, #059669, #10b981);
+            {% endif %}
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+            {% if announcement.priority == 'urgent' %}
+                background-color: rgba(255, 255, 255, 0.2);
+            {% elif announcement.priority == 'high' %}
+                background-color: rgba(255, 255, 255, 0.2);
+            {% else %}
+                background-color: rgba(255, 255, 255, 0.2);
+            {% endif %}
+        }
+        .content {
+            padding: 30px;
+        }
+        .announcement-card {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            {% if announcement.priority == 'urgent' %}
+                border-left: 4px solid #dc2626;
+            {% elif announcement.priority == 'high' %}
+                border-left: 4px solid #ea580c;
+            {% else %}
+                border-left: 4px solid #059669;
+            {% endif %}
+        }
+        .announcement-content {
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+        .announcement-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #059669;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .footer a {
+            color: #059669;
+            text-decoration: none;
+        }
+        .type-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px;
+            }
+            .announcement-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                {% if announcement.announcement_type == 'urgent' %}🚨
+                {% elif announcement.announcement_type == 'meeting' %}📅
+                {% elif announcement.announcement_type == 'financial' %}💰
+                {% elif announcement.announcement_type == 'social' %}🎉
+                {% elif announcement.announcement_type == 'reminder' %}⏰
+                {% else %}📢
+                {% endif %}
+                Group Announcement
+            </h1>
+            <p>{{ chama.name }}</p>
+            {% if announcement.priority != 'normal' %}
+                <div class="priority-badge">
+                    {% if announcement.priority == 'urgent' %}🚨 URGENT
+                    {% elif announcement.priority == 'high' %}🔴 HIGH PRIORITY
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ member.first_name }},</p>
+            
+            <p>There's a new announcement from your group administrator:</p>
+            
+            <div class="announcement-card">
+                <h3 style="margin: 0 0 15px 0; color: #1f2937;">{{ announcement.title }}</h3>
+                
+                <div class="announcement-content">{{ announcement.content }}</div>
+                
+                <div class="announcement-meta">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span>{{ announcement.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>👤</span>
+                        <span>{{ announcement.admin.first_name }} {{ announcement.admin.last_name }}</span>
+                    </div>
+                    {% if announcement.announcement_type != 'general' %}
+                    <div class="meta-item">
+                        <span>🏷️</span>
+                        <span>{{ announcement.announcement_type.title() }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if announcement.announcement_type == 'meeting' %}
+                <div style="background-color: #eff6ff; border: 1px solid #dbeafe; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #1e40af;">
+                        💡 <strong>Meeting-related announcement:</strong> Please check your calendar and make necessary arrangements to attend.
+                    </p>
+                </div>
+            {% elif announcement.announcement_type == 'financial' %}
+                <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #166534;">
+                        💰 <strong>Financial update:</strong> Please review the information carefully and take any required actions.
+                    </p>
+                </div>
+            {% elif announcement.priority == 'urgent' %}
+                <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #991b1b;">
+                        🚨 <strong>Urgent announcement:</strong> This requires your immediate attention. Please read carefully and respond promptly if action is needed.
+                    </p>
+                </div>
+            {% endif %}
+            
+            <center>
+                <a href="{{ url_for('chama.detail', chama_id=chama.id, _external=True) }}" class="button">
+                    View Group Dashboard
+                </a>
+            </center>
+            
+            {% if announcement.expires_at %}
+            <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+                ⏰ This announcement expires on {{ announcement.expires_at.strftime('%B %d, %Y') }}.
+            </p>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>
+                You received this email because you are a member of {{ chama.name }} on ChamaLink.
+                <br>
+                <a href="{{ url_for('main.home', _external=True) }}">Visit ChamaLink</a> | 
+                <a href="{{ url_for('settings.notifications', _external=True) }}">Notification Settings</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

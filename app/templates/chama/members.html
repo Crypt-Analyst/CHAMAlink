@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% block title %}{{ chama.name }} - Members - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="h3 mb-2">
+                                <i class="fas fa-users text-primary me-2"></i>
+                                {{ chama.name }} - Members
+                            </h1>
+                            <p class="text-muted mb-0">Manage chama members and their roles</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Chama
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Members List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Chama Members
+                            <span class="badge bg-primary ms-2">{{ members_with_roles|length }}</span>
+                        </h5>
+                        {% if user_role in ['creator', 'admin'] %}
+                        <div class="btn-group">
+                            <a href="{{ url_for('chama.search_chamas') }}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-user-plus me-1"></i>Invite Members
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if members_with_roles %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                    <th>Contact</th>
+                                    {% if user_role in ['creator', 'admin'] %}
+                                    <th>Actions</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member, role, joined_at in members_with_roles %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-placeholder bg-primary text-white rounded-circle me-3">
+                                                {{ member.username[0].upper() }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ member.username }}</strong>
+                                                {% if member.id == chama.creator_id %}
+                                                <span class="badge bg-warning text-dark ms-2">Creator</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if role == 'admin' else 'primary' if role == 'creator' else 'secondary' }}">
+                                            {{ role.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ joined_at.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <div class="small text-muted">
+                                            <div><i class="fas fa-envelope me-1"></i>{{ member.email }}</div>
+                                            {% if member.phone_number %}
+                                            <div><i class="fas fa-phone me-1"></i>{{ member.phone_number }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    {% if user_role in ['creator', 'admin'] %}
+                                    <td>
+                                        <div class="btn-group-vertical btn-group-sm">
+                                            {% if member.id != chama.creator_id and member.id != current_user.id %}
+                                            <!-- Remove Member -->
+                                            <button class="btn btn-outline-danger remove-member-btn" 
+                                                    data-member-id="{{ member.id }}" 
+                                                    data-member-name="{{ member.username }}">
+                                                <i class="fas fa-user-minus me-1"></i>Remove
+                                            </button>
+                                            {% endif %}
+                                            
+                                            {% if user_role == 'creator' and role == 'member' %}
+                                            <!-- Make Admin -->
+                                            <button class="btn btn-outline-success make-admin-btn" 
+                                                    data-member-id="{{ member.id }}" 
+                                                    data-member-name="{{ member.username }}">
+                                                <i class="fas fa-crown me-1"></i>Make Admin
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No members found</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Explanation -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Role Permissions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="role-info">
+                                <span class="badge bg-primary mb-2">Creator</span>
+                                <ul class="small text-muted">
+                                    <li>Full chama control</li>
+                                    <li>Can't be removed</li>
+                                    <li>Can make/remove admins</li>
+                                    <li>Can remove any member</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="role-info">
+                                <span class="badge bg-success mb-2">Admin</span>
+                                <ul class="small text-muted">
+                                    <li>Can approve loans</li>
+                                    <li>Can assign penalties</li>
+                                    <li>Can approve join requests</li>
+                                    <li>Can remove regular members</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="role-info">
+                                <span class="badge bg-secondary mb-2">Member</span>
+                                <ul class="small text-muted">
+                                    <li>Can apply for loans</li>
+                                    <li>Can make contributions</li>
+                                    <li>Can view chama info</li>
+                                    <li>Can request to leave</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Remove Member
+document.addEventListener('DOMContentLoaded', function() {
+    const removeMemberButtons = document.querySelectorAll('.remove-member-btn');
+    
+    removeMemberButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const memberId = this.dataset.memberId;
+            const memberName = this.dataset.memberName;
+            
+            if (confirm(`Are you sure you want to remove "${memberName}" from this chama?`)) {
+                fetch(`/chama/{{ chama.id }}/members/${memberId}/remove`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while removing the member');
+                });
+            }
+        });
+    });
+    
+    // Make Admin
+    const makeAdminButtons = document.querySelectorAll('.make-admin-btn');
+    
+    makeAdminButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const memberId = this.dataset.memberId;
+            const memberName = this.dataset.memberName;
+            
+            if (confirm(`Are you sure you want to make "${memberName}" an admin?`)) {
+                fetch(`/chama/{{ chama.id }}/members/${memberId}/make-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while promoting the member');
+                });
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.role-info ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.role-info ul li {
+    padding: 0.25rem 0;
+}
+
+.role-info ul li:before {
+    content: "✓";
+    color: #28a745;
+    font-weight: bold;
+    display: inline-block;
+    width: 1rem;
+    margin-right: 0.5rem;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.btn-group-vertical .btn {
+    margin-bottom: 0.25rem;
+}
+
+.btn-group-vertical .btn:last-child {
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}

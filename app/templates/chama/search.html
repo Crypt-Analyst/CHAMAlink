@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block title %}Search Chamas - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-3">
+                        <i class="fas fa-search text-primary me-2"></i>
+                        Search Chamas
+                    </h1>
+                    
+                    <!-- Search Form -->
+                    <form method="GET" action="{{ url_for('chama.search_chamas') }}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" name="q" 
+                                           value="{{ query }}" placeholder="Search chamas by name...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-2"></i>Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search Results -->
+    {% if query %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Search Results
+                        {% if chamas %}
+                        <span class="badge bg-primary ms-2">{{ chamas|length }} found</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if chamas %}
+                    <div class="row g-4">
+                        {% for chama in chamas %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="card-title mb-0">{{ chama.name }}</h6>
+                                        <span class="badge bg-success">{{ chama.status.title() }}</span>
+                                    </div>
+                                    
+                                    <p class="text-muted small mb-3">
+                                        {{ chama.description[:100] + '...' if chama.description and chama.description|length > 100 else chama.description or 'No description' }}
+                                    </p>
+                                    
+                                    <div class="row text-center mb-3">
+                                        <div class="col-6">
+                                            <div class="stat-item">
+                                                <i class="fas fa-users text-primary"></i>
+                                                <small class="d-block text-muted">{{ chama.member_count }} members</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="stat-item">
+                                                <i class="fas fa-money-bill-wave text-success"></i>
+                                                <small class="d-block text-muted">{{ chama.formatted_contribution }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if chama.registration_fee > 0 %}
+                                    <div class="alert alert-info small py-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Registration fee: {{ chama.formatted_registration_fee }}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            Created {{ chama.created_at.strftime('%b %Y') }}
+                                        </small>
+                                        <button class="btn btn-primary btn-sm request-join-btn" 
+                                                data-chama-id="{{ chama.id }}" 
+                                                data-chama-name="{{ chama.name }}">
+                                            <i class="fas fa-user-plus me-1"></i>
+                                            Request to Join
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No chamas found</h5>
+                        <p class="text-muted">Try searching with different keywords or check the spelling.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Instructions -->
+    {% if not query %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
+                    <h5>How to Join a Chama</h5>
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="row text-start">
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-primary me-2">1</span>
+                                        <strong>Search for Chamas</strong>
+                                    </div>
+                                    <p class="text-muted small">Use the search box above to find chamas by name.</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-primary me-2">2</span>
+                                        <strong>Request to Join</strong>
+                                    </div>
+                                    <p class="text-muted small">Click "Request to Join" on your preferred chama.</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-primary me-2">3</span>
+                                        <strong>Admin Approval</strong>
+                                    </div>
+                                    <p class="text-muted small">Chama admins will review and approve your request.</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-primary me-2">4</span>
+                                        <strong>Pay Registration Fee</strong>
+                                    </div>
+                                    <p class="text-muted small">Pay the registration fee (if applicable) to complete joining.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Add event listeners for request join buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const requestJoinButtons = document.querySelectorAll('.request-join-btn');
+    
+    requestJoinButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const chamaId = this.dataset.chamaId;
+            const chamaName = this.dataset.chamaName;
+            
+            if (confirm(`Are you sure you want to request to join "${chamaName}"?`)) {
+                fetch(`/chama/${chamaId}/request-join`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while sending your request');
+                });
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.stat-item i {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+}
+
+.card {
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}

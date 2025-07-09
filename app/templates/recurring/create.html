@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Create Recurring Payment - {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-sync-alt"></i> Create Recurring Payment
+                    </h4>
+                    <small class="text-muted">Set up automatic payments for {{ chama.name }}</small>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">KES</span>
+                                        <input type="number" step="0.01" min="1" class="form-control" 
+                                               id="amount" name="amount" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="payment_type" class="form-label">Payment Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="payment_type" name="payment_type" required>
+                                        <option value="">Select payment type</option>
+                                        <option value="contribution">Regular Contribution</option>
+                                        <option value="shares">Shares</option>
+                                        <option value="loan_repayment">Loan Repayment</option>
+                                        <option value="fine">Fine Payment</option>
+                                        <option value="registration">Registration Fee</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="frequency" class="form-label">Frequency <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="frequency" name="frequency" required>
+                                        <option value="">Select frequency</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                        <option value="quarterly">Quarterly</option>
+                                        <option value="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" 
+                                           min="{{ today }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="end_date" class="form-label">End Date (Optional)</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date">
+                            <small class="form-text text-muted">Leave empty for indefinite recurring payments</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"
+                                      placeholder="Add any additional notes about this recurring payment"></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Recurring payments will create pending contributions that need to be confirmed manually. 
+                            You will receive reminders before each payment is due.
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('recurring.chama_recurring_payments', chama_id=chama.id) }}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Recurring Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to today
+    document.getElementById('start_date').min = new Date().toISOString().split('T')[0];
+    
+    // Validate end date
+    document.getElementById('end_date').addEventListener('change', function() {
+        const startDate = document.getElementById('start_date').value;
+        const endDate = this.value;
+        
+        if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+            alert('End date must be after start date');
+            this.value = '';
+        }
+    });
+    
+    // Update minimum end date when start date changes
+    document.getElementById('start_date').addEventListener('change', function() {
+        const endDateInput = document.getElementById('end_date');
+        endDateInput.min = this.value;
+        
+        // Clear end date if it's now invalid
+        if (endDateInput.value && new Date(endDateInput.value) <= new Date(this.value)) {
+            endDateInput.value = '';
+        }
+    });
+});
+</script>
+{% endblock %}

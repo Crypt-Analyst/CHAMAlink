@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+{% block title %}Loan Dashboard - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-coins text-primary me-2"></i>
+                    Loan Dashboard
+                </h1>
+                <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="chamaDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-plus me-2"></i>Apply for Loan
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for chama in current_user.chamas %}
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('loans.apply_loan', chama_id=chama.id) }}">
+                                    <i class="fas fa-users me-2"></i>{{ chama.name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <button class="btn btn-outline-secondary" onclick="window.location.reload()">
+                        <i class="fas fa-sync me-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- My Loans -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>My Loan Applications
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user_loans %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Chama</th>
+                                    <th>Amount</th>
+                                    <th>Purpose</th>
+                                    <th>Status</th>
+                                    <th>Applied</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for loan in user_loans %}
+                                <tr>
+                                    <td>{{ loan.chama.name }}</td>
+                                    <td>{{ loan.formatted_amount }}</td>
+                                    <td>{{ loan.purpose[:50] }}{% if loan.purpose|length > 50 %}...{% endif %}</td>
+                                    <td>
+                                        {% if loan.status == 'pending' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Pending ({{ loan.approval_count }}/3)
+                                        </span>
+                                        {% elif loan.status == 'approved' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Approved
+                                        </span>
+                                        {% elif loan.status == 'rejected' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>Rejected
+                                        </span>
+                                        {% elif loan.status == 'disbursed' %}
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-money-check-alt me-1"></i>Disbursed
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ loan.application_date.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        {% if loan.status == 'disbursed' and loan.remaining_amount > 0 %}
+                                        <button class="btn btn-sm btn-outline-success" onclick="repayLoan({{ loan.id }})">
+                                            <i class="fas fa-money-bill-wave me-1"></i>Repay
+                                        </button>
+                                        {% endif %}
+                                        {% if loan.status == 'disbursed' %}
+                                        <small class="text-muted d-block">
+                                            Remaining: KES {{ "{:,.0f}".format(loan.remaining_amount) }}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-coins fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No loan applications yet</h5>
+                        <p class="text-muted">Apply for your first loan to get started</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Approvals -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gavel me-2"></i>Pending Approvals
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_approvals %}
+                    {% for loan in pending_approvals %}
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1">{{ loan.user.username }}</h6>
+                                <small class="text-muted">{{ loan.chama.name }}</small>
+                            </div>
+                            <span class="badge bg-warning">{{ loan.approval_count }}/3</span>
+                        </div>
+                        <div class="mb-2">
+                            <strong>{{ loan.formatted_amount }}</strong>
+                            <div class="small text-muted">{{ loan.purpose[:100] }}{% if loan.purpose|length > 100 %}...{% endif %}</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-success" onclick="approveLoan({{ loan.id }}, 'approve')">
+                                <i class="fas fa-check me-1"></i>Approve
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="approveLoan({{ loan.id }}, 'reject')">
+                                <i class="fas fa-times me-1"></i>Reject
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <p class="text-muted mb-0">No pending approvals</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Repayment Modal -->
+<div class="modal fade" id="repayLoanModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-money-bill-wave me-2"></i>Repay Loan
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="repayLoanForm">
+                    <input type="hidden" id="repayLoanId">
+                    <div class="mb-3">
+                        <label for="repayAmount" class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">KES</span>
+                            <input type="number" class="form-control" id="repayAmount" placeholder="1000" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="repayPhone" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" class="form-control" id="repayPhone" 
+                                   value="{{ current_user.phone_number or '' }}" 
+                                   placeholder="+254712345678" required>
+                        </div>
+                        <small class="text-muted">M-Pesa prompt will be sent to this number</small>
+                    </div>
+                    
+                    <!-- Payment Status -->
+                    <div id="repayPaymentStatus" class="d-none">
+                        <div class="alert alert-info">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            <span id="repayPaymentStatusText">Initiating payment...</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitRepaymentBtn" onclick="submitRepayment()">
+                    <i class="fas fa-mobile-alt me-2"></i>Pay with M-Pesa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Approval Modal -->
+<div class="modal fade" id="loanApprovalModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-gavel me-2"></i>Loan Approval
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="loanApprovalForm">
+                    <input type="hidden" id="approvalLoanId">
+                    <input type="hidden" id="approvalAction">
+                    <div class="mb-3">
+                        <label for="approvalComments" class="form-label">Comments (Optional)</label>
+                        <textarea class="form-control" id="approvalComments" rows="3" placeholder="Add your comments..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitApprovalBtn" onclick="submitApproval()">
+                    <i class="fas fa-check me-2"></i>Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function repayLoan(loanId) {
+    document.getElementById('repayLoanId').value = loanId;
+    document.getElementById('repayPaymentStatus').classList.add('d-none');
+    document.getElementById('submitRepaymentBtn').disabled = false;
+    new bootstrap.Modal(document.getElementById('repayLoanModal')).show();
+}
+
+function submitRepayment() {
+    const loanId = document.getElementById('repayLoanId').value;
+    const amount = document.getElementById('repayAmount').value;
+    const phone = document.getElementById('repayPhone').value;
+    
+    if (!amount || !phone) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    // Show loading
+    document.getElementById('repayPaymentStatus').classList.remove('d-none');
+    document.getElementById('repayPaymentStatusText').textContent = 'Initiating payment...';
+    document.getElementById('submitRepaymentBtn').disabled = true;
+    
+    fetch(`/loans/repay/${loanId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            amount: parseFloat(amount),
+            phone_number: phone
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('repayPaymentStatusText').textContent = 'Payment initiated successfully!';
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            alert('Error: ' + data.message);
+            document.getElementById('repayPaymentStatus').classList.add('d-none');
+            document.getElementById('submitRepaymentBtn').disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        document.getElementById('repayPaymentStatus').classList.add('d-none');
+        document.getElementById('submitRepaymentBtn').disabled = false;
+    });
+}
+
+function approveLoan(loanId, action) {
+    document.getElementById('approvalLoanId').value = loanId;
+    document.getElementById('approvalAction').value = action;
+    document.getElementById('submitApprovalBtn').className = action === 'approve' ? 
+        'btn btn-success' : 'btn btn-danger';
+    document.getElementById('submitApprovalBtn').innerHTML = action === 'approve' ? 
+        '<i class="fas fa-check me-2"></i>Approve' : 
+        '<i class="fas fa-times me-2"></i>Reject';
+    
+    new bootstrap.Modal(document.getElementById('loanApprovalModal')).show();
+}
+
+function submitApproval() {
+    const loanId = document.getElementById('approvalLoanId').value;
+    const action = document.getElementById('approvalAction').value;
+    const comments = document.getElementById('approvalComments').value;
+    
+    fetch(`/loans/approve/${loanId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            action: action,
+            comments: comments
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+</script>
+{% endblock %}

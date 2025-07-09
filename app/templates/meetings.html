@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% block title %}Online Meetings - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 fw-bold text-primary mb-4">Online Chama Meetings</h1>
+            <p class="lead text-muted">Connect with your chama members virtually. No more walking miles to attend meetings!</p>
+            <div class="badge bg-success fs-6 mb-4">
+                <i class="fas fa-video"></i> Powered by Google Meet Integration
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Overview -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-calendar-plus fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Schedule Meetings</h5>
+                    <p class="text-muted">Easily schedule your chama meetings with automatic Google Meet link generation</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-bell fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Auto Notifications</h5>
+                    <p class="text-muted">Members receive SMS and email reminders with meeting links automatically</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-warning text-dark rounded-circle mx-auto mb-3">
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                    <h5 class="fw-bold">Digital Minutes</h5>
+                    <p class="text-muted">Record and share meeting minutes digitally with all members</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <!-- Meeting Management Section -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-video me-2"></i>Schedule New Meeting
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form id="meetingForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Meeting Title</label>
+                                <input type="text" class="form-control" id="meetingTitle" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Select Chama</label>
+                                <select class="form-select" id="chamaSelect" required>
+                                    <option value="">Choose your chama...</option>
+                                    {% for chama in current_user.chamas %}
+                                    <option value="{{ chama.id }}">{{ chama.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Meeting Date</label>
+                                <input type="date" class="form-control" id="meetingDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Meeting Time</label>
+                                <input type="time" class="form-control" id="meetingTime" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Meeting Agenda</label>
+                            <textarea class="form-control" id="meetingAgenda" rows="3" placeholder="Enter the meeting agenda..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="autoNotify" checked>
+                                <label class="form-check-label" for="autoNotify">
+                                    Send automatic notifications to all members
+                                </label>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calendar-plus me-2"></i>Schedule Meeting
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Upcoming Meetings -->
+            <div class="card mt-4 shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Upcoming Meetings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="upcomingMeetings">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-calendar fa-3x mb-3"></i>
+                            <p>No upcoming meetings scheduled</p>
+                            <small>Schedule your first meeting above!</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Login Prompt -->
+    <div class="row">
+        <div class="col-lg-6 mx-auto text-center">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <i class="fas fa-lock fa-3x text-muted mb-4"></i>
+                    <h4 class="fw-bold mb-3">Login Required</h4>
+                    <p class="text-muted mb-4">Please login to schedule and manage your chama meetings</p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.meeting-item {
+    border-left: 4px solid #0d6efd;
+    transition: transform 0.3s ease;
+}
+
+.meeting-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.meeting-status {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+}
+
+.status-upcoming {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-live {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to today
+    const dateInput = document.getElementById('meetingDate');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+    }
+
+    // Handle form submission
+    const meetingForm = document.getElementById('meetingForm');
+    if (meetingForm) {
+        meetingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            scheduleMeeting();
+        });
+    }
+});
+
+function scheduleMeeting() {
+    const formData = {
+        title: document.getElementById('meetingTitle').value,
+        chama_id: document.getElementById('chamaSelect').value,
+        date: document.getElementById('meetingDate').value,
+        time: document.getElementById('meetingTime').value,
+        agenda: document.getElementById('meetingAgenda').value,
+        auto_notify: document.getElementById('autoNotify').checked
+    };
+
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Scheduling...';
+    submitBtn.disabled = true;
+
+    fetch('/api/meetings/schedule', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showNotification('Meeting scheduled successfully!', 'success');
+            
+            // Reset form
+            document.getElementById('meetingForm').reset();
+            
+            // Refresh upcoming meetings
+            loadUpcomingMeetings();
+        } else {
+            showNotification(data.message || 'Failed to schedule meeting', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while scheduling the meeting', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function loadUpcomingMeetings() {
+    fetch('/api/meetings/upcoming')
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('upcomingMeetings');
+        if (data.meetings && data.meetings.length > 0) {
+            container.innerHTML = data.meetings.map(meeting => `
+                <div class="meeting-item card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold mb-1">${meeting.title}</h6>
+                                <p class="text-muted mb-1">
+                                    <i class="fas fa-users me-1"></i>${meeting.chama_name}
+                                </p>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-calendar me-1"></i>${meeting.date} at ${meeting.time}
+                                </p>
+                                ${meeting.agenda ? `<p class="small mb-2">${meeting.agenda}</p>` : ''}
+                            </div>
+                            <div class="text-end">
+                                <span class="meeting-status status-upcoming">${meeting.status}</span>
+                                ${meeting.meet_link ? `
+                                    <div class="mt-2">
+                                        <a href="${meeting.meet_link}" target="_blank" class="btn btn-sm btn-success">
+                                            <i class="fas fa-video me-1"></i>Join Meeting
+                                        </a>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-calendar fa-3x mb-3"></i>
+                    <p>No upcoming meetings scheduled</p>
+                    <small>Schedule your first meeting above!</small>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading meetings:', error);
+    });
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+function getCsrfToken() {
+    // Get CSRF token from meta tag or cookie
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    return metaTag ? metaTag.getAttribute('content') : '';
+}
+
+// Load upcoming meetings on page load
+if (document.getElementById('upcomingMeetings')) {
+    loadUpcomingMeetings();
+}
+</script>
+{% endblock %}

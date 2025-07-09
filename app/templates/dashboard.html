@@ -1,0 +1,992 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="container-fluid py-4">
+        <div class="welcome-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-2">
+                        <i class="fas fa-tachometer-alt text-primary me-2"></i>
+                        Welcome back, <span class="text-primary">{{ current_user.username }}</span>! 👋
+                    </h1>
+                    <p class="text-muted mb-0">Here's what's happening with your Chamas today</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex flex-column flex-md-row gap-2">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>New Chama
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ total_chamas }}</h3>
+                        <p class="stat-label">Active Chamas</p>
+                        <small class="stat-change text-success">
+                            <i class="fas fa-arrow-up"></i> +{{ total_chamas - 2 if total_chamas > 2 else 0 }} this month
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-success">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">KES {{ "{:,.0f}".format(total_savings) }}</h3>
+                        <p class="stat-label">Total Savings</p>
+                        <small class="stat-change text-success">
+                            <i class="fas fa-arrow-up"></i> +15% this month
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-warning">
+                        <i class="fas fa-hand-holding-usd"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">KES {{ "{:,.0f}".format(monthly_contributions) }}</h3>
+                        <p class="stat-label">Monthly Contributions</p>
+                        <small class="stat-change text-info">
+                            <i class="fas fa-clock"></i> Due in 5 days
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon bg-info">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ avg_roi }}%</h3>
+                        <p class="stat-label">Return on Investment</p>
+                        <small class="stat-change text-success">
+                            <i class="fas fa-arrow-up"></i> +2.1% this quarter
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- My Chamas -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-users me-2"></i>My Chamas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Dynamic Chama Cards -->
+                            {% for chama in user_chamas %}
+                            <div class="col-md-6">
+                                <div class="chama-card chama-branded-card" data-chama-id="{{ chama.id }}">
+                                    <div class="chama-header">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <div class="chama-avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-users"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="chama-name mb-0">{{ chama.name }}</h6>
+                                                    <small class="text-muted">Your Personal {{ chama.name }} Space</small>
+                                                </div>
+                                            </div>
+                                            {% if current_user.current_subscription %}
+                                            <div class="plan-badge">
+                                                {% set plan_name = current_user.current_subscription.plan.name.lower() %}
+                                                {% if plan_name == 'basic' %}
+                                                    <span class="badge bg-info text-white">
+                                                        <i class="fas fa-star me-1"></i>Basic
+                                                    </span>
+                                                {% elif plan_name == 'classic' %}
+                                                    <span class="badge bg-success text-white">
+                                                        <i class="fas fa-gem me-1"></i>Classic
+                                                    </span>
+                                                {% elif plan_name == 'advanced' %}
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fas fa-crown me-1"></i>Advanced
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <span class="chama-status active">{{ chama.status.title() }}</span>
+                                    </div>
+                                    <div class="chama-stats">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <small class="text-muted">Members</small>
+                                                <div class="fw-bold">{{ chama.member_count }}</div>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="text-muted">{{ chama.name }} Balance</small>
+                                                <div class="fw-bold text-success">{{ chama.formatted_balance }}</div>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="text-muted">Your Role</small>
+                                                <div class="fw-bold text-info">{{ current_user.get_chama_role(chama.id).title() if current_user.get_chama_role(chama.id) else 'Member' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chama-progress mb-3">
+                                        <small class="text-muted">Monthly Goal Progress</small>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: 75%"></div>
+                                        </div>
+                                        <small class="text-success">75% of {{ chama.name }}'s monthly target</small>
+                                    </div>
+                                    <div class="chama-actions">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewChamaDetails({{ chama.id }})">
+                                            <i class="fas fa-eye me-1"></i>View {{ chama.name }}
+                                        </button>
+                                        <button class="btn btn-sm btn-primary" onclick="showContributeModal({{ chama.id }}, '{{ chama.name }}')">
+                                            <i class="fas fa-hand-holding-usd me-1"></i>Contribute
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            <!-- Add New Chama Card -->
+                            <div class="col-md-6">
+                                <div class="chama-card new-chama">
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-plus-circle fa-3x text-muted mb-3"></i>
+                                        <h6 class="text-muted">Create New Chama</h6>
+                                        <button class="btn btn-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#createChamaModal">
+                                            <i class="fas fa-plus me-2"></i>Get Started
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Recent Transactions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="transaction-list">
+                            {% for transaction in recent_transactions %}
+                            <div class="transaction-item" onclick="viewTransactionDetails({{ transaction.id }})" style="cursor: pointer;">
+                                <div class="transaction-icon {% if transaction.type == 'contribution' %}bg-success{% elif transaction.type == 'investment' %}bg-warning{% elif transaction.type == 'loan' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    <i class="fas {% if transaction.type == 'contribution' %}fa-arrow-down{% elif transaction.type == 'investment' %}fa-arrow-up{% elif transaction.type == 'loan' %}fa-exchange-alt{% else %}fa-minus{% endif %}"></i>
+                                </div>
+                                <div class="transaction-details">
+                                    <h6 class="transaction-title">{{ transaction.display_title }}</h6>
+                                    <p class="transaction-desc">{{ transaction.description }}</p>
+                                </div>
+                                <div class="transaction-amount {% if transaction.type == 'contribution' %}text-success{% elif transaction.type == 'investment' %}text-warning{% elif transaction.type == 'loan' %}text-info{% else %}text-secondary{% endif %}">
+                                    {{ transaction.formatted_amount }}
+                                </div>
+                                <div class="transaction-time">
+                                    {% if transaction.created_at.date() == now().date() %}
+                                        {{ transaction.created_at.strftime('%I:%M %p') }}
+                                    {% else %}
+                                        {{ transaction.created_at.strftime('%b %d') }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            {% if not recent_transactions %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No transactions yet</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-outline-primary btn-sm">View All Transactions</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="window.location.href='{{ url_for('loans.loan_dashboard') }}'">
+                                <i class="fas fa-coins me-2"></i>Apply for Loan
+                            </button>
+                            <button class="btn btn-outline-warning" onclick="window.location.href='{{ url_for('penalties.penalty_dashboard') }}'">
+                                <i class="fas fa-gavel me-2"></i>View Penalties
+                            </button>
+                            <button class="btn btn-outline-info" onclick="window.location.href='{{ url_for('notifications.notification_dashboard') }}'">
+                                <i class="fas fa-bell me-2"></i>Notifications
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="window.location.href='{{ url_for('settings.account_settings') }}'">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Events -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-check me-2"></i>Upcoming Events
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="event-list">
+                            {% for event in upcoming_events %}
+                            <div class="event-item">
+                                <div class="event-date">
+                                    <span class="day">{{ event.event_date.strftime('%d') }}</span>
+                                    <span class="month">{{ event.event_date.strftime('%b') }}</span>
+                                </div>
+                                <div class="event-details">
+                                    <h6 class="event-title">{{ event.title }}</h6>
+                                    <p class="event-desc">{{ event.description }}</p>
+                                    <small class="text-muted">{{ event.formatted_time }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                            {% if not upcoming_events %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No upcoming events</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Chart -->
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-area me-2"></i>Performance
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-placeholder">
+                            <canvas id="performanceChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Chama Modal -->
+<div class="modal fade" id="createChamaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-users me-2"></i>Create New Chama
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="chamaName" class="form-label">Chama Name</label>
+                        <input type="text" class="form-control" id="chamaName" placeholder="e.g., Smart Investors">
+                    </div>
+                    <div class="mb-3">
+                        <label for="chamaGoal" class="form-label">Primary Goal</label>
+                        <textarea class="form-control" id="chamaGoal" rows="3" placeholder="Describe your Chama's main objective..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contributionAmount" class="form-label">Monthly Contribution</label>
+                        <div class="input-group">
+                            <span class="input-group-text">KES</span>
+                            <input type="number" class="form-control" id="contributionAmount" placeholder="5000">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="meetingDay" class="form-label">Meeting Day</label>
+                        <select class="form-select" id="meetingDay">
+                            <option value="">Select meeting day</option>
+                            <option value="monday">Monday</option>
+                            <option value="tuesday">Tuesday</option>
+                            <option value="wednesday">Wednesday</option>
+                            <option value="thursday">Thursday</option>
+                            <option value="friday">Friday</option>
+                            <option value="saturday">Saturday</option>
+                            <option value="sunday">Sunday</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createChama()">Create Chama</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contribution Modal -->
+<div class="modal fade" id="contributeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-hand-holding-usd me-2"></i>Make Contribution
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="contributeForm">
+                    <div class="mb-3">
+                        <label for="contributeChamaName" class="form-label">Chama</label>
+                        <input type="text" class="form-control" id="contributeChamaName" readonly>
+                        <input type="hidden" id="contributeChamaId">
+                    </div>
+                    <div class="mb-3">
+                        <label for="contributeAmount" class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">KES</span>
+                            <input type="number" class="form-control" id="contributeAmount" placeholder="5000" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contributePhone" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" class="form-control" id="contributePhone" 
+                                   value="{{ current_user.phone_number or '' }}" 
+                                   placeholder="+254712345678" required>
+                        </div>
+                        <small class="text-muted">M-Pesa prompt will be sent to this number</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contributeDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="contributeDescription" rows="2" placeholder="Monthly contribution"></textarea>
+                    </div>
+                    
+                    <!-- Payment Status -->
+                    <div id="paymentStatus" class="d-none">
+                        <div class="alert alert-info">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            <span id="paymentStatusText">Initiating payment...</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitContributionBtn" onclick="submitContribution()">
+                    <i class="fas fa-mobile-alt me-2"></i>Pay with M-Pesa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function createChama() {
+    const formData = {
+        name: document.getElementById('chamaName').value,
+        goal: document.getElementById('chamaGoal').value,
+        monthly_contribution: document.getElementById('contributionAmount').value,
+        meeting_day: document.getElementById('meetingDay').value
+    };
+    
+    if (!formData.name || !formData.monthly_contribution) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    fetch('/create_chama', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Chama created successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the chama');
+    });
+}
+
+function showContributeModal(chamaId, chamaName) {
+    document.getElementById('contributeChamaId').value = chamaId;
+    document.getElementById('contributeChamaName').value = chamaName;
+    document.getElementById('contributeAmount').value = '';
+    document.getElementById('contributeDescription').value = 'Monthly contribution';
+    
+    const modal = new bootstrap.Modal(document.getElementById('contributeModal'));
+    modal.show();
+}
+
+function submitContribution() {
+    const formData = {
+        chama_id: document.getElementById('contributeChamaId').value,
+        amount: document.getElementById('contributeAmount').value,
+        description: document.getElementById('contributeDescription').value
+    };
+    
+    if (!formData.amount || formData.amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    fetch('/contribute', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Contribution recorded successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while recording the contribution');
+    });
+}
+
+function viewChamaDetails(chamaId) {
+    // Navigate to the chama detail page
+    window.location.href = `/chama/${chamaId}`;
+}
+
+function viewTransactionDetails(transactionId) {
+    // Fetch transaction details and show modal
+    fetch(`/api/transaction/${transactionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showTransactionModal(data.transaction);
+            } else {
+                alert('Error loading transaction details: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading transaction details');
+        });
+}
+
+function showTransactionModal(transaction) {
+    // Create and show transaction details modal
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'transactionModal';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-receipt me-2"></i>Transaction Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Transaction ID:</strong><br>
+                            <span class="text-muted">#${transaction.id}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Type:</strong><br>
+                            <span class="badge bg-primary">${transaction.type}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Amount:</strong><br>
+                            <span class="h5 text-success">KES ${transaction.amount}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Date:</strong><br>
+                            <span class="text-muted">${transaction.created_at}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Description:</strong><br>
+                            <p class="text-muted">${transaction.description}</p>
+                        </div>
+                    </div>
+                    ${transaction.chama_name ? `
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Chama:</strong><br>
+                            <span class="text-primary">${transaction.chama_name}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+    
+    // Remove modal from DOM when hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        modal.remove();
+    });
+}
+</script>
+
+<style>
+/* Dashboard Styles */
+.dashboard-container {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding: 0;
+}
+
+.welcome-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin: 0 1rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.stat-change {
+    font-size: 0.8rem;
+}
+
+.dashboard-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 0.5rem;
+}
+
+.dashboard-card .card-header {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 600;
+}
+
+.chama-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.chama-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.chama-card.new-chama {
+    border: 2px dashed #dee2e6;
+    background: #f8f9fa;
+}
+
+.chama-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.chama-name {
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+.chama-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.chama-status.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.chama-stats {
+    margin-bottom: 1rem;
+}
+
+.chama-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.transaction-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.transaction-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-item:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.transaction-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.transaction-details {
+    flex: 1;
+}
+
+.transaction-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.transaction-desc {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.transaction-amount {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.transaction-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.event-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.event-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.event-item:last-child {
+    border-bottom: none;
+}
+
+.event-date {
+    background: #667eea;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    min-width: 60px;
+}
+
+.event-date .day {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.event-date .month {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.event-details {
+    flex: 1;
+}
+
+.event-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.event-desc {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.chart-placeholder {
+    height: 200px;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+/* Chama Branding Enhancements */
+.chama-branded-card {
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.chama-branded-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    border-left-color: #764ba2;
+}
+
+.chama-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+}
+
+.chama-progress {
+    background: rgba(102, 126, 234, 0.05);
+    padding: 0.75rem;
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+}
+
+.chama-card .chama-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.chama-card .chama-actions .btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.chama-status.active {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+.chama-name {
+    color: #333;
+    font-weight: 600;
+}
+
+.chama-stats .fw-bold {
+    font-size: 1.1rem;
+}
+
+.chama-stats .text-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+/* Enhanced stat cards */
+.stat-card {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.stat-card:nth-child(1) {
+    border-left-color: #667eea;
+}
+
+.stat-card:nth-child(2) {
+    border-left-color: #28a745;
+}
+
+.stat-card:nth-child(3) {
+    border-left-color: #ffc107;
+}
+
+.stat-card:nth-child(4) {
+    border-left-color: #17a2b8;
+}
+
+.plan-badge .badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+}
+
+/* Transaction hover effects */
+.transaction-item:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .welcome-header {
+        margin: 0 0.5rem;
+    }
+    
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .chama-branded-card:hover {
+        transform: none;
+    }
+    
+    .chama-stats .row {
+        text-align: left !important;
+    }
+    
+    .chama-stats .col-4 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .chama-actions {
+        flex-direction: column;
+    }
+    
+    .transaction-item {
+        flex-wrap: wrap;
+    }
+}
+</style>
+{% endblock %}

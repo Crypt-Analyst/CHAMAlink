@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary mb-4">Terms of Service</h1>
+                <p class="text-muted">Last updated: {{ now().strftime('%B %d, %Y') }}</p>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <h2 class="h4 text-primary mb-4">1. Acceptance of Terms</h2>
+                    <p class="mb-4">
+                        By accessing and using ChamaLink ("Service"), you accept and agree to be bound by the terms and provision of this agreement. 
+                        If you do not agree to abide by the above, please do not use this service.
+                    </p>
+                    
+                    <h2 class="h4 text-primary mb-4">2. Description of Service</h2>
+                    <p class="mb-4">
+                        ChamaLink is a digital platform designed to facilitate the management of chama groups in Kenya. 
+                        The service includes but is not limited to:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Member management and role-based access control</li>
+                        <li>Financial tracking and reporting</li>
+                        <li>Loan application and approval systems</li>
+                        <li>M-Pesa payment integration</li>
+                        <li>Notification and communication systems</li>
+                        <li>Document storage and verification</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">3. User Registration and Account Security</h2>
+                    <p class="mb-4">
+                        To use ChamaLink, you must:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Be at least 18 years old, or have parental/guardian consent if under 18</li>
+                        <li>Provide accurate and complete registration information</li>
+                        <li>Maintain the security of your account password</li>
+                        <li>Verify your email address and phone number</li>
+                        <li>Upload valid identification documents for verification</li>
+                        <li>Comply with all applicable laws and regulations</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">4. Account Lockout and Security</h2>
+                    <p class="mb-4">
+                        For security purposes:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Accounts will be temporarily locked after 3 failed login attempts</li>
+                        <li>Locked accounts will be automatically unlocked after 24 hours</li>
+                        <li>Email notifications will be sent for security events</li>
+                        <li>Users must verify their email address before account activation</li>
+                        <li>Strong password requirements are enforced (minimum 6 characters)</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">5. Subscription Plans and Billing</h2>
+                    <p class="mb-4">
+                        ChamaLink offers the following subscription plans:
+                    </p>
+                    <ul class="mb-4">
+                        <li><strong>Basic Plan:</strong> KES 500/month - Single chama management</li>
+                        <li><strong>Classic Plan:</strong> KES 250/month - Enhanced single chama with advanced features</li>
+                        <li><strong>Advanced Plan:</strong> KES 1,800/month - Unlimited chamas with all features</li>
+                        <li>All plans include a 30-day free trial for new users</li>
+                        <li>Payments are processed through M-Pesa to till number 5625121</li>
+                        <li>Subscription fees are billed monthly in advance</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">6. Document Verification and KYC</h2>
+                    <p class="mb-4">
+                        All users must comply with Know Your Customer (KYC) requirements:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Upload valid government-issued identification (National ID or Passport)</li>
+                        <li>Provide clear passport-style photographs</li>
+                        <li>Ensure names on documents match registration information</li>
+                        <li>Submit to document authenticity verification processes</li>
+                        <li>Minors must provide guardian information and consent</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">7. Loan Management and Eligibility</h2>
+                    <p class="mb-4">
+                        Loan applications are subject to the following conditions:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Member must be active in the chama for at least 1 month</li>
+                        <li>No missed meetings or payment defaults</li>
+                        <li>Loan amount cannot exceed member's total savings</li>
+                        <li>Requires approval from 3 chama administrators</li>
+                        <li>Administrators approve loans via secure email links</li>
+                        <li>Approval links expire at the next scheduled meeting</li>
+                        <li>Minors require guardian approval for loan applications</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">8. Payment Processing and M-Pesa Integration</h2>
+                    <p class="mb-4">
+                        All payments are processed through Safaricom M-Pesa:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Subscription payments are sent to till number 5625121</li>
+                        <li>Users must have a valid M-Pesa account</li>
+                        <li>Transaction fees may apply as per M-Pesa terms</li>
+                        <li>Payment confirmations are sent via email</li>
+                        <li>Refunds are processed according to M-Pesa policies</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">9. Data Protection and Privacy</h2>
+                    <p class="mb-4">
+                        ChamaLink is committed to protecting your privacy:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Personal and financial data is encrypted and secured</li>
+                        <li>Data is stored in compliance with Kenyan data protection laws</li>
+                        <li>User data is not shared with third parties without consent</li>
+                        <li>Account data is preserved for 30 days after cancellation</li>
+                        <li>Users can request data deletion subject to legal requirements</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">10. Regulatory Compliance</h2>
+                    <p class="mb-4">
+                        ChamaLink operates in compliance with:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Central Bank of Kenya regulations</li>
+                        <li>Data Protection Act (Kenya)</li>
+                        <li>Anti-Money Laundering regulations</li>
+                        <li>Consumer Protection Act</li>
+                        <li>Companies Act (Kenya)</li>
+                        <li>All applicable tax obligations</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">11. Prohibited Activities</h2>
+                    <p class="mb-4">
+                        Users are prohibited from:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Using the service for illegal activities</li>
+                        <li>Providing false or misleading information</li>
+                        <li>Attempting to breach security measures</li>
+                        <li>Sharing account credentials with others</li>
+                        <li>Using the service to facilitate fraud or money laundering</li>
+                        <li>Violating any applicable laws or regulations</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">12. Termination and Suspension</h2>
+                    <p class="mb-4">
+                        ChamaLink reserves the right to:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Suspend or terminate accounts for terms violations</li>
+                        <li>Temporarily suspend accounts for security reasons</li>
+                        <li>Terminate service with 30 days' notice</li>
+                        <li>Preserve user data for legal and regulatory purposes</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">13. Limitation of Liability</h2>
+                    <p class="mb-4">
+                        ChamaLink's liability is limited to the maximum extent permitted by law. 
+                        We are not responsible for indirect, incidental, or consequential damages 
+                        arising from the use of our service.
+                    </p>
+                    
+                    <h2 class="h4 text-primary mb-4">14. Dispute Resolution</h2>
+                    <p class="mb-4">
+                        Any disputes arising from the use of ChamaLink will be resolved through:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Good faith negotiations between parties</li>
+                        <li>Mediation if direct negotiation fails</li>
+                        <li>Arbitration under Kenyan law if mediation fails</li>
+                        <li>Kenyan courts as the final recourse</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">15. Changes to Terms</h2>
+                    <p class="mb-4">
+                        ChamaLink reserves the right to modify these terms at any time. 
+                        Users will be notified of significant changes via email. 
+                        Continued use of the service after changes constitutes acceptance of new terms.
+                    </p>
+                    
+                    <h2 class="h4 text-primary mb-4">16. Contact Information</h2>
+                    <p class="mb-4">
+                        For questions about these terms, please contact:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Email: legal@chamalink.com</li>
+                        <li>Phone: +254 700 000 000</li>
+                        <li>Address: Nairobi, Kenya</li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-5">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Important:</strong> These terms are legally binding. 
+                        Please read them carefully and contact us if you have any questions.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

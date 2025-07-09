@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Notification - {{ chama.name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+            color: #374151;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .meeting-card {
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .meeting-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .icon {
+            font-size: 16px;
+        }
+        .agenda {
+            background-color: #f9fafb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .agenda h4 {
+            margin: 0 0 10px 0;
+            color: #374151;
+            font-size: 16px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px;
+            }
+            .meeting-details {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Meeting Scheduled</h1>
+            <p>{{ chama.name }}</p>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ member.first_name }},</p>
+            
+            <p>A new meeting has been scheduled for our group. Please mark your calendar and plan to attend.</p>
+            
+            <div class="meeting-card">
+                <h3 style="margin: 0 0 15px 0; color: #1f2937;">Meeting Details</h3>
+                
+                <div class="meeting-details">
+                    <div class="detail-item">
+                        <span class="icon">📅</span>
+                        <strong>Date:</strong> {{ meeting_datetime.strftime('%A, %B %d, %Y') }}
+                    </div>
+                    <div class="detail-item">
+                        <span class="icon">⏰</span>
+                        <strong>Time:</strong> {{ meeting_datetime.strftime('%I:%M %p') }}
+                    </div>
+                    {% if chama.meeting_location %}
+                    <div class="detail-item">
+                        <span class="icon">📍</span>
+                        <strong>Location:</strong> {{ chama.meeting_location }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if agenda %}
+                <div class="agenda">
+                    <h4>📋 Meeting Agenda</h4>
+                    <p style="margin: 0; white-space: pre-line;">{{ agenda }}</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <p><strong>Important reminders:</strong></p>
+            <ul style="color: #6b7280;">
+                <li>Please arrive on time to ensure we can start promptly</li>
+                <li>Bring any documents or reports if requested</li>
+                <li>Come prepared to participate in discussions</li>
+                <li>If you cannot attend, please notify the group admin in advance</li>
+            </ul>
+            
+            <center>
+                <a href="{{ url_for('chama.detail', chama_id=chama.id, _external=True) }}" class="button">
+                    View Group Dashboard
+                </a>
+            </center>
+            
+            <p style="margin-top: 30px; color: #6b7280; font-size: 14px;">
+                This meeting was scheduled by {{ chama.creator.first_name }} {{ chama.creator.last_name }} on {{ meeting_datetime.strftime('%B %d, %Y') }}.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>
+                You received this email because you are a member of {{ chama.name }} on ChamaLink.
+                <br>
+                <a href="{{ url_for('main.home', _external=True) }}">Visit ChamaLink</a> | 
+                <a href="{{ url_for('settings.notifications', _external=True) }}">Notification Settings</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

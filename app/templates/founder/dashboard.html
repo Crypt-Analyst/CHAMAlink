@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+{% block title %}Founder Dashboard - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="founder-dashboard">
+    <!-- Welcome Header -->
+    <div class="container-fluid py-4">
+        <div class="welcome-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-2">
+                        <i class="fas fa-crown text-warning me-2"></i>
+                        Welcome, <span class="text-warning">Founder Bilford</span>! 👑
+                    </h1>
+                    <p class="text-muted mb-0">Your ChamaLink empire overview and management console</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="d-flex flex-column flex-md-row gap-2">
+                        <button class="btn btn-warning">
+                            <i class="fas fa-plus me-2"></i>New Feature
+                        </button>
+                        <a href="{{ url_for('main.test_email') }}" class="btn btn-info">
+                            <i class="fas fa-envelope me-2"></i>Test Email
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="exportChamas()">
+                            <i class="fas fa-download me-2"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Founder Stats -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="founder-stat-card bg-primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ "{:,}".format(admin_users) }}</h3>
+                        <p class="stat-label">Admin Users</p>
+                        <small class="stat-change">
+                            <i class="fas fa-crown"></i> System administrators
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="founder-stat-card bg-success">
+                    <div class="stat-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ "{:,}".format(total_chamas) }}</h3>
+                        <p class="stat-label">Total Chamas</p>
+                        <small class="stat-change">
+                            <i class="fas fa-check-circle"></i> {{ active_chamas }} active
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="founder-stat-card bg-warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">KES {{ "{:,.0f}".format(total_revenue) }}</h3>
+                        <p class="stat-label">Total Revenue</p>
+                        <small class="stat-change">
+                            <i class="fas fa-chart-line"></i> Platform revenue
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="founder-stat-card bg-info">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 class="stat-number">{{ "{:.1f}".format(active_chama_percentage) }}%</h3>
+                        <p class="stat-label">Chama Health</p>
+                        <small class="stat-change">
+                            <i class="fas fa-smile"></i> Active communities
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Content -->
+        <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Chama Management -->
+                <div class="card founder-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shield-alt me-2"></i>Chama Oversight
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="alert alert-warning">
+                                    <strong>{{ pending_chamas|length }}</strong> Pending Review
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-danger">
+                                    <strong>{{ flagged_chamas|length }}</strong> Flagged
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-success">
+                                    <strong>{{ active_chamas }}</strong> Active & Healthy
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Flagged Chamas -->
+                        {% if flagged_chamas %}
+                        <h6 class="text-danger mb-3">⚠️ Chamas Requiring Attention</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Chama Name</th>
+                                        <th>Members</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for chama in flagged_chamas %}
+                                    <tr>
+                                        <td>{{ chama.name }}</td>
+                                        <td>{{ chama.member_count }}</td>
+                                        <td><span class="badge bg-danger">{{ chama.status.title() }}</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="toggleChamaStatus({{ chama.id }}, 'activate')">
+                                                <i class="fas fa-check"></i> Restore
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="toggleChamaStatus({{ chama.id }}, 'blacklist')">
+                                                <i class="fas fa-ban"></i> Blacklist
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Recent Payments -->
+                <div class="card founder-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-credit-card me-2"></i>Recent Subscription Payments
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="payment-list">
+                            {% for payment in recent_payments[:10] %}
+                            <div class="payment-item">
+                                <div class="payment-info">
+                                    <h6 class="payment-user">{{ payment.user.username }}</h6>
+                                    <p class="payment-desc">{{ payment.subscription.plan.name }} Plan</p>
+                                </div>
+                                <div class="payment-amount text-success">
+                                    KES {{ "{:,.0f}".format(payment.amount) }}
+                                </div>
+                                <div class="payment-time">
+                                    {{ payment.payment_date.strftime('%b %d, %Y') if payment.payment_date else 'Unknown' }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Recent Users -->
+                <div class="card founder-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-plus me-2"></i>New Users
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="user-list">
+                            {% for user in recent_users[:8] %}
+                            <div class="user-item">
+                                <div class="user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="user-info">
+                                    <h6 class="user-name">{{ user.username }}</h6>
+                                    <small class="user-email">{{ user.email }}</small>
+                                </div>
+                                <div class="user-status">
+                                    {% if user.is_email_verified %}
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    {% else %}
+                                    <i class="fas fa-clock text-warning"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card founder-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightning-bolt me-2"></i>Founder Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-warning">
+                                <i class="fas fa-bell me-2"></i>Send Platform Notice
+                            </button>
+                            <button class="btn btn-info">
+                                <i class="fas fa-chart-bar me-2"></i>Generate Report
+                            </button>
+                            <button class="btn btn-success">
+                                <i class="fas fa-gift me-2"></i>Create Promotion
+                            </button>
+                            <button class="btn btn-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Emergency Actions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Founder Actions -->
+<script>
+function toggleChamaStatus(chamaId, action) {
+    if (!confirm(`Are you sure you want to ${action} this chama?`)) {
+        return;
+    }
+
+    fetch(`/founder-dashboard/chama/${chamaId}/toggle-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: action })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred');
+    });
+}
+
+function exportChamas() {
+    // Show loading state
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exporting...';
+    button.disabled = true;
+    
+    // Redirect to export endpoint
+    window.location.href = '{{ url_for("main.export_all_chamas") }}';
+    
+    // Reset button after a delay
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }, 3000);
+}
+</script>
+
+<style>
+.founder-dashboard {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    min-height: 100vh;
+}
+
+.founder-stat-card {
+    background: linear-gradient(135deg, var(--bs-primary), var(--bs-primary));
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.founder-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.founder-stat-card.bg-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.founder-stat-card.bg-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.founder-stat-card.bg-warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #333;
+}
+
+.founder-stat-card.bg-info {
+    background: linear-gradient(135deg, #17a2b8, #6f42c1);
+}
+
+.founder-stat-card .stat-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
+    opacity: 0.3;
+}
+
+.founder-stat-card .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.founder-stat-card .stat-label {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.founder-stat-card .stat-change {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.founder-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+}
+
+.founder-card:hover {
+    transform: translateY(-2px);
+}
+
+.founder-card .card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    border: none;
+}
+
+.payment-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.payment-item:last-child {
+    border-bottom: none;
+}
+
+.payment-info {
+    flex: 1;
+}
+
+.payment-user {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.payment-desc {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.payment-amount {
+    font-weight: 600;
+    margin-right: 1rem;
+}
+
+.payment-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.user-item:last-child {
+    border-bottom: none;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.user-email {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.user-status {
+    font-size: 1.2rem;
+}
+</style>
+{% endblock %}

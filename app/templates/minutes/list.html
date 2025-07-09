@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Meeting Minutes - {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-file-alt me-2"></i>Meeting Minutes</h2>
+                    <p class="text-muted mb-0">{{ chama.name }} - Record and manage meeting minutes</p>
+                </div>
+                {% if can_create %}
+                <div>
+                    <a href="{{ url_for('minutes.create_minutes', chama_id=chama.id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Minutes
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Minutes List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Meeting History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if minutes %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Meeting Date</th>
+                                    <th>Title</th>
+                                    <th>Secretary</th>
+                                    <th>Attendees</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for minute in minutes %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ minute.meeting_date.strftime('%B %d, %Y') }}</strong>
+                                        <br><small class="text-muted">{{ minute.meeting_date.strftime('%A') }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ minute.meeting_title }}</strong>
+                                        {% if minute.attachment_path %}
+                                        <br><small class="text-info"><i class="fas fa-paperclip"></i> Has attachment</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ minute.secretary.full_name }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ minute.attendee_count }} members</span>
+                                    </td>
+                                    <td>
+                                        {% if minute.status == 'draft' %}
+                                        <span class="badge bg-warning">Draft</span>
+                                        {% elif minute.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('minutes.view_minutes', minutes_id=minute.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No meeting minutes yet</h5>
+                        <p class="text-muted">
+                            {% if can_create %}
+                            Start by creating your first meeting minutes.
+                            {% else %}
+                            Meeting minutes will appear here once created by the secretary or admin.
+                            {% endif %}
+                        </p>
+                        {% if can_create %}
+                        <a href="{{ url_for('minutes.create_minutes', chama_id=chama.id) }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create First Minutes
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

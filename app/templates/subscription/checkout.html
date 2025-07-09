@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Checkout - {{ plan.name }} Plan{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">Complete Your Purchase</h3>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Order Summary -->
+                    <div class="order-summary mb-4">
+                        <h5 class="fw-bold mb-3">Order Summary</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><strong>{{ plan.name }}</strong> Plan</span>
+                            <span class="badge bg-info">{{ duration }} month{{ 's' if duration > 1 else '' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Monthly Price:</span>
+                            <span>KES {{ plan.price }}</span>
+                        </div>
+                        {% if pricing.bonus_months > 0 %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Bonus Months:</span>
+                            <span class="text-success">+{{ pricing.bonus_months }} FREE</span>
+                        </div>
+                        {% endif %}
+                        {% if pricing.discount_percentage > 0 %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Discount:</span>
+                            <span class="text-success">{{ pricing.discount_percentage }}% OFF</span>
+                        </div>
+                        {% endif %}
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>Total Amount:</strong>
+                            <strong class="text-primary fs-4">KES {{ pricing.total_price|int }}</strong>
+                        </div>
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                You'll get {{ pricing.total_months_provided }} month{{ 's' if pricing.total_months_provided > 1 else '' }} of access
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="payment-form">
+                        <h5 class="fw-bold mb-3">Payment Details</h5>
+                        <form id="payment-form">
+                            <div class="mb-3">
+                                <label for="phone_number" class="form-label">M-Pesa Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+254</span>
+                                    <input type="tel" class="form-control" id="phone_number" 
+                                           placeholder="7XXXXXXXX" required>
+                                </div>
+                                <div class="form-text">
+                                    You'll receive an M-Pesa prompt on this number
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        I agree to the <a href="#" class="text-primary">Terms of Service</a> 
+                                        and <a href="#" class="text-primary">Privacy Policy</a>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" id="pay-btn">
+                                    <i class="fas fa-mobile-alt me-2"></i>
+                                    Pay KES {{ pricing.total_price|int }} via M-Pesa
+                                </button>
+                                <a href="{{ url_for('subscription.plans') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Plans
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Security Notice -->
+                    <div class="security-notice mt-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shield-alt text-success me-2"></i>
+                            <small class="text-muted">
+                                Your payment is secure and encrypted. We use industry-standard security measures to protect your data.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('payment-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const phoneNumber = document.getElementById('phone_number').value;
+    const payBtn = document.getElementById('pay-btn');
+    
+    // Validate phone number
+    if (!phoneNumber.match(/^[17]\d{8}$/)) {
+        alert('Please enter a valid Kenyan phone number (7XXXXXXXX or 1XXXXXXXX)');
+        return;
+    }
+    
+    // Disable button and show loading
+    payBtn.disabled = true;
+    payBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing Payment...';
+    
+    // Process payment
+    fetch('/subscription/process-multi-month-payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            plan_id: {{ plan.id }},
+            pricing_id: {{ pricing.id }},
+            phone_number: '254' + phoneNumber
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            if (data.redirect_url) {
+                window.location.href = data.redirect_url;
+            }
+        } else {
+            alert('Payment failed: ' + data.message);
+            // Re-enable button
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="fas fa-mobile-alt me-2"></i>Pay KES {{ pricing.total_price|int }} via M-Pesa';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Payment failed. Please try again.');
+        // Re-enable button
+        payBtn.disabled = false;
+        payBtn.innerHTML = '<i class="fas fa-mobile-alt me-2"></i>Pay KES {{ pricing.total_price|int }} via M-Pesa';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Verification - {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h4 class="mb-0">Payment Verification</h4>
+                        <div class="ms-auto">
+                            <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Chama
+                            </a>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-2">Submit your M-Pesa payment message for verification</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-mobile-alt text-success me-2"></i>
+                                        M-Pesa Payment Verification
+                                    </h5>
+                                    
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Instructions:</strong> Copy and paste your complete M-Pesa confirmation message below. 
+                                        Make sure to include the entire message for accurate verification.
+                                    </div>
+                                    
+                                    <form id="paymentVerificationForm">
+                                        <div class="mb-3">
+                                            <label for="paymentType" class="form-label">Payment Type</label>
+                                            <select class="form-select" id="paymentType" required>
+                                                <option value="">Select payment type</option>
+                                                <option value="contribution">Monthly Contribution</option>
+                                                <option value="loan_repayment">Loan Repayment</option>
+                                                <option value="penalty">Penalty Payment</option>
+                                                <option value="registration_fee">Registration Fee</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="amount" class="form-label">Amount (KES)</label>
+                                            <input type="number" class="form-control" id="amount" placeholder="Enter amount" step="0.01" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="mpesaMessage" class="form-label">M-Pesa Confirmation Message</label>
+                                            <textarea class="form-control" id="mpesaMessage" rows="8" 
+                                                placeholder="Paste your complete M-Pesa message here&#10;&#10;Example:&#10;QK7XAMPLE Confirmed. You have sent Ksh500.00 to PAYBILL 123456 for account 456789 on 1/1/2024 at 12:00 PM. Your M-Pesa balance is Ksh1,000.00. Transaction cost Ksh0.00."
+                                                required></textarea>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                                                <i class="fas fa-times me-1"></i>Clear
+                                            </button>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-check me-1"></i>Submit for Verification
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-question-circle text-primary me-2"></i>
+                                        How it Works
+                                    </h5>
+                                    
+                                    <div class="timeline timeline-simple">
+                                        <div class="timeline-item">
+                                            <div class="timeline-icon bg-success">
+                                                <i class="fas fa-mobile-alt"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6 class="mb-1">1. Make Payment</h6>
+                                                <p class="text-sm text-muted">Send money via M-Pesa to the chama account</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline-item">
+                                            <div class="timeline-icon bg-info">
+                                                <i class="fas fa-copy"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6 class="mb-1">2. Copy Message</h6>
+                                                <p class="text-sm text-muted">Copy the complete M-Pesa confirmation message</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline-item">
+                                            <div class="timeline-icon bg-warning">
+                                                <i class="fas fa-paste"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6 class="mb-1">3. Submit Here</h6>
+                                                <p class="text-sm text-muted">Paste the message and submit for verification</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="timeline-item">
+                                            <div class="timeline-icon bg-primary">
+                                                <i class="fas fa-user-check"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6 class="mb-1">4. Admin Verification</h6>
+                                                <p class="text-sm text-muted">Admins will verify and approve your payment</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card border-0 shadow-sm mt-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                                        Tips
+                                    </h5>
+                                    
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Copy the entire M-Pesa message
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Double-check the amount
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Select correct payment type
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Wait for admin approval
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('paymentVerificationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        payment_type: document.getElementById('paymentType').value,
+        amount: document.getElementById('amount').value,
+        mpesa_message: document.getElementById('mpesaMessage').value
+    };
+    
+    // Basic validation
+    if (!formData.payment_type || !formData.amount || !formData.mpesa_message) {
+        showAlert('error', 'Please fill in all required fields');
+        return;
+    }
+    
+    if (parseFloat(formData.amount) <= 0) {
+        showAlert('error', 'Amount must be greater than 0');
+        return;
+    }
+    
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Submitting...';
+    
+    fetch('{{ url_for("chama.verify_payment", chama_id=chama.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            clearForm();
+            setTimeout(() => {
+                window.location.href = '{{ url_for("chama.chama_detail", chama_id=chama.id) }}';
+            }, 2000);
+        } else {
+            showAlert('error', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('error', 'An error occurred while submitting the verification');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+
+function clearForm() {
+    document.getElementById('paymentVerificationForm').reset();
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
+// Auto-extract amount from M-Pesa message
+document.getElementById('mpesaMessage').addEventListener('input', function() {
+    const message = this.value;
+    const amountMatch = message.match(/Ksh([\d,]+\.?\d*)/);
+    
+    if (amountMatch) {
+        const amount = amountMatch[1].replace(/,/g, '');
+        document.getElementById('amount').value = amount;
+    }
+});
+</script>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -1.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e9ecef;
+}
+
+.timeline-item:last-child:before {
+    display: none;
+}
+
+.timeline-icon {
+    position: absolute;
+    left: -2rem;
+    top: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.75rem;
+}
+
+.timeline-content {
+    padding-left: 0.5rem;
+}
+</style>
+{% endblock %}

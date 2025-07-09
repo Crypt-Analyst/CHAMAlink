@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}Choose Your Plan - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary mb-3">Choose Your Plan</h1>
+        <p class="lead text-muted">Flexible pricing options with special discounts for longer commitments</p>
+        <div class="badge bg-warning text-dark fs-6 px-3 py-2 mb-4">
+            <i class="fas fa-gift me-2"></i>Pay for 6 months, get 1 month FREE!
+        </div>
+    </div>
+
+    <!-- Plan Selection Tabs -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <div class="btn-group" role="group" aria-label="Payment duration">
+                <input type="radio" class="btn-check" name="duration" id="duration-1" value="1" checked>
+                <label class="btn btn-outline-primary" for="duration-1">Monthly</label>
+                
+                <input type="radio" class="btn-check" name="duration" id="duration-3" value="3">
+                <label class="btn btn-outline-primary" for="duration-3">3 Months <span class="badge bg-info ms-1">5% Off</span></label>
+                
+                <input type="radio" class="btn-check" name="duration" id="duration-6" value="6">
+                <label class="btn btn-outline-primary" for="duration-6">6 Months <span class="badge bg-success ms-1">+1 FREE</span></label>
+                
+                <input type="radio" class="btn-check" name="duration" id="duration-12" value="12">
+                <label class="btn btn-outline-primary" for="duration-12">12 Months <span class="badge bg-success ms-1">+2 FREE</span></label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plans Grid -->
+    <div class="row g-4" id="plans-container">
+        <!-- Plans will be loaded here dynamically -->
+    </div>
+
+    <!-- Features Comparison -->
+    <div class="mt-5">
+        <h3 class="text-center mb-4">Feature Comparison</h3>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Features</th>
+                        <th class="text-center">Basic<br><small>KES 200/mo</small></th>
+                        <th class="text-center">Classic<br><small>KES 250/mo</small></th>
+                        <th class="text-center">Advanced<br><small>KES 500/mo</small></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><i class="fas fa-users text-primary me-2"></i>Number of Chamas</td>
+                        <td class="text-center">1</td>
+                        <td class="text-center">1</td>
+                        <td class="text-center"><span class="badge bg-success">Unlimited</span></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-mobile-alt text-primary me-2"></i>M-Pesa Integration</td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-chart-bar text-primary me-2"></i>Basic Reporting</td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-video text-primary me-2"></i>Online Meetings</td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-download text-primary me-2"></i>Export Reports</td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-chart-line text-primary me-2"></i>Advanced Analytics</td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-headset text-primary me-2"></i>Priority Support</td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-cog text-primary me-2"></i>API Access</td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Plans data (this would normally come from the backend)
+const plansData = {
+    basic: {
+        name: 'Basic',
+        description: 'Perfect for small chamas',
+        monthly_price: 200,
+        features: ['1 Chama', 'M-Pesa Integration', 'Basic Reporting', 'Online Meetings'],
+        pricing: {
+            1: { total: 200, bonus: 0, discount: 0 },
+            3: { total: 570, bonus: 0, discount: 5 },
+            6: { total: 1200, bonus: 1, discount: 0 },
+            12: { total: 2400, bonus: 2, discount: 0 }
+        }
+    },
+    classic: {
+        name: 'Classic',
+        description: 'Enhanced features for growing chamas',
+        monthly_price: 250,
+        features: ['1 Chama', 'All Basic Features', 'Export Reports', 'Priority Support'],
+        pricing: {
+            1: { total: 250, bonus: 0, discount: 0 },
+            3: { total: 712.5, bonus: 0, discount: 5 },
+            6: { total: 1500, bonus: 1, discount: 0 },
+            12: { total: 3000, bonus: 2, discount: 0 }
+        }
+    },
+    advanced: {
+        name: 'Advanced',
+        description: 'Complete solution for enterprise',
+        monthly_price: 500,
+        features: ['Unlimited Chamas', 'All Features', 'API Access', '24/7 Support'],
+        pricing: {
+            1: { total: 500, bonus: 0, discount: 0 },
+            3: { total: 1425, bonus: 0, discount: 5 },
+            6: { total: 3000, bonus: 1, discount: 0 },
+            12: { total: 6000, bonus: 2, discount: 0 }
+        }
+    }
+};
+
+// Update plans display based on selected duration
+function updatePlansDisplay() {
+    const selectedDuration = document.querySelector('input[name="duration"]:checked').value;
+    const container = document.getElementById('plans-container');
+    
+    let plansHtml = '';
+    
+    Object.keys(plansData).forEach((planKey, index) => {
+        const plan = plansData[planKey];
+        const pricing = plan.pricing[selectedDuration];
+        const isPopular = planKey === 'classic';
+        
+        const totalMonths = parseInt(selectedDuration) + pricing.bonus;
+        const pricePerMonth = pricing.total / parseInt(selectedDuration);
+        const savings = (plan.monthly_price * parseInt(selectedDuration)) - pricing.total;
+        
+        plansHtml += `
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 ${isPopular ? 'border-primary shadow-lg' : 'border-0 shadow'}">
+                    ${isPopular ? '<div class="ribbon bg-primary text-white">Most Popular</div>' : ''}
+                    <div class="card-body text-center p-4">
+                        <h4 class="card-title fw-bold text-primary">${plan.name}</h4>
+                        <p class="text-muted mb-3">${plan.description}</p>
+                        
+                        <div class="pricing-section mb-4">
+                            <div class="price-display">
+                                <span class="h2 fw-bold text-primary">KES ${pricing.total.toLocaleString()}</span>
+                                <br>
+                                <small class="text-muted">
+                                    ${selectedDuration} month${selectedDuration > 1 ? 's' : ''}
+                                    ${pricing.bonus > 0 ? ` + ${pricing.bonus} FREE` : ''}
+                                </small>
+                            </div>
+                            ${selectedDuration > 1 ? `
+                                <div class="monthly-breakdown mt-2">
+                                    <small class="text-success">
+                                        <strong>KES ${pricePerMonth.toFixed(0)}/month</strong>
+                                        ${savings > 0 ? `<br>Save KES ${savings.toLocaleString()}` : ''}
+                                    </small>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <ul class="list-unstyled text-start mb-4">
+                            ${plan.features.map(feature => `
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    ${feature}
+                                </li>
+                            `).join('')}
+                        </ul>
+                        
+                        <button class="btn ${isPopular ? 'btn-primary' : 'btn-outline-primary'} w-100" 
+                                onclick="selectPlan('${planKey}', ${selectedDuration})">
+                            Choose ${plan.name}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = plansHtml;
+}
+
+// Handle plan selection
+function selectPlan(planKey, duration) {
+    const plan = plansData[planKey];
+    const pricing = plan.pricing[duration];
+    
+    // For now, just show a confirmation
+    const totalMonths = parseInt(duration) + pricing.bonus;
+    const message = `You selected ${plan.name} plan for ${duration} month${duration > 1 ? 's' : ''}.\\n` +
+                   `Total: KES ${pricing.total.toLocaleString()}\\n` +
+                   `You'll get ${totalMonths} month${totalMonths > 1 ? 's' : ''} of access.\\n\\n` +
+                   `Proceed to payment?`;
+    
+    if (confirm(message)) {
+        // Redirect to payment page with plan details
+        window.location.href = `/subscription/checkout?plan=${planKey}&duration=${duration}`;
+    }
+}
+
+// Initialize plans display
+document.addEventListener('DOMContentLoaded', function() {
+    updatePlansDisplay();
+    
+    // Listen for duration changes
+    document.querySelectorAll('input[name="duration"]').forEach(radio => {
+        radio.addEventListener('change', updatePlansDisplay);
+    });
+});
+</script>
+
+<style>
+.ribbon {
+    position: absolute;
+    top: 15px;
+    right: -5px;
+    z-index: 2;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 3px 0 0 3px;
+}
+
+.ribbon::after {
+    content: '';
+    position: absolute;
+    right: -5px;
+    top: 0;
+    border-left: 5px solid #0d6efd;
+    border-top: 12.5px solid transparent;
+    border-bottom: 12.5px solid transparent;
+}
+
+.price-display {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.btn-check:checked + .btn {
+    background-color: #0d6efd;
+    color: white;
+}
+</style>
+{% endblock %}

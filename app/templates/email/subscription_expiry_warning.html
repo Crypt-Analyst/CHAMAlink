@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Subscription Expiry Warning - ChamaLink</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #ffc107; color: #333; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f8f9fa; }
+        .footer { padding: 20px; text-align: center; color: #666; }
+        .btn { display: inline-block; padding: 10px 20px; background: #ffc107; color: #333; text-decoration: none; border-radius: 5px; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Subscription Expiry Warning</h1>
+            <p>Your ChamaLink subscription expires in {{ days_remaining }} day{{ 's' if days_remaining != 1 else '' }}</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello {{ user.first_name or user.username }}!</h2>
+            
+            <div class="warning">
+                <strong>⚠️ Action Required:</strong> Your {{ plan.name.title() }} subscription expires on {{ end_date.strftime('%B %d, %Y') }}.
+            </div>
+            
+            <p>To continue enjoying ChamaLink's features, please renew your subscription before it expires.</p>
+            
+            <h3>What happens if you don't renew?</h3>
+            <ul>
+                <li>Your account will be temporarily suspended</li>
+                <li>You won't be able to access chama management features</li>
+                <li>Your data will be preserved for 30 days</li>
+                <li>You can reactivate anytime by renewing your subscription</li>
+            </ul>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ url_for('subscription.plans', _external=True) }}" class="btn">Renew Now</a>
+            </div>
+            
+            <p>If you have any questions about your subscription, please contact our support team.</p>
+            
+            <p>Best regards,<br>The ChamaLink Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 ChamaLink. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

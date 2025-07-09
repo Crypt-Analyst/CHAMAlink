@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Meeting Minutes - {{ minutes.meeting_title }}{% endblock %}
+
+{% block page_header %}
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">{{ minutes.meeting_title }}</h1>
+                    <p class="text-blue-100 mt-1">{{ minutes.chama.name }} - {{ minutes.meeting_date.strftime('%B %d, %Y') }}</p>
+                </div>
+                <div class="flex space-x-3">
+                    {% if can_approve %}
+                        <button onclick="approveMinutes()" 
+                                class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                            ✅ Approve & Publish
+                        </button>
+                    {% endif %}
+                    <a href="{{ url_for('minutes.chama_minutes', chama_id=minutes.chama_id) }}" 
+                       class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition">
+                        ← Back to Minutes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Status Badge -->
+        <div class="mb-6">
+            {% if minutes.status == 'approved' %}
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    ✅ Approved & Published
+                    {% if minutes.approved_at %}
+                        <span class="ml-2 text-green-600">on {{ minutes.approved_at.strftime('%B %d, %Y') }}</span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                    ⏳ Draft - Pending Approval
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Meeting Information -->
+        <div class="bg-white rounded-lg shadow-sm border mb-6">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Meeting Information</h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Meeting Date</h3>
+                        <p class="text-lg text-gray-900">{{ minutes.meeting_date.strftime('%A, %B %d, %Y') }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Recorded By</h3>
+                        <p class="text-lg text-gray-900">{{ minutes.secretary.first_name }} {{ minutes.secretary.last_name }}</p>
+                    </div>
+                    {% if attendees %}
+                    <div class="md:col-span-2">
+                        <h3 class="text-sm font-medium text-gray-500 mb-3">Attendees ({{ attendees|length }})</h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% for attendee in attendees %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                                    {{ attendee.first_name }} {{ attendee.last_name }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Agenda Items -->
+        {% if minutes.agenda_items %}
+        <div class="bg-white rounded-lg shadow-sm border mb-6">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Meeting Agenda</h2>
+            </div>
+            <div class="p-6">
+                <ul class="space-y-2">
+                    {% for item in minutes.agenda_items %}
+                        <li class="flex items-start">
+                            <span class="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                            <span class="text-gray-700">{{ item }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Meeting Minutes Content -->
+        {% if minutes.minutes_content %}
+        <div class="bg-white rounded-lg shadow-sm border mb-6">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Meeting Minutes</h2>
+            </div>
+            <div class="p-6">
+                <div class="prose max-w-none">
+                    <div class="text-gray-700 whitespace-pre-line">{{ minutes.minutes_content }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Decisions Made -->
+        {% if minutes.decisions_made %}
+        <div class="bg-white rounded-lg shadow-sm border mb-6">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Decisions Made</h2>
+            </div>
+            <div class="p-6">
+                <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
+                    <div class="text-gray-700 whitespace-pre-line">{{ minutes.decisions_made }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Items -->
+        {% if minutes.action_items %}
+        <div class="bg-white rounded-lg shadow-sm border mb-6">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Action Items</h2>
+            </div>
+            <div class="p-6">
+                <ul class="space-y-3">
+                    {% for action in minutes.action_items %}
+                        <li class="flex items-start">
+                            <span class="inline-block w-3 h-3 bg-orange-500 rounded-full mt-1 mr-3 flex-shrink-0"></span>
+                            <span class="text-gray-700">{{ action }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Attachment -->
+        {% if minutes.attachment_path %}
+        <div class="bg-white rounded-lg shadow-sm border mb-6">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Attachments</h2>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                    <svg class="w-8 h-8 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <div>
+                        <p class="font-medium text-gray-900">Meeting Document</p>
+                        <p class="text-sm text-gray-500">{{ minutes.attachment_path.split('/')[-1] }}</p>
+                    </div>
+                    <div class="ml-auto">
+                        <a href="{{ url_for('static', filename=minutes.attachment_path.replace('app/static/', '')) }}" 
+                           target="_blank"
+                           class="text-blue-600 hover:text-blue-800 font-medium">
+                            Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Meeting Summary -->
+        <div class="bg-gray-50 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Meeting Summary</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="bg-white p-4 rounded-lg">
+                    <div class="text-gray-500">Attendees</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ attendees|length if attendees else 0 }}</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg">
+                    <div class="text-gray-500">Agenda Items</div>
+                    <div class="text-2xl font-bold text-green-600">{{ minutes.agenda_items|length if minutes.agenda_items else 0 }}</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg">
+                    <div class="text-gray-500">Action Items</div>
+                    <div class="text-2xl font-bold text-orange-600">{{ minutes.action_items|length if minutes.action_items else 0 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if can_approve %}
+<script>
+function approveMinutes() {
+    if (confirm('Are you sure you want to approve and publish these meeting minutes? This will notify all group members.')) {
+        fetch('{{ url_for("minutes.approve_minutes", minutes_id=minutes.id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while approving the minutes.');
+        });
+    }
+}
+</script>
+{% endif %}
+{% endblock %}

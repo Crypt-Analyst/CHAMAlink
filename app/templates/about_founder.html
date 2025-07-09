@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}About Our Founder - Bilford Bwire | ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <div class="founder-hero-section">
+                <div class="founder-avatar-large mb-4">
+                    <img src="{{ url_for('static', filename='images/bilford-bwire.jpg') }}" 
+                         alt="Bilford Bwire - Founder" 
+                         class="rounded-circle founder-photo" 
+                         style="width: 150px; height: 150px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto" style="display: none; width: 150px; height: 150px;">
+                        <i class="fas fa-user-tie fa-4x"></i>
+                    </div>
+                </div>
+                <h1 class="display-4 fw-bold text-primary mb-4">Meet Bilford Bwire</h1>
+                <p class="lead text-muted mb-4">The 25-year-old visionary behind ChamaLink's mission to revolutionize African community finance</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Story Content -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            
+            <!-- The Beginning -->
+            <div class="story-section mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="story-content">
+                            <h2 class="h3 fw-bold text-primary mb-3">
+                                <i class="fas fa-seedling me-2"></i>The Beginning
+                            </h2>
+                            <p class="lead">
+                                It all started in 2007, when I was just 8 years old during the challenging siku za Moi era. 
+                                I witnessed my grandmother, Joyce Mwato, transform our family's financial future through her local Chama.
+                            </p>
+                            <p>
+                                Every Saturday morning, I watched my grandmother walk miles to sit under a large acacia tree 
+                                with twelve other women. Each carrying a small envelope containing 100 Kenyan Shillings - 
+                                a significant amount for rural families during those difficult economic times.
+                            </p>
+                            <p>
+                                That experience made me think about technology every day. I couldn't understand why such 
+                                powerful community work required so much physical effort.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="story-visual bg-light p-4 rounded-3">
+                            <div class="text-center">
+                                <i class="fas fa-tree fa-4x text-success mb-3"></i>
+                                <h5 class="fw-bold">Under the Acacia Tree</h5>
+                                <p class="text-muted small">
+                                    "Bidii Women's Group" - where it all began. Twelve women, one dream, 
+                                    and the power of community that would inspire a digital revolution.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Challenge -->
+            <div class="story-section mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6 order-md-2">
+                        <div class="story-content">
+                            <h2 class="h3 fw-bold text-warning mb-3">
+                                <i class="fas fa-heart-broken me-2"></i>The Challenge
+                            </h2>
+                            <p class="lead">
+                                In 2010, when I was 11, my mother Judith Lily joined my grandmother's chama. 
+                                Watching both of them walk those long distances to attend meetings broke my heart.
+                            </p>
+                            <p>
+                                They never gave up, despite the challenges. Rain or shine, they would make that journey. 
+                                Their dedication was inspiring, but I knew there had to be a better way.
+                            </p>
+                            <p>
+                                Their commitment inspired me to dream of making life simpler for every mother out there 
+                                who believed in the power of community savings.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 order-md-1">
+                        <div class="story-visual bg-warning bg-opacity-10 p-4 rounded-3">
+                            <div class="text-center">
+                                <i class="fas fa-walking fa-4x text-warning mb-3"></i>
+                                <h5 class="fw-bold">Miles of Dedication</h5>
+                                <p class="text-muted small">
+                                    Every Saturday, watching my grandmother and mother walk miles for their 
+                                    chama meetings, I knew technology could solve this.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Education -->
+            <div class="story-section mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="story-content">
+                            <h2 class="h3 fw-bold text-success mb-3">
+                                <i class="fas fa-graduation-cap me-2"></i>The Education
+                            </h2>
+                            <p class="lead">
+                                At Mount Kenya University, studying computer science, I carried this vision with me. 
+                                Every algorithm I learned, every database concept I mastered, I thought about chamas.
+                            </p>
+                            <p>
+                                I really felt bad remembering my grandmother and mother walking miles just to attend meetings. 
+                                During university, I started building small tech solutions, always with community finance in mind.
+                            </p>
+                            <p>
+                                I knew there had to be a way to preserve the beautiful spirit of chamas while eliminating 
+                                the geographical barriers.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="story-visual bg-success bg-opacity-10 p-4 rounded-3">
+                            <div class="text-center">
+                                <i class="fas fa-university fa-4x text-success mb-3"></i>
+                                <h5 class="fw-bold">Mount Kenya University</h5>
+                                <p class="text-muted small">
+                                    Computer Science studies fueled by a childhood dream to digitize 
+                                    community finance and honor my grandmother's legacy.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Vision -->
+            <div class="story-section mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6 order-md-2">
+                        <div class="story-content">
+                            <h2 class="h3 fw-bold text-info mb-3">
+                                <i class="fas fa-lightbulb me-2"></i>The Vision Realized
+                            </h2>
+                            <p class="lead">
+                                Now at 25 years old, I've created this beautiful app that will help every chama across Africa. 
+                                ChamaLink is my answer to those miles my grandmother and mother walked.
+                            </p>
+                            <p>
+                                We've digitized that same spirit of collaboration I witnessed as a child, bringing modern tools 
+                                including online meetings to traditional practices. No more walking miles - meet online!
+                            </p>
+                            <p>
+                                I'm making life simple for every mother out there, just like my grandmother Joyce Mwato 
+                                and my mother Judith Lily, who showed me the power of never giving up.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 order-md-1">
+                        <div class="story-visual bg-info bg-opacity-10 p-4 rounded-3">
+                            <div class="text-center">
+                                <i class="fas fa-rocket fa-4x text-info mb-3"></i>
+                                <h5 class="fw-bold">ChamaLink Today</h5>
+                                <p class="text-muted small">
+                                    1000+ chamas empowered, 15,000+ lives transformed, 
+                                    and the journey has just begun.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quote Section -->
+            <div class="quote-section text-center py-5">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <blockquote class="blockquote text-white mb-0">
+                            <p class="lead mb-4">
+                                "Every feature we build, every decision we make, is guided by one principle: 
+                                empowering your financial success. We're not just building software; 
+                                we're honoring the legacy of every grandmother who walked miles for her chama."
+                            </p>
+                            <footer class="blockquote-footer text-warning">
+                                <cite title="Source Title">Bilford Bwire, Founder & CEO of ChamaLink</cite>
+                            </footer>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="cta-section text-center py-5">
+                <h3 class="fw-bold mb-4">Join Me on This Journey</h3>
+                <p class="lead mb-4">
+                    Every chama that joins ChamaLink brings us closer to our vision of 
+                    financial empowerment for all African communities.
+                </p>
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-rocket me-2"></i>Start Your Chama Today
+                    </a>
+                    <a href="{{ url_for('main.founder_story') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-book-open me-2"></i>Read Full Story
+                    </a>
+                    <a href="mailto:rahasoft.app@gmail.com" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-envelope me-2"></i>Connect with Me
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.story-section {
+    margin-bottom: 4rem;
+}
+
+.story-visual {
+    transition: transform 0.3s ease;
+}
+
+.story-visual:hover {
+    transform: translateY(-5px);
+}
+
+.founder-photo {
+    transition: transform 0.3s ease;
+}
+
+.founder-photo:hover {
+    transform: scale(1.05);
+}
+
+.quote-section .card {
+    transition: transform 0.3s ease;
+}
+
+.quote-section .card:hover {
+    transform: translateY(-5px);
+}
+
+@media (max-width: 768px) {
+    .story-section .row {
+        text-align: center;
+    }
+    
+    .order-md-1,
+    .order-md-2 {
+        order: initial !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% block title %}Sign In - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <!-- Left Side - Branding -->
+            <div class="col-lg-6 d-none d-lg-flex auth-left">
+                <div class="auth-brand-section">
+                    <div class="brand-content">
+                        <div class="brand-logo mb-4">
+                            <i class="fas fa-users-cog fa-4x text-white"></i>
+                        </div>
+                        <h1 class="brand-title text-white mb-3">Welcome Back to ChamaLink</h1>
+                        <p class="brand-subtitle text-white-50 mb-4">
+                            Continue your journey in modernizing your Chama's financial management
+                        </p>
+                        <div class="auth-features">
+                            <div class="feature-item mb-3">
+                                <i class="fas fa-shield-alt text-warning me-3"></i>
+                                <span class="text-white">Bank-level security</span>
+                            </div>
+                            <div class="feature-item mb-3">
+                                <i class="fas fa-mobile-alt text-warning me-3"></i>
+                                <span class="text-white">Mobile-first design</span>
+                            </div>
+                            <div class="feature-item mb-3">
+                                <i class="fas fa-chart-line text-warning me-3"></i>
+                                <span class="text-white">Real-time analytics</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-users text-warning me-3"></i>
+                                <span class="text-white">Community-driven</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Login Form -->
+            <div class="col-lg-6 auth-right">
+                <div class="auth-form-container">
+                    <div class="auth-form-wrapper">
+                        <!-- Header -->
+                        <div class="auth-header text-center mb-4">
+                            <h2 class="auth-title">Sign In</h2>
+                            <p class="auth-subtitle text-muted">Access your Chama dashboard</p>
+                        </div>
+
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'danger' else 'info-circle' }} me-2"></i>
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <!-- Login Form -->
+                        <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="form-group mb-4">
+                                <label for="email" class="form-label">{{ form.email.label.text }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    {% if form.email.errors %}
+                                        {{ form.email(class="form-control is-invalid", autofocus=True, placeholder="Enter your email") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.email(class="form-control", autofocus=True, placeholder="Enter your email") }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label for="password" class="form-label">{{ form.password.label.text }}</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    {% if form.password.errors %}
+                                        {{ form.password(class="form-control is-invalid", placeholder="Enter your password", id="loginPassword") }}
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('loginPassword', this)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <div class="invalid-feedback">
+                                            {% for error in form.password.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.password(class="form-control", placeholder="Enter your password", id="loginPassword") }}
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('loginPassword', this)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    {{ form.remember_me(class="form-check-input") }}
+                                    {{ form.remember_me.label(class="form-check-label") }}
+                                </div>
+                                <a href="#" class="text-decoration-none">Forgot password?</a>
+                            </div>
+
+                            <div class="d-grid mb-4">
+                                {{ form.submit(class="btn btn-primary btn-lg") }}
+                            </div>
+
+                            <div class="text-center">
+                                <p class="mb-0">Don't have an account? 
+                                    <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold">
+                                        Create Account
+                                    </a>
+                                </p>
+                            </div>
+                            
+                            <!-- Email Verification Notice -->
+                            <div class="text-center mt-3">
+                                <p class="text-muted small">
+                                    Didn't receive verification email? 
+                                    <button type="button" class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#resendVerificationModal">
+                                        Resend verification
+                                    </button>
+                                </p>
+                            </div>
+                        </form>
+
+                        <!-- Social Login (Optional) -->
+                        <div class="auth-divider my-4">
+                            <span class="divider-text">Or continue with</span>
+                        </div>
+                        
+                        <div class="social-login mb-4">
+                            <button class="btn btn-outline-secondary btn-lg w-100 mb-2" type="button">
+                                <span class="google-g-icon me-2">G</span>Continue with Google
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Email Verification Modal -->
+<div class="modal fade" id="resendVerificationModal" tabindex="-1" aria-labelledby="resendVerificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resendVerificationModalLabel">Resend Verification Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('auth.resend_verification') }}">
+                <div class="modal-body">
+                    <p>Enter your email address to receive a new verification link.</p>
+                    <div class="form-group">
+                        <label for="verificationEmail" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="verificationEmail" name="email" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Resend Verification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.auth-left {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-left::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.1)" points="0,1000 1000,0 1000,1000"/></svg>');
+    background-size: cover;
+}
+
+.auth-brand-section {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 2rem;
+}
+
+.brand-content {
+    max-width: 400px;
+    text-align: center;
+}
+
+.brand-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.brand-subtitle {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.auth-features {
+    text-align: left;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+}
+
+.auth-right {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-title {
+    color: #2c3e50;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+.input-group-text {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+}
+
+.form-control {
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.auth-divider {
+    position: relative;
+    text-align: center;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #dee2e6;
+}
+
+.divider-text {
+    background: #ffffff;
+    padding: 0 1rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.social-login .btn {
+    border: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.social-login .btn:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.google-g-icon {
+    background: linear-gradient(45deg, #4285f4, #ea4335, #fbbc05, #34a853);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+    font-size: 1.2rem;
+    font-family: Arial, sans-serif;
+}
+
+@media (max-width: 991.98px) {
+    .auth-container {
+        background: #ffffff;
+    }
+    
+    .auth-right {
+        min-height: 100vh;
+    }
+    
+    .brand-title {
+        font-size: 2rem;
+    }
+}
+</style>
+
+<script>
+function togglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}

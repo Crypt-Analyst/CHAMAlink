@@ -1,0 +1,820 @@
+{% extends "base.html" %}
+{% block title %}{{ chama.name }} Dashboard - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Personalized Chama Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm chama-header-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="chama-branding mb-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="chama-avatar bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-users fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h1 class="h2 mb-1 chama-name">{{ chama.name }}</h1>
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            Welcome to your personalized {{ chama.name }} dashboard
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="chama-status-bar">
+                                    <span class="badge bg-success me-2">
+                                        <i class="fas fa-check-circle me-1"></i>{{ chama.status.title() }}
+                                    </span>
+                                    <span class="badge bg-info me-2">
+                                        <i class="fas fa-user-shield me-1"></i>{{ user_role.title() }} Member
+                                    </span>
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-clock me-1"></i>Member since {{ current_user.member_since(chama.id).strftime('%B %Y') if current_user.member_since(chama.id) else 'Unknown' }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% if chama.description %}
+                            <div class="chama-description mt-3">
+                                <h6 class="fw-bold text-primary">{{ chama.name }} Mission:</h6>
+                                <p class="text-muted mb-0">{{ chama.description }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="action-buttons d-flex flex-column flex-md-row gap-2">
+                                {% if user_role in ['creator', 'admin'] %}
+                                <a href="{{ url_for('admin.chama_admin', chama_id=chama.id) }}" class="btn btn-warning">
+                                    <i class="fas fa-cog me-2"></i>Admin Dashboard
+                                </a>
+                                <button class="btn btn-outline-primary" onclick="showInviteModal()">
+                                    <i class="fas fa-user-plus me-2"></i>Invite to {{ chama.name }}
+                                </button>
+                                <button class="btn btn-outline-success" onclick="exportChamaData()">
+                                    <i class="fas fa-download me-2"></i>Export Data
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-outline-success" onclick="showEditChamaModal()">
+                                    <i class="fas fa-edit me-2"></i>Manage {{ chama.name }}
+                                </button>
+                                <button class="btn btn-primary" onclick="showContributeModal()">
+                                    <i class="fas fa-hand-holding-usd me-2"></i>Contribute to {{ chama.name }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- {{ chama.name }} Performance Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary text-white rounded-circle me-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h3 class="h5 mb-0">{{ chama.member_count }}</h3>
+                            <p class="text-muted mb-0">{{ chama.name }} Members</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success text-white rounded-circle me-3">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div>
+                            <h3 class="h5 mb-0">{{ chama.formatted_balance }}</h3>
+                            <p class="text-muted mb-0">{{ chama.name }} Total Balance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning text-white rounded-circle me-3">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="h5 mb-0">{{ chama.formatted_contribution }}</h3>
+                            <p class="text-muted mb-0">Monthly Target</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-info text-white rounded-circle me-3">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h3 class="h5 mb-0">{{ total_contributions|round|int }}</h3>
+                            <p class="text-muted mb-0">Total Contributions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Recent Transactions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Recent Transactions
+                        </h5>
+                        <a href="{{ url_for('chama.chama_transactions', chama_id=chama.id) }}" class="btn btn-sm btn-outline-primary">
+                            View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Member</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if transaction.type == 'contribution' else 'warning' }}">
+                                            {{ transaction.display_title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.formatted_amount }}</td>
+                                    <td>{{ transaction.user.username }}</td>
+                                    <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No transactions yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Online Meetings Section -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-video me-2"></i>Chama Meetings
+                        </h5>
+                        {% if user_role in ['creator', 'admin'] %}
+                        <button class="btn btn-sm btn-primary" onclick="scheduleNewMeeting()">
+                            <i class="fas fa-plus me-1"></i>Schedule Meeting
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="meetings-container">
+                        <div class="text-center py-3">
+                            <i class="fas fa-spinner fa-spin"></i> Loading meetings...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Chama Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Chama Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Goal:</strong>
+                        <p class="text-muted">{{ chama.goal or "No goal set" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Meeting Day:</strong>
+                        <p class="text-muted">{{ chama.meeting_day.title() if chama.meeting_day else "Not set" }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Registration Fee:</strong>
+                        <p class="text-muted">{{ chama.formatted_registration_fee }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Created:</strong>
+                        <p class="text-muted">{{ chama.created_at.strftime('%B %d, %Y') }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Your Role:</strong>
+                        <span class="badge bg-primary">{{ user_role.title() }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if user_role in ['creator', 'admin'] %}
+                        <a href="{{ url_for('chama.chama_members', chama_id=chama.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-users me-2"></i>Manage Members
+                        </a>
+                        <a href="{{ url_for('chama.payment_verifications', chama_id=chama.id) }}" class="btn btn-outline-warning">
+                            <i class="fas fa-check-circle me-2"></i>Payment Verifications
+                        </a>
+                        {% endif %}
+                        {% if chama.registration_fee > 0 %}
+                        <button class="btn btn-warning" onclick="showRegistrationFeeModal()">
+                            <i class="fas fa-credit-card me-2"></i>Pay Registration Fee
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-primary" onclick="showContributeModal()">
+                            <i class="fas fa-hand-holding-usd me-2"></i>Make Contribution
+                        </button>
+                        <a href="{{ url_for('chama.verify_payment', chama_id=chama.id) }}" class="btn btn-outline-success">
+                            <i class="fas fa-mobile-alt me-2"></i>Verify Payment
+                        </a>
+                        <a href="{{ url_for('reports.chama_dashboard', chama_id=chama.id) }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-line me-2"></i>Financial Reports
+                        </a>
+                        <a href="{{ url_for('receipts.chama_receipts', chama_id=chama.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-receipt me-2"></i>View Receipts
+                        </a>
+                        <a href="{{ url_for('receipts.payment_history', chama_id=chama.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-history me-2"></i>Payment History
+                        </a>
+                        <a href="{{ url_for('recurring.chama_recurring_payments', chama_id=chama.id) }}" class="btn btn-outline-info">
+                            <i class="fas fa-sync-alt me-2"></i>Recurring Payments
+                        </a>
+                        <a href="{{ url_for('chama.chama_members', chama_id=chama.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-users me-2"></i>View Members
+                        </a>
+                        <a href="{{ url_for('chama.chama_transactions', chama_id=chama.id) }}" class="btn btn-outline-dark">
+                            <i class="fas fa-list me-2"></i>View Transactions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contribute Modal -->
+<div class="modal fade" id="contributeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-hand-holding-usd me-2"></i>Make Contribution
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="contributeForm">
+                    <div class="mb-3">
+                        <label for="contributionAmount" class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">KES</span>
+                            <input type="number" class="form-control" id="contributionAmount" 
+                                   placeholder="{{ chama.monthly_contribution }}" min="1" step="0.01" required>
+                        </div>
+                        <small class="text-muted">Recommended: {{ chama.formatted_contribution }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contributionNote" class="form-label">Note (Optional)</label>
+                        <textarea class="form-control" id="contributionNote" rows="3" 
+                                  placeholder="Additional notes about this contribution..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitContribution()">
+                    <i class="fas fa-check me-2"></i>Submit Contribution
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Invite Modal -->
+{% if user_role in ['creator', 'admin'] %}
+<div class="modal fade" id="inviteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>Invite Member
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inviteForm">
+                    <div class="mb-3">
+                        <label for="inviteEmail" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="inviteEmail" 
+                               placeholder="member@example.com" required>
+                        <small class="text-muted">User must already be registered on ChamaLink</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitInvite()">
+                    <i class="fas fa-paper-plane me-2"></i>Send Invite
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Registration Fee Modal -->
+<div class="modal fade" id="registrationFeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-credit-card me-2"></i>Pay Registration Fee
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Registration fee for <strong>{{ chama.name }}</strong>: <strong>{{ chama.formatted_registration_fee }}</strong>
+                </div>
+                <form id="registrationFeeForm">
+                    <div class="mb-3">
+                        <label for="registrationPhone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="registrationPhone" 
+                               placeholder="254700000000" required>
+                        <small class="text-muted">M-Pesa phone number (format: 254700000000)</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="submitRegistrationFee()">
+                    <i class="fas fa-mobile-alt me-2"></i>Pay via M-Pesa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showContributeModal() {
+    $('#contributeModal').modal('show');
+}
+
+function showInviteModal() {
+    $('#inviteModal').modal('show');
+}
+
+function showRegistrationFeeModal() {
+    $('#registrationFeeModal').modal('show');
+}
+
+function exportChamaData() {
+    // Show loading state
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exporting...';
+    button.disabled = true;
+    
+    // Redirect to export endpoint  
+    window.location.href = `/reports/{{ chama.id }}/export/csv?start_date=2020-01-01&end_date=${new Date().toISOString().split('T')[0]}`;
+    
+    // Reset button after a delay
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }, 3000);
+}
+
+function submitRegistrationFee() {
+    const phone = document.getElementById('registrationPhone').value;
+    
+    if (!phone) {
+        alert('Please enter your phone number');
+        return;
+    }
+    
+    // Validate phone number format
+    const phoneRegex = /^254[0-9]{9}$/;
+    if (!phoneRegex.test(phone)) {
+        alert('Please enter a valid phone number (format: 254700000000)');
+        return;
+    }
+    
+    fetch('/chama/{{ chama.id }}/pay-registration-fee', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            phone: phone
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            $('#registrationFeeModal').modal('hide');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing your payment');
+    });
+}
+
+function submitContribution() {
+    const amount = document.getElementById('contributionAmount').value;
+    const note = document.getElementById('contributionNote').value;
+    
+    if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    fetch('/chama/{{ chama.id }}/contribute', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            amount: parseFloat(amount),
+            note: note
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            $('#contributeModal').modal('hide');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing your contribution');
+    });
+}
+
+function submitInvite() {
+    const email = document.getElementById('inviteEmail').value;
+    
+    if (!email) {
+        alert('Please enter an email address');
+        return;
+    }
+    
+    fetch('/chama/{{ chama.id }}/invite', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            $('#inviteModal').modal('hide');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while sending the invite');
+    });
+}
+
+// Load meetings when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadChamaMeetings();
+});
+
+// Load meetings for this specific chama
+function loadChamaMeetings() {
+    const chamaId = {{ chama.id }};
+    fetch(`/api/chama/${chamaId}/meetings`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayChamaMeetings(data.meetings);
+            } else {
+                showMeetingsError(data.message || 'Failed to load meetings');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading meetings:', error);
+            showMeetingsError('Failed to load meetings');
+        });
+}
+
+// Display meetings in the container
+function displayChamaMeetings(meetings) {
+    const container = document.getElementById('meetings-container');
+    
+    if (meetings.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No meetings scheduled yet</p>
+                {% if user_role in ['creator', 'admin'] %}
+                <button class="btn btn-primary btn-sm" onclick="scheduleNewMeeting()">
+                    <i class="fas fa-plus me-1"></i>Schedule Your First Meeting
+                </button>
+                {% endif %}
+            </div>
+        `;
+        return;
+    }
+    
+    const meetingsHtml = meetings.map(meeting => {
+        const meetingDate = new Date(meeting.scheduled_time);
+        const isUpcoming = meetingDate > new Date();
+        const statusClass = isUpcoming ? 'bg-success' : 'bg-secondary';
+        const statusText = isUpcoming ? 'Upcoming' : 'Past';
+        
+        return `
+            <div class="meeting-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="meeting-title">${meeting.title}</h6>
+                        <p class="meeting-time mb-2">
+                            <i class="fas fa-calendar me-1"></i>
+                            ${meetingDate.toLocaleDateString()} at ${meetingDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </p>
+                        ${meeting.description ? `<p class="text-muted small mb-2">${meeting.description}</p>` : ''}
+                        <span class="badge ${statusClass} meeting-status">${statusText}</span>
+                    </div>
+                    <div class="meeting-actions">
+                        ${isUpcoming ? `
+                            <a href="${meeting.meeting_link}" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="fas fa-video me-1"></i>Join
+                            </a>
+                        ` : ''}
+                        {% if user_role in ['creator', 'admin'] %}
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMeeting(${meeting.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = meetingsHtml;
+}
+
+// Show error message
+function showMeetingsError(message) {
+    const container = document.getElementById('meetings-container');
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+            <p class="text-muted">${message}</p>
+            <button class="btn btn-sm btn-outline-primary" onclick="loadChamaMeetings()">
+                <i class="fas fa-redo me-1"></i>Try Again
+            </button>
+        </div>
+    `;
+}
+
+// Schedule new meeting (admin only)
+function scheduleNewMeeting() {
+    const title = prompt('Meeting Title:');
+    if (!title) return;
+    
+    const dateTime = prompt('Date and Time (YYYY-MM-DD HH:MM):');
+    if (!dateTime) return;
+    
+    const description = prompt('Description (optional):') || '';
+    
+    const chamaId = {{ chama.id }};
+    const meetingData = {
+        title: title,
+        scheduled_time: dateTime,
+        description: description,
+        chama_id: chamaId
+    };
+    
+    fetch('/api/schedule-meeting', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(meetingData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Meeting scheduled successfully!');
+            loadChamaMeetings(); // Reload meetings
+        } else {
+            alert('Failed to schedule meeting: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error scheduling meeting:', error);
+        alert('Failed to schedule meeting');
+    });
+}
+
+// Delete meeting (admin only)
+function deleteMeeting(meetingId) {
+    if (!confirm('Are you sure you want to delete this meeting?')) {
+        return;
+    }
+    
+    fetch(`/api/meeting/${meetingId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Meeting deleted successfully!');
+            loadChamaMeetings(); // Reload meetings
+        } else {
+            alert('Failed to delete meeting: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting meeting:', error);
+        alert('Failed to delete meeting');
+    });
+}
+</script>
+
+<style>
+.chama-header-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+}
+
+.chama-header-card .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.chama-avatar {
+    width: 80px;
+    height: 80px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.chama-name {
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chama-status-bar .badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.stat-card:nth-child(1) {
+    border-left-color: #0d6efd;
+}
+
+.stat-card:nth-child(2) {
+    border-left-color: #198754;
+}
+
+.stat-card:nth-child(3) {
+    border-left-color: #ffc107;
+}
+
+.stat-card:nth-child(4) {
+    border-left-color: #0dcaf0;
+}
+
+.chama-description {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.chama-description h6 {
+    color: #ffc107 !important;
+}
+
+.action-buttons .btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Meetings Section Styles */
+.meeting-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.meeting-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: #007bff;
+}
+
+.meeting-title {
+    font-weight: 600;
+    color: #333;
+}
+
+.meeting-time {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.meeting-status {
+    font-size: 0.8rem;
+}
+
+.meeting-actions .btn {
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .chama-avatar {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .chama-name {
+        font-size: 1.5rem;
+    }
+    
+    .chama-status-bar {
+        margin-top: 1rem;
+    }
+    
+    .chama-status-bar .badge {
+        display: block;
+        margin-bottom: 0.5rem;
+        width: fit-content;
+    }
+}
+</style>
+{% endblock %}

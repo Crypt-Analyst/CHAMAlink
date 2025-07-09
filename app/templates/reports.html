@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Reports - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Financial Reports</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="exportReport('pdf')">
+                <i class="fas fa-file-pdf me-2"></i>Export PDF
+            </button>
+            <button class="btn btn-outline-success" onclick="exportReport('excel')">
+                <i class="fas fa-file-excel me-2"></i>Export Excel
+            </button>
+        </div>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-coins text-success fs-2"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total Contributions</h6>
+                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_contributions) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-hand-holding-usd text-warning fs-2"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total Loans</h6>
+                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_loans) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-gavel text-danger fs-2"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total Penalties</h6>
+                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_penalties) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-chart-line text-info fs-2"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Net Savings</h6>
+                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_contributions - total_loans) }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Monthly Contributions Trend</h5>
+                    <canvas id="contributionsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Chama Distribution</h5>
+                    <canvas id="chamaChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detailed Reports -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Chama Performance</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Chama Name</th>
+                                    <th>Total Saved</th>
+                                    <th>Members</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chama in user_chamas %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" class="text-decoration-none">
+                                            {{ chama.name }}
+                                        </a>
+                                    </td>
+                                    <td>KES {{ "{:,.2f}".format(chama.total_balance) }}</td>
+                                    <td>{{ chama.members|length }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ (chama.total_balance / chama.target_amount * 100) if chama.target_amount else 0 }}%">
+                                                {{ "%.1f"|format((chama.total_balance / chama.target_amount * 100) if chama.target_amount else 0) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Recent Transactions</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ now().strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge bg-success">Contribution</span>
+                                    </td>
+                                    <td>KES 2,000</td>
+                                    <td>
+                                        <span class="badge bg-success">Completed</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ (now() - timedelta(days=7)).strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge bg-warning">Loan</span>
+                                    </td>
+                                    <td>KES 5,000</td>
+                                    <td>
+                                        <span class="badge bg-warning">Pending</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{ (now() - timedelta(days=14)).strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge bg-danger">Penalty</span>
+                                    </td>
+                                    <td>KES 200</td>
+                                    <td>
+                                        <span class="badge bg-success">Paid</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Monthly Breakdown -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <h5 class="mb-4">Monthly Financial Breakdown</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Contributions</th>
+                            <th>Loans Issued</th>
+                            <th>Penalties</th>
+                            <th>Net Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in range(6) %}
+                        <tr>
+                            <td>{{ (now() - timedelta(days=30*i)).strftime('%B %Y') }}</td>
+                            <td class="text-success">KES {{ "{:,.2f}".format(2000 + (i * 100)) }}</td>
+                            <td class="text-warning">KES {{ "{:,.2f}".format(1000 + (i * 50)) }}</td>
+                            <td class="text-danger">KES {{ "{:,.2f}".format(200 + (i * 20)) }}</td>
+                            <td class="text-primary">KES {{ "{:,.2f}".format(800 + (i * 30)) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js for visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Monthly Contributions Chart
+const contributionsCtx = document.getElementById('contributionsChart').getContext('2d');
+const contributionsChart = new Chart(contributionsCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Monthly Contributions',
+            data: [2000, 2100, 2200, 2050, 2300, 2400],
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'KES ' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Chama Distribution Chart
+const chamaCtx = document.getElementById('chamaChart').getContext('2d');
+const chamaChart = new Chart(chamaCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Family Chama', 'Friends Chama', 'Office Chama'],
+        datasets: [{
+            data: [15000, 12000, 8000],
+            backgroundColor: [
+                '#667eea',
+                '#28a745',
+                '#ffc107'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Export functionality
+function exportReport(format) {
+    // This would typically make an API call to generate the report
+    alert(`Exporting report in ${format.toUpperCase()} format...`);
+    // You would implement actual export logic here
+}
+</script>
+{% endblock %}

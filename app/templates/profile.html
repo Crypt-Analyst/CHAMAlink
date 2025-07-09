@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Profile Info -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 text-center">
+                    <div class="user-avatar-large mb-3">
+                        {{ current_user.username[0].upper() }}
+                    </div>
+                    <h4 class="mb-1">{{ current_user.full_name }}</h4>
+                    <p class="text-muted mb-3">@{{ current_user.username }}</p>
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h5 class="mb-0">{{ current_user.chamas|length }}</h5>
+                            <small class="text-muted">Chamas</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="mb-0">{{ current_user.get_total_contributions(0) }}</h5>
+                            <small class="text-muted">Total Saved</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="mb-0">{{ current_user.created_at.strftime('%Y') }}</h5>
+                            <small class="text-muted">Member Since</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('settings.account_settings') }}" class="btn btn-primary">
+                            <i class="fas fa-cog me-2"></i>Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Status -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Account Status</h5>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Email Verified</span>
+                        {% if current_user.is_email_verified %}
+                        <span class="badge bg-success">Verified</span>
+                        {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Documents Verified</span>
+                        {% if current_user.is_documents_verified %}
+                        <span class="badge bg-success">Verified</span>
+                        {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Subscription</span>
+                        {% if current_user.current_subscription %}
+                        <span class="badge bg-primary">{{ current_user.current_subscription.plan.name.title() }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">None</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Account Type</span>
+                        {% if current_user.is_minor %}
+                        <span class="badge bg-info">Minor</span>
+                        {% else %}
+                        <span class="badge bg-success">Adult</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Personal Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Personal Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Full Name</label>
+                            <p class="mb-0">{{ current_user.full_name or 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Email</label>
+                            <p class="mb-0">{{ current_user.email }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Phone Number</label>
+                            <p class="mb-0">{{ current_user.phone_number or 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Date of Birth</label>
+                            <p class="mb-0">{{ current_user.date_of_birth.strftime('%B %d, %Y') if current_user.date_of_birth else 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">National ID</label>
+                            <p class="mb-0">{{ current_user.national_id or 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Member Since</label>
+                            <p class="mb-0">{{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chama Memberships -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Chama Memberships</h5>
+                    {% if current_user.chamas %}
+                    <div class="row">
+                        {% for chama in current_user.chamas %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body p-3">
+                                    <h6 class="mb-2">{{ chama.name }}</h6>
+                                    <p class="text-muted small mb-2">{{ chama.description or 'No description' }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">{{ current_user.get_chama_role(chama.id).title() }}</span>
+                                        <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users text-muted" style="font-size: 48px;"></i>
+                        <h6 class="mt-3 text-muted">No Chama Memberships</h6>
+                        <p class="text-muted">You haven't joined any chamas yet.</p>
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Join a Chama
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">Recent Activity</h5>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6>Account Created</h6>
+                                <p class="text-muted small">{{ current_user.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if current_user.last_login %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>Last Login</h6>
+                                <p class="text-muted small">{{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if current_user.current_subscription %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-warning"></div>
+                            <div class="timeline-content">
+                                <h6>Subscription Active</h6>
+                                <p class="text-muted small">{{ current_user.current_subscription.plan.name.title() }} plan</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.user-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 2rem;
+    color: white;
+    font-weight: bold;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: -30px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+</style>
+{% endblock %}

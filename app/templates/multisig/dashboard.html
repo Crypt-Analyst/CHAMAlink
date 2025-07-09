@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Multi-Signature Transactions - {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-signature text-primary me-2"></i>Multi-Signature Transactions</h2>
+                    <p class="text-muted">{{ chama.name }} - Secure transaction approvals</p>
+                </div>
+                <a href="{{ url_for('multisig.create_expense_transaction', chama_id=chama.id) }}" 
+                   class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Request Expense Approval
+                </a>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock fa-2x mb-2"></i>
+                            <h4>{{ pending_transactions|length }}</h4>
+                            <p class="mb-0">Pending</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-signature fa-2x mb-2"></i>
+                            <h4>{{ partially_signed|length }}</h4>
+                            <p class="mb-0">Partially Signed</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-check-double fa-2x mb-2"></i>
+                            <h4>{{ completed_transactions|selectattr('status', 'equalto', 'approved')|list|length }}</h4>
+                            <p class="mb-0">Approved</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-secondary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                            <h4>{{ completed_transactions|length }}</h4>
+                            <p class="mb-0">Total Processed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Transactions -->
+            {% if pending_transactions %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Transactions Requiring First Signature</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Requested By</th>
+                                    <th>Date</th>
+                                    <th>Expires</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in pending_transactions %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ transaction.transaction_type.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.description|truncate(50) }}</td>
+                                    <td><strong>KES {{ "{:,.2f}".format(transaction.amount) }}</strong></td>
+                                    <td>{{ transaction.requested_by.first_name }} {{ transaction.requested_by.last_name }}</td>
+                                    <td>{{ transaction.created_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+                                    <td>
+                                        {% if transaction.is_expired %}
+                                            <span class="badge bg-danger">Expired</span>
+                                        {% else %}
+                                            <span class="text-muted">{{ transaction.expires_at.strftime('%b %d, %Y') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('multisig.transaction_detail', chama_id=chama.id, transaction_id=transaction.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Partially Signed Transactions -->
+            {% if partially_signed %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-signature me-2"></i>Transactions Requiring Second Signature</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>First Signatory</th>
+                                    <th>Signed At</th>
+                                    <th>Expires</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in partially_signed %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            {{ transaction.transaction_type.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.description|truncate(50) }}</td>
+                                    <td><strong>KES {{ "{:,.2f}".format(transaction.amount) }}</strong></td>
+                                    <td>{{ transaction.first_signatory.first_name }} {{ transaction.first_signatory.last_name }}</td>
+                                    <td>{{ transaction.first_signature_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+                                    <td>
+                                        {% if transaction.is_expired %}
+                                            <span class="badge bg-danger">Expired</span>
+                                        {% else %}
+                                            <span class="text-muted">{{ transaction.expires_at.strftime('%b %d, %Y') }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('multisig.transaction_detail', chama_id=chama.id, transaction_id=transaction.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Completed Transactions -->
+            {% if completed_transactions %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Completed Transactions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Completed</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in completed_transactions %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            {{ transaction.transaction_type.replace('_', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.description|truncate(50) }}</td>
+                                    <td>KES {{ "{:,.2f}".format(transaction.amount) }}</td>
+                                    <td>
+                                        {% if transaction.status == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif transaction.status == 'executed' %}
+                                            <span class="badge bg-info">Executed</span>
+                                        {% elif transaction.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ transaction.updated_at.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('multisig.transaction_detail', chama_id=chama.id, transaction_id=transaction.id) }}" 
+                                           class="btn btn-sm btn-outline-info">View</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Empty State -->
+            {% if not pending_transactions and not partially_signed and not completed_transactions %}
+            <div class="text-center py-5">
+                <i class="fas fa-signature fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No Multi-Signature Transactions</h4>
+                <p class="text-muted">Multi-signature transactions help secure large expenses and loan disbursements.</p>
+                <a href="{{ url_for('multisig.create_expense_transaction', chama_id=chama.id) }}" 
+                   class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create First Transaction
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    border: 1px solid rgba(0,0,0,0.125);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.025);
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.fa-2x {
+    opacity: 0.8;
+}
+</style>
+{% endblock %}

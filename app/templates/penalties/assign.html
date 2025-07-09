@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Assign Penalty - {{ chama.name }} - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-gavel me-2"></i>Assign Penalty - {{ chama.name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Penalties should be assigned fairly and only after proper committee discussion. 
+                        The member will be notified immediately and can pay through M-Pesa.
+                    </div>
+
+                    <form id="assignPenaltyForm">
+                        <input type="hidden" id="chamaId" value="{{ chama.id }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="penaltyMember" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Select Member
+                                    </label>
+                                    <select class="form-select" id="penaltyMember" required>
+                                        <option value="">Choose member...</option>
+                                        {% for member, role in members %}
+                                        <option value="{{ member.id }}">{{ member.username }} ({{ role.title() }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="penaltyType" class="form-label">
+                                        <i class="fas fa-tags me-2"></i>Penalty Type
+                                    </label>
+                                    <select class="form-select" id="penaltyType" required>
+                                        <option value="">Select type...</option>
+                                        <option value="late_payment">Late Payment</option>
+                                        <option value="missed_meeting">Missed Meeting</option>
+                                        <option value="misconduct">Misconduct</option>
+                                        <option value="breach_of_rules">Breach of Rules</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="penaltyAmount" class="form-label">
+                                <i class="fas fa-money-bill-wave me-2"></i>Penalty Amount
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">KES</span>
+                                <input type="number" class="form-control" id="penaltyAmount" 
+                                       placeholder="500" required min="100">
+                            </div>
+                            <small class="text-muted">Suggested amounts: Late Payment (KES 500), Missed Meeting (KES 200)</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="penaltyDescription" class="form-label">
+                                <i class="fas fa-comment me-2"></i>Description/Reason
+                            </label>
+                            <textarea class="form-control" id="penaltyDescription" rows="3" 
+                                      placeholder="Provide details about the penalty reason..." required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="confirmPenalty" required>
+                                <label class="form-check-label" for="confirmPenalty">
+                                    I confirm that this penalty has been discussed and approved by the committee, 
+                                    and I have the authority to assign it.
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="submitPenaltyAssignment()">
+                                <i class="fas fa-gavel me-2"></i>Assign Penalty
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function submitPenaltyAssignment() {
+    const chamaId = document.getElementById('chamaId').value;
+    const userId = document.getElementById('penaltyMember').value;
+    const type = document.getElementById('penaltyType').value;
+    const amount = document.getElementById('penaltyAmount').value;
+    const description = document.getElementById('penaltyDescription').value;
+    const confirmed = document.getElementById('confirmPenalty').checked;
+    
+    // Validation
+    if (!userId || !type || !amount || !description || !confirmed) {
+        alert('Please fill in all required fields and confirm the penalty assignment');
+        return;
+    }
+    
+    if (parseFloat(amount) < 100) {
+        alert('Minimum penalty amount is KES 100');
+        return;
+    }
+    
+    if (description.length < 20) {
+        alert('Please provide a more detailed description (minimum 20 characters)');
+        return;
+    }
+    
+    // Confirm assignment
+    if (!confirm('Are you sure you want to assign this penalty? The member will be notified immediately.')) {
+        return;
+    }
+    
+    // Disable submit button
+    const submitBtn = document.querySelector('[onclick="submitPenaltyAssignment()"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Assigning...';
+    
+    fetch('/penalties/create_penalty', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            chama_id: parseInt(chamaId),
+            user_id: parseInt(userId),
+            type: type,
+            amount: parseFloat(amount),
+            description: description.trim()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Penalty assigned successfully!');
+            window.location.href = '/penalties/';
+        } else {
+            alert('Error: ' + data.message);
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-gavel me-2"></i>Assign Penalty';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-gavel me-2"></i>Assign Penalty';
+    });
+}
+</script>
+{% endblock %}

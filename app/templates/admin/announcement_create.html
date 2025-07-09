@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+
+{% block title %}Create Announcement - {{ chama.name }}{% endblock %}
+
+{% block page_header %}
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">Create Group Announcement</h1>
+                    <p class="text-green-100 mt-1">{{ chama.name }}</p>
+                </div>
+                <a href="{{ url_for('admin.announcements', chama_id=chama.id) }}" 
+                   class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition">
+                    ← Back to Announcements
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <form method="POST" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Main Content -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Announcement Details</h2>
+                        
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                                Announcement Title *
+                            </label>
+                            <input type="text" 
+                                   id="title" 
+                                   name="title" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                   placeholder="Enter a clear, descriptive title..."
+                                   required>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="mb-4">
+                            <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
+                                Announcement Content *
+                            </label>
+                            <textarea id="content" 
+                                      name="content" 
+                                      rows="8"
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                      placeholder="Write your announcement here..."
+                                      required></textarea>
+                            <p class="text-sm text-gray-500 mt-1">Use clear, concise language. You can include important details, dates, and instructions.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Settings Sidebar -->
+                <div class="space-y-6">
+                    <!-- Type & Priority -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Settings</h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Type -->
+                            <div>
+                                <label for="announcement_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Type
+                                </label>
+                                <select id="announcement_type" 
+                                        name="announcement_type" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                    <option value="general">📢 General</option>
+                                    <option value="meeting">📅 Meeting</option>
+                                    <option value="financial">💰 Financial</option>
+                                    <option value="social">🎉 Social Event</option>
+                                    <option value="urgent">🚨 Urgent</option>
+                                    <option value="reminder">⏰ Reminder</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Priority -->
+                            <div>
+                                <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Priority
+                                </label>
+                                <select id="priority" 
+                                        name="priority" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Expiry Date -->
+                            <div>
+                                <label for="expires_at" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Expiry Date (Optional)
+                                </label>
+                                <input type="date" 
+                                       id="expires_at" 
+                                       name="expires_at" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <p class="text-xs text-gray-500 mt-1">Announcement will be hidden after this date</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Target Members -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Target Audience</h3>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="radio" 
+                                           name="target_type" 
+                                           value="all" 
+                                           class="text-green-600 focus:ring-green-500 border-gray-300"
+                                           checked>
+                                    <span class="ml-2 text-sm text-gray-700">📢 All members</span>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="radio" 
+                                           name="target_type" 
+                                           value="specific" 
+                                           class="text-green-600 focus:ring-green-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">🎯 Specific members</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Member Selection -->
+                        <div id="member-selection" class="mt-4 hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Select Members
+                            </label>
+                            <div class="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2">
+                                {% for member in members %}
+                                    <label class="flex items-center">
+                                        <input type="checkbox" 
+                                               name="target_members" 
+                                               value="{{ member.id }}" 
+                                               class="text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                        <span class="ml-2 text-sm text-gray-700">
+                                            {{ member.first_name }} {{ member.last_name }}
+                                            {% if member.id == chama.creator_id %}
+                                                <span class="text-xs text-blue-600">(Creator)</span>
+                                            {% endif %}
+                                        </span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notification Options -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Delivery Options</h3>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="checkbox" 
+                                           name="send_notifications" 
+                                           class="text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                           checked>
+                                    <span class="ml-2 text-sm text-gray-700">📱 In-app notifications</span>
+                                </label>
+                                <p class="text-xs text-gray-500 ml-6">Send push notifications to mobile app users</p>
+                            </div>
+                            <div>
+                                <label class="flex items-center">
+                                    <input type="checkbox" 
+                                           name="send_emails" 
+                                           class="text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                           checked>
+                                    <span class="ml-2 text-sm text-gray-700">📧 Email notifications</span>
+                                </label>
+                                <p class="text-xs text-gray-500 ml-6">Send email alerts to all targeted members</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="space-y-3">
+                            <button type="submit" 
+                                    class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition font-medium">
+                                📢 Send Announcement
+                            </button>
+                            <button type="button" 
+                                    onclick="saveDraft()"
+                                    class="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition">
+                                💾 Save as Draft
+                            </button>
+                            <a href="{{ url_for('admin.announcements', chama_id=chama.id) }}" 
+                               class="block w-full bg-gray-100 text-gray-600 py-2 px-4 rounded-lg hover:bg-gray-200 transition text-center">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        
+        <!-- Preview Section -->
+        <div class="mt-8 bg-gray-50 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Preview</h3>
+            <div id="preview" class="bg-white rounded-lg shadow-sm border p-6">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                        <span class="text-white text-sm font-bold">{{ chama.name[0] }}</span>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">{{ chama.name }}</p>
+                        <p class="text-sm text-gray-500">Group Announcement</p>
+                    </div>
+                </div>
+                <h4 id="preview-title" class="text-lg font-semibold text-gray-900 mb-2">
+                    Your announcement title will appear here...
+                </h4>
+                <div id="preview-content" class="text-gray-700">
+                    Your announcement content will appear here...
+                </div>
+                <div class="mt-4 flex items-center space-x-4 text-sm text-gray-500">
+                    <span>📅 Just now</span>
+                    <span id="preview-type">📢 General</span>
+                    <span id="preview-priority">Normal Priority</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle member selection based on target type
+document.querySelectorAll('input[name="target_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const memberSelection = document.getElementById('member-selection');
+        if (this.value === 'specific') {
+            memberSelection.classList.remove('hidden');
+        } else {
+            memberSelection.classList.add('hidden');
+        }
+    });
+});
+
+// Live preview
+function updatePreview() {
+    const title = document.getElementById('title').value || 'Your announcement title will appear here...';
+    const content = document.getElementById('content').value || 'Your announcement content will appear here...';
+    const type = document.getElementById('announcement_type');
+    const priority = document.getElementById('priority').value;
+    
+    document.getElementById('preview-title').textContent = title;
+    document.getElementById('preview-content').textContent = content;
+    document.getElementById('preview-type').textContent = type.selectedOptions[0].textContent;
+    
+    const priorityText = priority === 'urgent' ? '🚨 Urgent' : 
+                        priority === 'high' ? '🔴 High Priority' : 'Normal Priority';
+    document.getElementById('preview-priority').textContent = priorityText;
+}
+
+document.getElementById('title').addEventListener('input', updatePreview);
+document.getElementById('content').addEventListener('input', updatePreview);
+document.getElementById('announcement_type').addEventListener('change', updatePreview);
+document.getElementById('priority').addEventListener('change', updatePreview);
+
+// Set minimum date to today for expiry
+document.getElementById('expires_at').min = new Date().toISOString().split('T')[0];
+
+// Save draft functionality
+function saveDraft() {
+    alert('Draft functionality coming soon!');
+}
+
+// Character counter for content
+const contentTextarea = document.getElementById('content');
+const counter = document.createElement('p');
+counter.className = 'text-xs text-gray-500 mt-1 text-right';
+contentTextarea.parentNode.appendChild(counter);
+
+contentTextarea.addEventListener('input', function() {
+    const length = this.value.length;
+    counter.textContent = `${length} characters`;
+    
+    if (length > 500) {
+        counter.className = 'text-xs text-orange-600 mt-1 text-right';
+    } else if (length > 300) {
+        counter.className = 'text-xs text-yellow-600 mt-1 text-right';
+    } else {
+        counter.className = 'text-xs text-gray-500 mt-1 text-right';
+    }
+});
+</script>
+{% endblock %}

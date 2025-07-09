@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Payment Confirmation - ChamaLink</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #28a745; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f8f9fa; }
+        .footer { padding: 20px; text-align: center; color: #666; }
+        .btn { display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; }
+        .receipt { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745; }
+        .amount { font-size: 24px; font-weight: bold; color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Payment Confirmed!</h1>
+            <p>Your ChamaLink subscription has been renewed</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hello {{ user.first_name or user.username }}!</h2>
+            
+            <p>Thank you for your payment! Your {{ plan.name.title() }} subscription has been successfully renewed.</p>
+            
+            <div class="receipt">
+                <h3>Payment Details</h3>
+                <p><strong>Amount:</strong> <span class="amount">KES {{ payment.amount|int }}</span></p>
+                <p><strong>Plan:</strong> {{ plan.name.title() }}</p>
+                <p><strong>Payment Date:</strong> {{ payment.payment_date.strftime('%B %d, %Y at %I:%M %p') if payment.payment_date else 'N/A' }}</p>
+                <p><strong>Receipt Number:</strong> {{ payment.mpesa_receipt_number or 'N/A' }}</p>
+                <p><strong>Valid Until:</strong> {{ end_date.strftime('%B %d, %Y') if end_date else 'N/A' }}</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{ url_for('main.dashboard', _external=True) }}" class="btn">Access Your Account</a>
+            </div>
+            
+            <p>Your subscription is now active and you can continue enjoying all the features of ChamaLink.</p>
+            
+            <p>Best regards,<br>The ChamaLink Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2024 ChamaLink. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

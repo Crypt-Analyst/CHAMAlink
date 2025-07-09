@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chama.name }} - Recurring Payments{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>{{ chama.name }} - Recurring Payments</h2>
+                <div>
+                    <a href="{{ url_for('recurring.create_recurring_payment', chama_id=chama.id) }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Recurring Payment
+                    </a>
+                    <a href="{{ url_for('chama.detail', chama_id=chama.id) }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Chama
+                    </a>
+                </div>
+            </div>
+            
+            {% if recurring_payments %}
+            <div class="row">
+                {% for payment in recurring_payments %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <span class="badge badge-info">{{ payment.payment_type.title() }}</span>
+                                KES {{ "{:,.2f}".format(payment.amount) }}
+                            </h5>
+                            <div>
+                                {% if payment.is_active %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            {% if member.role in ['admin', 'treasurer'] %}
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-user"></i> {{ payment.user.full_name }}
+                            </p>
+                            {% endif %}
+                            
+                            <p class="mb-2">
+                                <i class="fas fa-calendar"></i> 
+                                <strong>Frequency:</strong> {{ payment.frequency.title() }}
+                            </p>
+                            
+                            <p class="mb-2">
+                                <i class="fas fa-calendar-alt"></i> 
+                                <strong>Next Payment:</strong> 
+                                {% if payment.next_payment_date <= today %}
+                                    <span class="text-danger">{{ payment.next_payment_date.strftime('%Y-%m-%d') }} (Due)</span>
+                                {% else %}
+                                    {{ payment.next_payment_date.strftime('%Y-%m-%d') }}
+                                {% endif %}
+                            </p>
+                            
+                            <p class="mb-2">
+                                <i class="fas fa-play-circle"></i> 
+                                <strong>Started:</strong> {{ payment.start_date.strftime('%Y-%m-%d') }}
+                            </p>
+                            
+                            {% if payment.end_date %}
+                            <p class="mb-2">
+                                <i class="fas fa-stop-circle"></i> 
+                                <strong>Ends:</strong> {{ payment.end_date.strftime('%Y-%m-%d') }}
+                            </p>
+                            {% endif %}
+                            
+                            {% if payment.description %}
+                            <p class="mb-2">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Description:</strong> {{ payment.description }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                {% if payment.is_active and payment.next_payment_date <= today %}
+                                <button class="btn btn-success btn-sm execute-payment-btn" 
+                                        data-payment-id="{{ payment.id }}">
+                                    <i class="fas fa-play"></i> Execute
+                                </button>
+                                {% endif %}
+                                
+                                {% if payment.user_id == current_user.id or member.role in ['admin', 'treasurer'] %}
+                                <button class="btn btn-{% if payment.is_active %}warning{% else %}success{% endif %} btn-sm toggle-payment-btn" 
+                                        data-payment-id="{{ payment.id }}">
+                                    <i class="fas fa-{% if payment.is_active %}pause{% else %}play{% endif %}"></i>
+                                    {% if payment.is_active %}Pause{% else %}Activate{% endif %}
+                                </button>
+                                
+                                <button class="btn btn-danger btn-sm delete-payment-btn" 
+                                        data-payment-id="{{ payment.id }}">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-sync-alt fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No recurring payments set up</h4>
+                    <p class="text-muted">Create recurring payments to automate your contributions.</p>
+                    <a href="{{ url_for('recurring.create_recurring_payment', chama_id=chama.id) }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create First Recurring Payment
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle payment execution
+    document.querySelectorAll('.execute-payment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const paymentId = this.dataset.paymentId;
+            
+            if (confirm('Are you sure you want to execute this recurring payment?')) {
+                executePayment(paymentId, this);
+            }
+        });
+    });
+    
+    // Handle payment toggle
+    document.querySelectorAll('.toggle-payment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const paymentId = this.dataset.paymentId;
+            togglePayment(paymentId, this);
+        });
+    });
+    
+    // Handle payment deletion
+    document.querySelectorAll('.delete-payment-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const paymentId = this.dataset.paymentId;
+            
+            if (confirm('Are you sure you want to delete this recurring payment? This action cannot be undone.')) {
+                deletePayment(paymentId);
+            }
+        });
+    });
+});
+
+function executePayment(paymentId, button) {
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    button.disabled = true;
+    
+    fetch(`/recurring-payment/${paymentId}/execute`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error executing payment: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error executing payment. Please try again.');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function togglePayment(paymentId, button) {
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    button.disabled = true;
+    
+    fetch(`/recurring-payment/${paymentId}/toggle`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error toggling payment: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error toggling payment. Please try again.');
+    })
+    .finally(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function deletePayment(paymentId) {
+    fetch(`/recurring-payment/${paymentId}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert('Error deleting payment. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error deleting payment. Please try again.');
+    });
+}
+</script>
+{% endblock %}

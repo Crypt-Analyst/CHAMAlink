@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}Penalties Dashboard - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-gavel text-warning me-2"></i>
+                    Penalties Dashboard
+                </h1>
+                <div class="d-flex gap-2">
+                    {% for chama in current_user.chamas %}
+                        {% set user_role = chama.members|selectattr('id', 'equalto', current_user.id)|first %}
+                        {% if user_role %}
+                        <div class="dropdown">
+                            <button class="btn btn-outline-warning dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-plus me-2"></i>Assign Penalty
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('penalties.assign_penalty', chama_id=chama.id) }}">
+                                        <i class="fas fa-users me-2"></i>{{ chama.name }}
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    <button class="btn btn-outline-secondary" onclick="window.location.reload()">
+                        <i class="fas fa-sync me-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- My Penalties -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>My Penalties
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user_penalties %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Chama</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for penalty in user_penalties %}
+                                <tr>
+                                    <td>{{ penalty.chama.name }}</td>
+                                    <td>{{ penalty.type.replace('_', ' ').title() }}</td>
+                                    <td>{{ penalty.formatted_amount }}</td>
+                                    <td>
+                                        {% if penalty.status == 'pending' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Pending
+                                        </span>
+                                        {% elif penalty.status == 'paid' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Paid
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ penalty.created_date.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        {% if penalty.status == 'pending' %}
+                                        <button class="btn btn-sm btn-outline-success" onclick="payPenalty({{ penalty.id }})">
+                                            <i class="fas fa-money-bill-wave me-1"></i>Pay
+                                        </button>
+                                        {% else %}
+                                        <small class="text-muted">
+                                            Paid: {{ penalty.paid_date.strftime('%b %d, %Y') }}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="text-muted">No penalties assigned</h5>
+                        <p class="text-muted">Keep up the good work!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>Admin Panel
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_assignments %}
+                    <h6 class="text-muted mb-3">Recent Penalties (All Chamas)</h6>
+                    {% for penalty in pending_assignments[:10] %}
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1">{{ penalty.user.username }}</h6>
+                                <small class="text-muted">{{ penalty.chama.name }}</small>
+                            </div>
+                            <span class="badge {% if penalty.status == 'pending' %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ penalty.status.title() }}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <strong>{{ penalty.formatted_amount }}</strong>
+                            <div class="small text-muted">{{ penalty.type.replace('_', ' ').title() }}</div>
+                            {% if penalty.description %}
+                            <div class="small text-muted">{{ penalty.description[:50] }}{% if penalty.description|length > 50 %}...{% endif %}</div>
+                            {% endif %}
+                        </div>
+                        <div class="small text-muted">
+                            {{ penalty.created_date.strftime('%b %d, %Y') }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-shield-check fa-2x text-success mb-2"></i>
+                        <p class="text-muted mb-0">No recent penalties</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Penalty Payment Modal -->
+<div class="modal fade" id="payPenaltyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-money-bill-wave me-2"></i>Pay Penalty
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="payPenaltyForm">
+                    <input type="hidden" id="penaltyId">
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">KES</span>
+                            <input type="text" class="form-control" id="penaltyAmount" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="penaltyPhone" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" class="form-control" id="penaltyPhone" 
+                                   value="{{ current_user.phone_number or '' }}" 
+                                   placeholder="+254712345678" required>
+                        </div>
+                        <small class="text-muted">M-Pesa prompt will be sent to this number</small>
+                    </div>
+                    
+                    <!-- Payment Status -->
+                    <div id="penaltyPaymentStatus" class="d-none">
+                        <div class="alert alert-info">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            <span id="penaltyPaymentStatusText">Initiating payment...</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitPenaltyPaymentBtn" onclick="submitPenaltyPayment()">
+                    <i class="fas fa-mobile-alt me-2"></i>Pay with M-Pesa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function payPenalty(penaltyId) {
+    // Find penalty details from table
+    const row = document.querySelector(`tr:has(button[onclick="payPenalty(${penaltyId})"])`);
+    const amount = row.cells[2].textContent.replace('KES ', '').replace(',', '');
+    
+    document.getElementById('penaltyId').value = penaltyId;
+    document.getElementById('penaltyAmount').value = amount;
+    document.getElementById('penaltyPaymentStatus').classList.add('d-none');
+    document.getElementById('submitPenaltyPaymentBtn').disabled = false;
+    
+    new bootstrap.Modal(document.getElementById('payPenaltyModal')).show();
+}
+
+function submitPenaltyPayment() {
+    const penaltyId = document.getElementById('penaltyId').value;
+    const phone = document.getElementById('penaltyPhone').value;
+    
+    if (!phone) {
+        alert('Please enter your phone number');
+        return;
+    }
+    
+    // Show loading
+    document.getElementById('penaltyPaymentStatus').classList.remove('d-none');
+    document.getElementById('penaltyPaymentStatusText').textContent = 'Initiating payment...';
+    document.getElementById('submitPenaltyPaymentBtn').disabled = true;
+    
+    fetch(`/penalties/pay/${penaltyId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            phone_number: phone
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('penaltyPaymentStatusText').textContent = 'Payment initiated successfully!';
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            alert('Error: ' + data.message);
+            document.getElementById('penaltyPaymentStatus').classList.add('d-none');
+            document.getElementById('submitPenaltyPaymentBtn').disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        document.getElementById('penaltyPaymentStatus').classList.add('d-none');
+        document.getElementById('submitPenaltyPaymentBtn').disabled = false;
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary mb-4">Privacy Policy</h1>
+                <p class="text-muted">Last updated: {{ now().strftime('%B %d, %Y') }}</p>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <h2 class="h4 text-primary mb-4">1. Introduction</h2>
+                    <p class="mb-4">
+                        ChamaLink ("we," "our," or "us") is committed to protecting your privacy. 
+                        This Privacy Policy explains how we collect, use, disclose, and safeguard your information 
+                        when you use our digital chama management platform.
+                    </p>
+                    
+                    <h2 class="h4 text-primary mb-4">2. Information We Collect</h2>
+                    <h5 class="mb-3">Personal Information</h5>
+                    <ul class="mb-4">
+                        <li>Full name and username</li>
+                        <li>Email address and phone number</li>
+                        <li>Date of birth and age verification</li>
+                        <li>National ID or passport number</li>
+                        <li>Guardian information (for minors)</li>
+                        <li>Profile photographs</li>
+                    </ul>
+                    
+                    <h5 class="mb-3">Financial Information</h5>
+                    <ul class="mb-4">
+                        <li>Chama membership details</li>
+                        <li>Contribution and payment history</li>
+                        <li>Loan applications and approvals</li>
+                        <li>M-Pesa transaction details</li>
+                        <li>Banking and payment information</li>
+                    </ul>
+                    
+                    <h5 class="mb-3">Technical Information</h5>
+                    <ul class="mb-4">
+                        <li>IP address and device information</li>
+                        <li>Browser type and version</li>
+                        <li>Login attempts and timestamps</li>
+                        <li>Usage patterns and preferences</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">3. How We Use Your Information</h2>
+                    <p class="mb-4">We use your information to:</p>
+                    <ul class="mb-4">
+                        <li>Provide and maintain our chama management services</li>
+                        <li>Process payments and financial transactions</li>
+                        <li>Verify your identity and prevent fraud</li>
+                        <li>Send notifications and important updates</li>
+                        <li>Comply with legal and regulatory requirements</li>
+                        <li>Improve our services and user experience</li>
+                        <li>Provide customer support</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">4. Information Sharing and Disclosure</h2>
+                    <p class="mb-4">We may share your information with:</p>
+                    
+                    <h5 class="mb-3">Service Providers</h5>
+                    <ul class="mb-4">
+                        <li>M-Pesa and Safaricom for payment processing</li>
+                        <li>Email service providers for notifications</li>
+                        <li>Cloud storage providers for data hosting</li>
+                        <li>Identity verification services</li>
+                    </ul>
+                    
+                    <h5 class="mb-3">Legal Requirements</h5>
+                    <ul class="mb-4">
+                        <li>Government agencies when required by law</li>
+                        <li>Law enforcement for fraud investigation</li>
+                        <li>Regulatory bodies (Central Bank of Kenya, etc.)</li>
+                        <li>Tax authorities for compliance purposes</li>
+                    </ul>
+                    
+                    <h5 class="mb-3">Chama Members</h5>
+                    <ul class="mb-4">
+                        <li>Basic profile information within your chama</li>
+                        <li>Contribution and payment status</li>
+                        <li>Meeting attendance records</li>
+                        <li>Financial reports and analytics</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">5. Data Security</h2>
+                    <p class="mb-4">We implement robust security measures including:</p>
+                    <ul class="mb-4">
+                        <li>SSL encryption for all data transmission</li>
+                        <li>Strong password requirements and account lockouts</li>
+                        <li>Regular security audits and updates</li>
+                        <li>Secure cloud infrastructure</li>
+                        <li>Limited access to personal data</li>
+                        <li>Employee training on data protection</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">6. Data Retention</h2>
+                    <p class="mb-4">We retain your information:</p>
+                    <ul class="mb-4">
+                        <li>For as long as your account is active</li>
+                        <li>For 30 days after account cancellation (for reactivation)</li>
+                        <li>For 7 years for financial records (regulatory requirement)</li>
+                        <li>Indefinitely for fraud prevention and legal compliance</li>
+                        <li>Until you request deletion (where legally permissible)</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">7. Your Rights</h2>
+                    <p class="mb-4">Under Kenyan data protection law, you have the right to:</p>
+                    <ul class="mb-4">
+                        <li>Access your personal data</li>
+                        <li>Correct inaccurate information</li>
+                        <li>Request deletion of your data</li>
+                        <li>Restrict processing of your data</li>
+                        <li>Data portability</li>
+                        <li>Object to data processing</li>
+                        <li>Withdraw consent at any time</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">8. Email Communications</h2>
+                    <p class="mb-4">We send emails for:</p>
+                    <ul class="mb-4">
+                        <li>Account verification and security alerts</li>
+                        <li>Subscription and payment confirmations</li>
+                        <li>Loan approval notifications</li>
+                        <li>Meeting reminders and chama updates</li>
+                        <li>System maintenance and important updates</li>
+                    </ul>
+                    <p class="mb-4">
+                        Email notifications are sent from: <strong>flowbyte.erp25@gmail.com</strong>
+                    </p>
+                    
+                    <h2 class="h4 text-primary mb-4">9. Cookies and Tracking</h2>
+                    <p class="mb-4">We use cookies and similar technologies to:</p>
+                    <ul class="mb-4">
+                        <li>Maintain your login session</li>
+                        <li>Remember your preferences</li>
+                        <li>Analyze usage patterns</li>
+                        <li>Improve user experience</li>
+                        <li>Prevent fraud and abuse</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">10. Third-Party Services</h2>
+                    <p class="mb-4">Our platform integrates with:</p>
+                    <ul class="mb-4">
+                        <li><strong>M-Pesa:</strong> For payment processing</li>
+                        <li><strong>Safaricom:</strong> For SMS and payment services</li>
+                        <li><strong>Google Services:</strong> For email and analytics</li>
+                        <li><strong>Cloud Providers:</strong> For hosting and storage</li>
+                    </ul>
+                    <p class="mb-4">
+                        These services have their own privacy policies which govern their use of your information.
+                    </p>
+                    
+                    <h2 class="h4 text-primary mb-4">11. Minors and Guardian Consent</h2>
+                    <p class="mb-4">For users under 18:</p>
+                    <ul class="mb-4">
+                        <li>Parental or guardian consent is required</li>
+                        <li>Guardian information is collected and verified</li>
+                        <li>Enhanced privacy protections apply</li>
+                        <li>Special approval processes for financial transactions</li>
+                        <li>Guardian notification for significant activities</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">12. International Data Transfers</h2>
+                    <p class="mb-4">
+                        Your data is primarily stored in Kenya. Where international transfers are necessary 
+                        (e.g., cloud services), we ensure appropriate safeguards are in place including:
+                    </p>
+                    <ul class="mb-4">
+                        <li>Adequate data protection frameworks</li>
+                        <li>Contractual data protection clauses</li>
+                        <li>Compliance with international standards</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">13. Data Breach Response</h2>
+                    <p class="mb-4">In the event of a data breach, we will:</p>
+                    <ul class="mb-4">
+                        <li>Notify affected users within 72 hours</li>
+                        <li>Report to relevant authorities as required</li>
+                        <li>Implement immediate containment measures</li>
+                        <li>Conduct thorough investigation</li>
+                        <li>Provide support and guidance to affected users</li>
+                    </ul>
+                    
+                    <h2 class="h4 text-primary mb-4">14. Changes to Privacy Policy</h2>
+                    <p class="mb-4">
+                        We may update this Privacy Policy from time to time. We will notify you of any 
+                        material changes via email and through our platform. Your continued use of our 
+                        services after changes constitutes acceptance of the updated policy.
+                    </p>
+                    
+                    <h2 class="h4 text-primary mb-4">15. Contact Information</h2>
+                    <p class="mb-4">
+                        For privacy-related questions or to exercise your rights, contact:
+                    </p>
+                    <ul class="mb-4">
+                        <li><strong>Email:</strong> privacy@chamalink.com</li>
+                        <li><strong>Phone:</strong> +254 700 000 000</li>
+                        <li><strong>Address:</strong> Nairobi, Kenya</li>
+                        <li><strong>Data Protection Officer:</strong> dpo@chamalink.com</li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-5">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>Your Privacy Matters:</strong> We are committed to protecting your privacy 
+                        and handling your data responsibly. If you have any concerns, please don't hesitate to contact us.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

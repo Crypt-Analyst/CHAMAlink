@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}My Receipts - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>My Receipts</h2>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            
+            {% if receipts %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-receipt"></i> All My Receipts
+                        <span class="badge badge-info ml-2">{{ receipts|length }} total</span>
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Receipt #</th>
+                                    <th>Date</th>
+                                    <th>Chama</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for receipt in receipts %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ receipt.receipt_number }}</strong>
+                                    </td>
+                                    <td>{{ receipt.generated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('chama.detail', chama_id=receipt.chama_id) }}" 
+                                           class="text-decoration-none">
+                                            {{ receipt.chama.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">{{ receipt.payment_type.title() }}</span>
+                                    </td>
+                                    <td class="text-success font-weight-bold">
+                                        KES {{ "{:,.2f}".format(receipt.amount) }}
+                                    </td>
+                                    <td>
+                                        {% if receipt.status == 'confirmed' %}
+                                            <span class="badge badge-success">Confirmed</span>
+                                        {% elif receipt.status == 'pending' %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">{{ receipt.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('receipts.view_receipt', receipt_id=receipt.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="View Receipt">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('receipts.download_receipt', receipt_id=receipt.id) }}" 
+                                           class="btn btn-sm btn-outline-success" title="Download PDF">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No receipts found</h4>
+                    <p class="text-muted">Your receipts will appear here once your payments are confirmed.</p>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Go to Dashboard
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

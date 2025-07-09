@@ -1,0 +1,970 @@
+{% extends "base.html" %}
+{% block title %}ChamaLink - Modern Chama Management{% endblock %}
+
+{% block content %}
+<!-- TEST MARKER - If you see this, the template is working -->
+
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Welcome to <span class="text-warning">ChamaLink</span>
+                </h1>
+                <p class="lead mb-4">
+                    Transform your Chama with modern digital tools. Manage contributions, track investments, and grow together with transparency and efficiency.
+                </p>
+                <div class="d-flex flex-column flex-md-row gap-3 mb-4">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-warning btn-lg px-4 py-2">
+                        <i class="fas fa-rocket me-2"></i>Get Started Free
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4 py-2">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+                <div class="d-flex align-items-center text-light">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <small>Secure • Reliable • Built for East African Chamas</small>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image">
+                    <i class="fas fa-users-cog fa-10x text-warning opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Video Demo Section -->
+<section class="video-demo-section py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h2 class="display-6 fw-bold mb-4">See ChamaLink in Action</h2>
+                <p class="lead mb-4">
+                    Watch how ChamaLink transforms traditional chama management with modern digital tools. 
+                    See real features, real benefits, and real results.
+                </p>
+                <div class="video-features mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Easy contribution tracking</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Automated M-Pesa integration</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Real-time financial reporting</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Transparent member management</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-play me-2"></i>Try It Yourself
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <div class="video-container position-relative">
+                    <!-- Animated Video Placeholder -->
+                    <div class="video-placeholder bg-gradient-primary rounded-3 p-5 text-center text-white position-relative overflow-hidden">
+                        <div class="video-content">
+                            <div class="floating-elements">
+                                <div class="floating-element floating-element-1">
+                                    <i class="fas fa-mobile-alt fa-2x"></i>
+                                </div>
+                                <div class="floating-element floating-element-2">
+                                    <i class="fas fa-chart-line fa-2x"></i>
+                                </div>
+                                <div class="floating-element floating-element-3">
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                                <div class="floating-element floating-element-4">
+                                    <i class="fas fa-money-bill fa-2x"></i>
+                                </div>
+                            </div>
+                            <div class="video-center">
+                                <div class="play-button-large">
+                                    <i class="fas fa-play fa-4x"></i>
+                                </div>
+                                <h4 class="mt-4 mb-2">ChamaLink Demo</h4>
+                                <p class="mb-0">3 minutes • Full walkthrough</p>
+                            </div>
+                        </div>
+                        <div class="video-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.3); cursor: pointer;" onclick="playDemoVideo()">
+                            <div class="text-center">
+                                <div class="play-button-overlay">
+                                    <i class="fas fa-play fa-3x"></i>
+                                </div>
+                                <p class="mt-3 mb-0">Click to watch demo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold mb-3">Choose Your Experience</h2>
+                <p class="lead text-muted">Whether you're tech-savvy or prefer simplicity, we have the perfect solution for your Chama</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Basic Option -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm border-0 basic-card">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-hand-paper fa-2x"></i>
+                            </div>
+                            <h3 class="h4 fw-bold text-primary">Basic</h3>
+                            <p class="text-muted">Simple, starter approach to Chama management</p>
+                            <div class="price-badge">
+                                <span class="price">KES 200</span>
+                                <small class="text-muted d-block">per month</small>
+                            </div>
+                        </div>
+                        
+                        <div class="features-list">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Basic member registration</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Simple contribution tracking</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Basic financial reports</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Meeting minutes recording</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>SMS notifications</span>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('auth.register') }}?plan=basic" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-play me-2"></i>Start Basic
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classic Option -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm border-0 classic-card">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-star fa-2x"></i>
+                            </div>
+                            <h3 class="h4 fw-bold text-success">Classic</h3>
+                            <p class="text-muted">Traditional approach with solid features</p>
+                            <div class="price-badge">
+                                <span class="price">KES 250</span>
+                                <small class="text-muted d-block">per month</small>
+                            </div>
+                        </div>
+                        
+                        <div class="features-list">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>All Basic features</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Advanced reporting</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Email notifications</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Data export capabilities</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Basic loan tracking</span>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('auth.register') }}?plan=classic" class="btn btn-outline-success btn-lg">
+                                <i class="fas fa-star me-2"></i>Start Classic
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Advanced Option -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card h-100 shadow-sm border-0 advanced-card">
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-gem fa-2x"></i>
+                            </div>
+                            <h3 class="h4 fw-bold text-info">Advanced</h3>
+                            <p class="text-muted">Complete solution with premium features</p>
+                            <div class="price-badge">
+                                <span class="price">KES 500</span>
+                                <small class="text-muted d-block">per month</small>
+                            </div>
+                        </div>
+                        
+                        <div class="features-list">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>All Classic features</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Multiple chama management</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Priority support</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Advanced audit trails</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success me-3"></i>
+                                <span>Custom integrations</span>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('auth.register') }}?plan=advanced" class="btn btn-info btn-lg">
+                                <i class="fas fa-gem me-2"></i>Start Advanced
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enterprise Section -->
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="card h-100 shadow-lg border-0 enterprise-card position-relative">
+                    <div class="badge bg-danger text-white position-absolute top-0 start-50 translate-middle px-4 py-2">
+                        <i class="fas fa-building me-1"></i>ENTERPRISE
+                    </div>
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="feature-icon bg-danger text-white rounded-circle mx-auto mb-3" style="width: 100px; height: 100px;">
+                                <i class="fas fa-building fa-3x"></i>
+                            </div>
+                            <h2 class="fw-bold text-danger">Enterprise Solution</h2>
+                            <p class="lead text-muted">For SACCOs, NGOs, and large organizations</p>
+                            <div class="price-badge">
+                                <span class="price" style="font-size: 2.5rem;">Custom Pricing</span>
+                                <small class="text-muted d-block">Contact us for a quote</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="features-list">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                        <span>All Advanced features</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                        <span>Multi-signature approvals</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                        <span>White-label solutions</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                        <span>Dedicated account manager</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="features-list">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                        <span>API access & integrations</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                        <span>Custom reporting & analytics</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                        <span>24/7 Priority Support</span>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                        <span>Training & Onboarding</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('subscription_new.enterprise_contact') }}" class="btn btn-danger btn-lg px-5">
+                                <i class="fas fa-phone me-2"></i>Contact Sales Team
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Additional Features Section -->
+<section class="detailed-features-section py-5 bg-light" id="features">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold mb-3">Explore Our Features</h2>
+                <p class="lead text-muted">Discover how ChamaLink can transform your community's financial journey</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Member Management -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('main.features') }}#member-management" class="text-decoration-none">
+                    <div class="feature-card card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Member Management</h5>
+                            <p class="text-muted mb-0">Manage memberships, roles, and permissions with ease</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Financial Tracking -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('main.features') }}#financial-management" class="text-decoration-none">
+                    <div class="feature-card card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Financial Tracking</h5>
+                            <p class="text-muted mb-0">Track contributions, loans, and investments transparently</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- M-Pesa Integration -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('main.features') }}#mobile-payments" class="text-decoration-none">
+                    <div class="feature-card card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-mobile-alt fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">M-Pesa Integration</h5>
+                            <p class="text-muted mb-0">Seamless mobile money payments and reconciliation</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Loan Management -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('main.features') }}#loan-management" class="text-decoration-none">
+                    <div class="feature-card card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon bg-warning text-dark rounded-circle mx-auto mb-3">
+                                <i class="fas fa-hand-holding-usd fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Loan Management</h5>
+                            <p class="text-muted mb-0">Complete loan lifecycle with approval workflows</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Reports & Analytics -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('main.features') }}#analytics" class="text-decoration-none">
+                    <div class="feature-card card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon bg-danger text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-chart-bar fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Reports & Analytics</h5>
+                            <p class="text-muted mb-0">Comprehensive insights and financial reports</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Security & Compliance -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('main.features') }}#security" class="text-decoration-none">
+                    <div class="feature-card card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon bg-dark text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-shield-alt fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Security & Compliance</h5>
+                            <p class="text-muted mb-0">Bank-level security with audit trails</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Online Meetings -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('main.meetings') }}" class="text-decoration-none">
+                    <div class="feature-card card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-video fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Online Meetings</h5>
+                            <p class="text-muted mb-0">Virtual meetings with Google Meet integration</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Mobile App -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('main.features') }}#mobile-app" class="text-decoration-none">
+                    <div class="feature-card card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3">
+                                <i class="fas fa-mobile-alt fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">Mobile App</h5>
+                            <p class="text-muted mb-0">Access your chama on-the-go with our mobile app</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section bg-light py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-primary">1,000+</h3>
+                    <p class="text-muted">Active Chamas</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-success">KES 50M+</h3>
+                    <p class="text-muted">Managed Funds</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-warning">15,000+</h3>
+                    <p class="text-muted">Happy Members</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-item">
+                    <h3 class="display-6 fw-bold text-info">99.9%</h3>
+                    <p class="text-muted">Uptime</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Founder Section -->
+<section class="founder-section py-5 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <div class="founder-content">                        <div class="founder-avatar mb-4">
+                            <div class="avatar-circle bg-white text-primary d-flex align-items-center justify-content-center mx-auto">
+                                <!-- Try to load founder photo, fallback to icon -->
+                                <img src="{{ url_for('static', filename='images/bilford-bwire.jpg') }}" 
+                                     alt="Bilford Bwire - Founder" 
+                                     class="rounded-circle" 
+                                     style="width: 100px; height: 100px; object-fit: cover;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <i class="fas fa-user-tie fa-3x text-primary" style="display: none;"></i>
+                            </div>
+                        </div>
+                    <h3 class="h4 fw-bold mb-3 text-dark" style="text-shadow: 2px 2px 4px rgba(255,255,255,0.8);">Meet the Missionary</h3>
+                    <h2 class="display-6 fw-bold mb-3 text-dark" style="text-shadow: 2px 2px 4px rgba(255,255,255,0.8);">Bilford Bwire</h2>
+                    <p class="lead mb-4 text-dark" style="text-shadow: 1px 1px 2px rgba(255,255,255,0.8); line-height: 1.6; font-weight: 600;">
+                        "I created ChamaLink to revolutionize how African communities build wealth together. Having witnessed the incredible power of Chamas in transforming lives, I believe technology can amplify their success exponentially."
+                    </p>
+                    
+                    <!-- Vision & Mission -->
+                    <div class="row mt-5">
+                        <div class="col-md-6 mb-4">
+                            <div class="vision-card bg-white bg-opacity-90 p-4 rounded-3 h-100 shadow">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-eye fa-2x text-primary"></i>
+                                </div>
+                                <h5 class="fw-bold mb-3 text-dark">Our Vision</h5>
+                                <p class="mb-0 text-dark">
+                                    To become Africa's leading platform for community-driven financial empowerment, enabling millions to achieve their financial dreams through collaborative wealth-building.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="mission-card bg-white bg-opacity-90 p-4 rounded-3 h-100 shadow">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-bullseye fa-2x text-primary"></i>
+                                </div>
+                                <h5 class="fw-bold mb-3 text-dark">Our Mission</h5>
+                                <p class="mb-0 text-dark">
+                                    To digitize and strengthen traditional Chama systems with modern tools, making financial management transparent, efficient, and accessible to communities across East Africa and beyond.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Founder's Promise -->
+                    <div class="founder-promise mt-5">
+                        <div class="card bg-white bg-opacity-95 border-0 shadow">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3 text-primary">
+                                    <i class="fas fa-heart me-2"></i>
+                                    My Promise to You
+                                </h5>
+                                <p class="mb-3 text-dark">
+                                    "Every feature we build, every decision we make, is guided by one principle: <strong>empowering your financial success</strong>. We're not just building software; we're crafting the future of community finance."
+                                </p>
+                                <div class="text-center mt-4">
+                                    <em class="text-dark">"Together, we're not just managing money - we're building generational wealth."</em>
+                                    <br>
+                                    <small class="text-primary fw-bold">- Bilford Bwire, Founder & CEO</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact the Founder -->
+                    <div class="founder-contact mt-4">
+                        <a href="/founder-story" class="btn btn-warning btn-lg me-3">
+                            <i class="fas fa-book-open me-2"></i>Read Full Story
+                        </a>
+                        <a href="{{ url_for('main.about_founder') }}" class="btn btn-outline-light btn-lg me-3">
+                            <i class="fas fa-info-circle me-2"></i>Learn More
+                        </a>
+                        <a href="mailto:rahasoft.app@gmail.com" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-envelope me-2"></i>Connect with Me
+                        </a>
+                    </div>
+                    
+                    <!-- Additional Founder Details (Initially Hidden) -->
+                    <div id="founderDetails" class="founder-details mt-4" style="display: none;">
+                        <div class="card bg-white bg-opacity-15 border-0">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-3 text-warning">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    The ChamaLink Story
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="fw-bold text-warning">The Beginning</h6>
+                                        <p class="mb-0 small">
+                                            In 2007, when I was just 8 years old, I witnessed my grandmother Joyce Mwato transform our family's financial future through her local Chama. 
+                                            Watching her and later my mother Judith Lily walk miles for those Saturday meetings taught me the incredible power of community-driven wealth building, but also showed me how technology could make their lives easier.
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="fw-bold text-warning">The Vision</h6>
+                                        <p class="mb-0 small">
+                                            At Mount Kenya University, studying computer science, I carried this vision of making chama management easier. 
+                                            Now at 25, ChamaLink digitizes that same spirit of collaboration I witnessed as a child, bringing modern tools including online meetings to traditional practices. 
+                                            I'm making life simple for every mother out there, just like my grandmother and mother.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <strong class="text-warning">2007</strong>
+                                            <br><small>Age 8: First Chama Experience</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <strong class="text-warning">2020</strong>
+                                            <br><small>ChamaLink Founded</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <strong class="text-warning">2025</strong>
+                                            <br><small>Age 25: 1000+ Chamas Served</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-5 fw-bold mb-4">Ready to Transform Your Chama?</h2>
+                <p class="lead text-muted mb-4">Join thousands of successful Chamas using ChamaLink to manage their finances better</p>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </a>
+                <a href="#features" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-info-circle me-2"></i>Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.classic-card {
+    border-left: 4px solid #0d6efd;
+    transition: transform 0.3s ease;
+}
+
+.classic-card:hover {
+    transform: translateY(-5px);
+}
+
+.basic-card {
+    border-left: 4px solid #6f42c1;
+    transition: transform 0.3s ease;
+}
+
+.basic-card:hover {
+    transform: translateY(-5px);
+}
+
+.basic-plus-card {
+    border-left: 4px solid #ffc107;
+    transition: transform 0.3s ease;
+}
+
+.basic-plus-card:hover {
+    transform: translateY(-5px);
+}
+
+.advanced-card {
+    border-left: 4px solid #0dcaf0;
+    transition: transform 0.3s ease;
+}
+
+.advanced-card:hover {
+    transform: translateY(-5px);
+}
+
+.enterprise-card {
+    border-left: 4px solid #dc3545;
+    transition: transform 0.3s ease;
+}
+
+.enterprise-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+.feature-icon {
+    transition: transform 0.3s ease;
+}
+
+.founder-details {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.price-badge {
+    margin: 1rem 0;
+}
+
+/* Video Demo Section Styles */
+.video-demo-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.video-container {
+    height: 400px;
+}
+
+.video-placeholder {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.floating-element {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.3);
+    animation: float-around 8s infinite linear;
+}
+
+.floating-element-1 {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.floating-element-2 {
+    top: 70%;
+    right: 15%;
+    animation-delay: 2s;
+}
+
+.floating-element-3 {
+    bottom: 30%;
+    left: 20%;
+    animation-delay: 4s;
+}
+
+.floating-element-4 {
+    top: 40%;
+    right: 30%;
+    animation-delay: 6s;
+}
+
+@keyframes float-around {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
+    25% { transform: translate(20px, -20px) rotate(90deg); opacity: 0.6; }
+    50% { transform: translate(0, -40px) rotate(180deg); opacity: 0.3; }
+    75% { transform: translate(-20px, -20px) rotate(270deg); opacity: 0.6; }
+    100% { transform: translate(0, 0) rotate(360deg); opacity: 0.3; }
+}
+
+.video-center {
+    position: relative;
+    z-index: 2;
+}
+
+.play-button-large {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
+}
+
+.play-button-large:hover {
+    background: #fff;
+    transform: scale(1.1);
+}
+
+.play-button-overlay {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.video-overlay:hover .play-button-overlay {
+    background: #fff;
+    transform: scale(1.1);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+.video-features {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 1.5rem;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.fa-10x {
+    font-size: 8rem;
+}
+
+.stat-item {
+    padding: 1rem;
+}
+
+.hero-image {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.price-badge { 
+    margin: 1rem 0; 
+} 
+
+.price-badge .price { 
+    font-size: 2rem; 
+    font-weight: 700; 
+    color: #333; 
+    background: linear-gradient(135deg, #667eea, #764ba2); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+    background-clip: text; 
+}
+
+.founder-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.founder-mission .card {
+    border-radius: 15px;
+}
+
+.founder-stats .stat-item {
+    border-right: 1px solid #dee2e6;
+}
+
+.founder-stats .stat-item:last-child {
+    border-right: none;
+}
+
+@media (max-width: 768px) {
+    .founder-stats .stat-item {
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .founder-stats .stat-item:last-child {
+        border-bottom: none;
+    }
+}
+</style>
+
+<script>
+function toggleFounderDetails() {
+    const details = document.getElementById('founderDetails');
+    const icon = document.getElementById('learnMoreIcon');
+    
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        icon.className = 'fas fa-minus me-2';
+    } else {
+        details.style.display = 'none';
+        icon.className = 'fas fa-plus me-2';
+    }
+}
+
+// Demo video functionality
+function playDemoVideo() {
+    // For now, we'll show an alert with demo info
+    // In production, this would open a modal or redirect to video
+    alert('🎥 Demo Video Coming Soon!\n\nThis will showcase:\n• Easy member registration\n• Contribution tracking\n• M-Pesa integration\n• Real-time reports\n• Meeting scheduling\n\nFor now, try our live demo by registering!');
+    
+    // Optional: Redirect to registration
+    // window.location.href = "{{ url_for('auth.register') }}";
+}
+</script>
+
+{% endblock %}

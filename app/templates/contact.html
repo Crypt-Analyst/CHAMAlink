@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary mb-4">Contact Us</h1>
+        <p class="lead text-muted">Get in touch with our team - we're here to help!</p>
+    </div>
+    
+    <div class="row">
+        <!-- Contact Form -->
+        <div class="col-lg-8 mb-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <h3 class="mb-4">Send us a Message</h3>
+                    <form method="POST" action="{{ url_for('main.contact') }}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Subject *</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Choose a subject...</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="technical">Technical Support</option>
+                                <option value="billing">Billing & Subscriptions</option>
+                                <option value="feature">Feature Request</option>
+                                <option value="bug">Bug Report</option>
+                                <option value="partnership">Partnership Inquiry</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Message *</label>
+                            <textarea class="form-control" id="message" name="message" rows="6" 
+                                      placeholder="Tell us how we can help you..." required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Information -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h4 class="mb-4">Get in Touch</h4>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-envelope text-primary fs-4 me-3"></i>
+                        <div>
+                            <h6 class="mb-0">Email</h6>
+                            <p class="text-muted mb-0">support@chamalink.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-phone text-success fs-4 me-3"></i>
+                        <div>
+                            <h6 class="mb-0">Phone</h6>
+                            <p class="text-muted mb-0">+254 700 000 000</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-map-marker-alt text-danger fs-4 me-3"></i>
+                        <div>
+                            <h6 class="mb-0">Office</h6>
+                            <p class="text-muted mb-0">Nairobi, Kenya</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-clock text-warning fs-4 me-3"></i>
+                        <div>
+                            <h6 class="mb-0">Support Hours</h6>
+                            <p class="text-muted mb-0">Mon - Fri: 8AM - 6PM EAT</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="mb-4">Follow Us</h4>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="btn btn-outline-primary rounded-circle">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-info rounded-circle">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-primary rounded-circle">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-dark rounded-circle">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Before You Contact Us</h2>
+                <p class="text-muted">Check out these common questions - you might find your answer here!</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <i class="fas fa-question-circle text-primary fs-2 mb-3"></i>
+                            <h5>How do I get started?</h5>
+                            <p class="text-muted">
+                                Sign up for a free account and choose your subscription plan. 
+                                All plans include a 30-day free trial.
+                            </p>
+                            <a href="{{ url_for('main.help_support') }}" class="btn btn-outline-primary btn-sm">
+                                Learn More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <i class="fas fa-credit-card text-success fs-2 mb-3"></i>
+                            <h5>What payment methods do you accept?</h5>
+                            <p class="text-muted">
+                                We accept M-Pesa payments for all subscriptions and transactions. 
+                                More payment methods coming soon.
+                            </p>
+                            <a href="{{ url_for('main.features') }}" class="btn btn-outline-success btn-sm">
+                                View Features
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <i class="fas fa-shield-alt text-warning fs-2 mb-3"></i>
+                            <h5>Is my data secure?</h5>
+                            <p class="text-muted">
+                                Yes! We use bank-grade security, SSL encryption, and comply with 
+                                international data protection standards.
+                            </p>
+                            <a href="{{ url_for('main.privacy') }}" class="btn btn-outline-warning btn-sm">
+                                Privacy Policy
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Emergency Contact -->
+    <div class="bg-light rounded p-5 mt-5 text-center">
+        <h3 class="text-danger mb-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>Emergency Support
+        </h3>
+        <p class="text-muted mb-4">
+            For urgent technical issues affecting your chama operations, 
+            please contact our emergency support line.
+        </p>
+        <a href="tel:+254700000000" class="btn btn-danger btn-lg">
+            <i class="fas fa-phone me-2"></i>Emergency: +254 700 000 000
+        </a>
+        <p class="text-muted small mt-3">Available 24/7 for critical issues only</p>
+    </div>
+</div>
+{% endblock %}

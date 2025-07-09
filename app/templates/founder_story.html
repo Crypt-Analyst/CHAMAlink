@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% block title %}Founder's Story - Bilford Bwire | ChamaLink{% endblock %}
+
+{% block content %}
+<div class="founder-story-page">
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="founder-hero">
+                        <h1 class="display-4 fw-bold mb-4">The Journey Behind ChamaLink</h1>
+                        <p class="lead">
+                            From witnessing my grandmother's Chama transform our family's fortune during the challenging siku za Moi to building Africa's most advanced community finance platform.
+                        </p>
+                        <div class="founder-avatar-large mb-4">
+                            <div class="avatar-circle bg-white text-primary d-flex align-items-center justify-content-center">
+                                <img src="{{ url_for('static', filename='images/bilford-bwire.jpg') }}" 
+                                     alt="Bilford Bwire - Founder" 
+                                     class="rounded-circle" 
+                                     style="width: 110px; height: 110px; object-fit: cover;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <i class="fas fa-user-tie fa-4x" style="display: none;"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-warning">Bilford Bwire</h3>
+                        <p class="mb-0">Founder & CEO, ChamaLink</p>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="story-stats bg-white bg-opacity-10 p-4 rounded-3">
+                        <h4 class="mb-4 text-warning">Impact So Far</h4>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <h3 class="fw-bold">1,000+</h3>
+                                <p class="mb-0">Chamas Empowered</p>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="fw-bold">KES 50M+</h3>
+                                <p class="mb-0">Funds Managed</p>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="fw-bold">15,000+</h3>
+                                <p class="mb-0">Lives Transformed</p>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="fw-bold">5 Countries</h3>
+                                <p class="mb-0">Across East Africa</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Content -->
+    <section class="story-content py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    
+                    <!-- Chapter 1: The Beginning -->
+                    <div class="story-chapter mb-5">
+                        <div class="chapter-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mb-3">
+                            <span class="fw-bold">01</span>
+                        </div>
+                        <h2 class="h3 fw-bold mb-4">The Spark: Grandmother's Wisdom</h2>
+                        <div class="story-text">
+                            <p class="lead">
+                                It was 2007, during the challenging siku za Moi era, when I first witnessed the magic of a Chama. I was just 8 years old then. My grandmother, Joyce Mwato, a retired teacher in rural Kenya, would gather with twelve other women every Saturday morning. They called themselves "Bidii Women's Group" - Bidii meaning effort in Swahili.
+                            </p>
+                            <p>
+                                As a curious 8-year-old, I watched my grandmother walk miles to sit under a large acacia tree with other women, each carrying a small envelope. What I witnessed changed my understanding of community forever. Each woman contributed 100 Kenyan Shillings - a significant amount for rural families then, especially during those difficult economic times. That experience made me think about technology every day.
+                            </p>
+                            <p>
+                                In 2010, when I was 11, my mother Judith Lily joined my grandmother's chama. Watching both of them walk those long distances to attend meetings broke my heart. They never gave up, despite the challenges. Their dedication inspired me to dream of making life simpler for every mother out there.
+                            </p>
+                            <blockquote class="blockquote text-center my-4 p-4 bg-light rounded">
+                                <p class="mb-3">"Mwana wange, when women come together with purpose, mountains move."</p>
+                                <footer class="blockquote-footer">My grandmother, <cite title="Source Title">Joyce Mwato</cite></footer>
+                            </blockquote>
+                            <p>
+                                Within two years, I watched my grandmother transform our family's financial situation. She used her Chama payout to start a small kiosk, which eventually funded my education and changed our family's trajectory forever. Every day since then, I couldn't stop thinking about how technology could make this process easier for families like ours.
+                            </p>
+                            <p>
+                                Years later, at Mount Kenya University pursuing my computer science degree, I carried this vision with me. I really felt bad remembering my grandmother and mother walking miles just to attend meetings. I knew there had to be a better way. Now, at 25 years old, I've created this beautiful app that will help every chama across Africa.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Chapter 2: The Education -->
+                    <div class="story-chapter mb-5">
+                        <div class="chapter-number bg-success text-white rounded-circle d-flex align-items-center justify-content-center mb-3">
+                            <span class="fw-bold">02</span>
+                        </div>
+                        <h2 class="h3 fw-bold mb-4">The Education: Building the Foundation</h2>
+                        <div class="story-text">
+                            <p>
+                                Thanks to my grandmother's Chama, I was able to pursue computer science at Mount Kenya University. But even as I learned about algorithms and databases, my mind kept returning to that acacia tree and those Saturday meetings.
+                            </p>
+                            <p>
+                                During university, I started a small tech consultancy with classmates. We built websites for local businesses, but I noticed a pattern - many of our clients were asking for systems to manage group savings and loans. The demand for digitizing Chamas was real.
+                            </p>
+                            <div class="row my-4">
+                                <div class="col-md-6">
+                                    <div class="insight-card bg-primary bg-opacity-10 p-3 rounded h-100">
+                                        <h5 class="fw-bold text-primary">The Problem I Saw</h5>
+                                        <ul class="mb-0">
+                                            <li>Manual record-keeping prone to errors</li>
+                                            <li>Lack of transparency in financial dealings</li>
+                                            <li>Difficulty tracking contributions and loans</li>
+                                            <li>Limited access to financial insights</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="insight-card bg-success bg-opacity-10 p-3 rounded h-100">
+                                        <h5 class="fw-bold text-success">The Vision I Had</h5>
+                                        <ul class="mb-0">
+                                            <li>Digital-first Chama management</li>
+                                            <li>Real-time financial transparency</li>
+                                            <li>Mobile accessibility for all members</li>
+                                            <li>Data-driven decision making</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chapter 3: The Journey -->
+                    <div class="story-chapter mb-5">
+                        <div class="chapter-number bg-warning text-white rounded-circle d-flex align-items-center justify-content-center mb-3">
+                            <span class="fw-bold">03</span>
+                        </div>
+                        <h2 class="h3 fw-bold mb-4">The Journey: From Idea to Reality</h2>
+                        <div class="story-text">
+                            <p>
+                                After graduation, I spent five years working for various fintech companies across Kenya and Nigeria. I learned about mobile money, blockchain, and financial inclusion. But every project I worked on made me realize how underserved the Chama market was.
+                            </p>
+                            <p>
+                                In 2020, during the COVID-19 pandemic, I witnessed Chamas struggling to meet physically. Many disbanded because they couldn't manage their finances remotely. That's when I knew the time had come to build ChamaLink.
+                            </p>
+                            
+                            <!-- Timeline -->
+                            <div class="timeline my-5">
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-primary"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold">March 2020 - The Pivot</h6>
+                                        <p>Left my corporate job to build ChamaLink full-time</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold">August 2020 - First MVP</h6>
+                                        <p>Launched with 10 Chamas in Nairobi and Mombasa</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-warning"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold">January 2021 - Major Milestone</h6>
+                                        <p>Reached 100 Chamas and KES 10M in managed funds</p>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-info"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold">December 2023 - Going Enterprise</h6>
+                                        <p>Launched enterprise features for SACCOs and NGOs</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chapter 4: The Vision -->
+                    <div class="story-chapter mb-5">
+                        <div class="chapter-number bg-info text-white rounded-circle d-flex align-items-center justify-content-center mb-3">
+                            <span class="fw-bold">04</span>
+                        </div>
+                        <h2 class="h3 fw-bold mb-4">The Vision: Where We're Going</h2>
+                        <div class="story-text">
+                            <p>
+                                Today, ChamaLink is more than a platform - it's a movement. We're not just digitizing Chamas; we're revolutionizing how African communities build wealth together.
+                            </p>
+                            
+                            <!-- Future Goals -->
+                            <div class="future-goals my-4">
+                                <h5 class="fw-bold mb-3">Our 2030 Goals</h5>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="goal-card border rounded p-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-globe text-primary me-2"></i>
+                                                <h6 class="fw-bold mb-0">Pan-African Reach</h6>
+                                            </div>
+                                            <p class="mb-0 small">Serve 1 million Chamas across all 54 African countries</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="goal-card border rounded p-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-coins text-success me-2"></i>
+                                                <h6 class="fw-bold mb-0">Wealth Creation</h6>
+                                            </div>
+                                            <p class="mb-0 small">Facilitate $1 billion in community-driven investments</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="goal-card border rounded p-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-graduation-cap text-warning me-2"></i>
+                                                <h6 class="fw-bold mb-0">Financial Education</h6>
+                                            </div>
+                                            <p class="mb-0 small">Educate 10 million people on digital financial literacy</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="goal-card border rounded p-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-handshake text-info me-2"></i>
+                                                <h6 class="fw-bold mb-0">Partnership</h6>
+                                            </div>
+                                            <p class="mb-0 small">Partner with every major financial institution in Africa</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <blockquote class="blockquote text-center my-5 p-4 bg-gradient-primary text-white rounded">
+                                <p class="mb-3 lead">"We're not building a company; we're nurturing a financial revolution that starts in the villages and transforms nations."</p>
+                                <footer class="blockquote-footer text-warning">
+                                    <cite title="Source Title">Bilford Bwire, Founder of ChamaLink</cite>
+                                </footer>
+                            </blockquote>
+                        </div>
+                    </div>
+
+                    <!-- Call to Action -->
+                    <div class="story-cta text-center py-5">
+                        <h3 class="fw-bold mb-4">Join Me on This Journey</h3>
+                        <p class="lead mb-4">
+                            Every Chama that joins ChamaLink brings us closer to our vision of financial empowerment for all Africans.
+                        </p>
+                        <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-rocket me-2"></i>Start Your Chama Today
+                            </a>
+                            <a href="mailto:rahasoft.app@gmail.com" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-envelope me-2"></i>Connect with Me Directly
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.founder-avatar-large .avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.2);
+}
+
+.chapter-number {
+    width: 60px;
+    height: 60px;
+    font-size: 1.2rem;
+}
+
+.story-chapter {
+    position: relative;
+    padding-left: 80px;
+}
+
+.story-chapter:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 80px;
+    bottom: -40px;
+    width: 2px;
+    background: linear-gradient(to bottom, #dee2e6, transparent);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -25px;
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid white;
+}
+
+.timeline-content {
+    padding-left: 20px;
+}
+
+.goal-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.goal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.insight-card {
+    transition: transform 0.3s ease;
+}
+
+.insight-card:hover {
+    transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+    .story-chapter {
+        padding-left: 0;
+    }
+    
+    .story-chapter::after {
+        display: none;
+    }
+    
+    .chapter-number {
+        position: relative;
+        margin: 0 auto 20px;
+    }
+}
+</style>
+{% endblock %}

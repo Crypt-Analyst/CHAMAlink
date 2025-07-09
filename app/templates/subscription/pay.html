@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6>Complete Your Payment</h6>
+                    <p class="text-sm">Pay for your {{ subscription.plan.name.title() }} subscription</p>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-gradient-primary">
+                                <div class="card-body">
+                                    <h5 class="text-white">{{ subscription.plan.name.title() }} Plan</h5>
+                                    <h2 class="text-white font-weight-bold">KES {{ subscription.plan.price|int }}</h2>
+                                    <p class="text-white opacity-8">{{ subscription.plan.description }}</p>
+                                    
+                                    {% if subscription.is_trial %}
+                                    <div class="alert alert-light" role="alert">
+                                        <i class="ni ni-bell-55 me-2"></i>
+                                        Your trial expires on {{ subscription.trial_end_date.strftime('%B %d, %Y') }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <form id="paymentForm">
+                                <input type="hidden" name="subscription_id" value="{{ subscription.id }}">
+                                
+                                <div class="form-group">
+                                    <label for="phone_number">M-Pesa Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                           placeholder="254712345678" value="{{ current_user.phone_number or '' }}" required>
+                                    <small class="form-text text-muted">Enter your M-Pesa registered phone number</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Payment Method</label>
+                                    <div class="card">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-3">
+                                                    <i class="ni ni-mobile-button text-dark text-sm"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">M-Pesa</h6>
+                                                    <p class="text-xs text-muted mb-0">Pay with M-Pesa Mobile Money</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="alert alert-info" role="alert">
+                                        <i class="ni ni-bell-55 me-2"></i>
+                                        <strong>Payment Instructions:</strong><br>
+                                        1. Enter your M-Pesa phone number<br>
+                                        2. Click "Pay Now" button<br>
+                                        3. Check your phone for M-Pesa prompt<br>
+                                        4. Enter your M-Pesa PIN to complete payment
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100" id="payBtn">
+                                    <i class="ni ni-credit-card me-2"></i>Pay KES {{ subscription.plan.price|int }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Processing Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Processing Payment</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-3">Please check your phone for M-Pesa prompt and enter your PIN to complete payment.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const payBtn = document.getElementById('payBtn');
+    const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    
+    // Show loading state
+    payBtn.disabled = true;
+    payBtn.innerHTML = '<i class="ni ni-settings-gear-65 me-2"></i>Processing...';
+    modal.show();
+    
+    fetch('{{ url_for("subscription.process_payment") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        modal.hide();
+        
+        if (data.success) {
+            // Show success message
+            showAlert('success', data.message);
+            
+            // Poll for payment status
+            setTimeout(() => {
+                window.location.href = '{{ url_for("subscription.subscription_status") }}';
+            }, 5000);
+        } else {
+            showAlert('error', data.message);
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="ni ni-credit-card me-2"></i>Pay KES {{ subscription.plan.price|int }}';
+        }
+    })
+    .catch(error => {
+        modal.hide();
+        showAlert('error', 'An error occurred while processing payment');
+        payBtn.disabled = false;
+        payBtn.innerHTML = '<i class="ni ni-credit-card me-2"></i>Pay KES {{ subscription.plan.price|int }}';
+    });
+});
+
+function showAlert(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertIcon = type === 'success' ? 'ni-check-bold' : 'ni-support-16';
+    
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            <i class="ni ${alertIcon} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.querySelector('.card-body').insertAdjacentHTML('afterbegin', alertHtml);
+}
+</script>
+{% endblock %}

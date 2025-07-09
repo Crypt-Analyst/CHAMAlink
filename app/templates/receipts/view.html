@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Receipt #{{ receipt.receipt_number }} - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Payment Receipt</h4>
+                    <div>
+                        <a href="{{ url_for('receipts.download_receipt', receipt_id=receipt.id) }}" 
+                           class="btn btn-primary btn-sm">
+                            <i class="fas fa-download"></i> Download PDF
+                        </a>
+                        <a href="{{ url_for('receipts.chama_receipts', chama_id=receipt.chama_id) }}" 
+                           class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Receipts
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-12 text-center">
+                            <h2 class="text-primary">{{ receipt.chama.name }}</h2>
+                            <p class="text-muted">Official Payment Receipt</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th>Receipt Number:</th>
+                                    <td>{{ receipt.receipt_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date:</th>
+                                    <td>{{ receipt.generated_at.strftime('%B %d, %Y at %I:%M %p') }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Member:</th>
+                                    <td>{{ receipt.user.full_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Email:</th>
+                                    <td>{{ receipt.user.email }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th>Payment Type:</th>
+                                    <td>
+                                        <span class="badge badge-info">{{ receipt.payment_type.title() }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Amount:</th>
+                                    <td class="text-success font-weight-bold">KES {{ "{:,.2f}".format(receipt.amount) }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status:</th>
+                                    <td>
+                                        {% if receipt.status == 'confirmed' %}
+                                            <span class="badge badge-success">Confirmed</span>
+                                        {% elif receipt.status == 'pending' %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">{{ receipt.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if receipt.transaction_id %}
+                                <tr>
+                                    <th>Transaction ID:</th>
+                                    <td><code>{{ receipt.transaction_id }}</code></td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if receipt.notes %}
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h5>Notes:</h5>
+                            <p class="text-muted">{{ receipt.notes }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mt-5">
+                        <div class="col-md-12 text-center">
+                            <hr>
+                            <p class="text-muted small">
+                                This is an official receipt generated by ChamaLink.<br>
+                                For any queries, please contact the chama administrator.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

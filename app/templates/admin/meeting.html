@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Meeting - {{ chama.name }}{% endblock %}
+
+{% block page_header %}
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">Schedule Next Meeting</h1>
+                    <p class="text-blue-100 mt-1">{{ chama.name }}</p>
+                </div>
+                <a href="{{ url_for('admin.chama_admin', chama_id=chama.id) }}" 
+                   class="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition">
+                    ← Back to Admin Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-sm border">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Meeting Details</h2>
+                <p class="text-gray-600 mt-1">Schedule the next meeting and notify all members</p>
+            </div>
+            
+            <form method="POST" class="p-6 space-y-6">
+                <!-- Current Meeting Info -->
+                {% if chama.next_meeting_date %}
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="font-medium text-blue-900 mb-2">Current Scheduled Meeting</h3>
+                        <p class="text-blue-700">{{ chama.next_meeting_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    </div>
+                {% endif %}
+                
+                <!-- Meeting Date -->
+                <div>
+                    <label for="meeting_date" class="block text-sm font-medium text-gray-700 mb-2">
+                        Meeting Date *
+                    </label>
+                    <input type="date" 
+                           id="meeting_date" 
+                           name="meeting_date" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           value="{% if chama.next_meeting_date %}{{ chama.next_meeting_date.strftime('%Y-%m-%d') }}{% endif %}"
+                           required>
+                </div>
+                
+                <!-- Meeting Time -->
+                <div>
+                    <label for="meeting_time" class="block text-sm font-medium text-gray-700 mb-2">
+                        Meeting Time
+                    </label>
+                    <input type="time" 
+                           id="meeting_time" 
+                           name="meeting_time" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           value="{% if chama.next_meeting_date %}{{ chama.next_meeting_date.strftime('%H:%M') }}{% elif chama.meeting_time %}{{ chama.meeting_time.strftime('%H:%M') }}{% else %}14:00{% endif %}">
+                    <p class="text-sm text-gray-500 mt-1">Leave blank for all-day event</p>
+                </div>
+                
+                <!-- Meeting Agenda -->
+                <div>
+                    <label for="meeting_agenda" class="block text-sm font-medium text-gray-700 mb-2">
+                        Meeting Agenda (Optional)
+                    </label>
+                    <textarea id="meeting_agenda" 
+                              name="meeting_agenda" 
+                              rows="4"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter meeting agenda items..."></textarea>
+                    <p class="text-sm text-gray-500 mt-1">This will be included in the notification to members</p>
+                </div>
+                
+                <!-- Notification Options -->
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <input type="checkbox" 
+                               id="notify_members" 
+                               name="notify_members" 
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                               checked>
+                        <label for="notify_members" class="ml-2 block text-sm text-gray-700">
+                            Send notifications to all members
+                        </label>
+                    </div>
+                    <p class="text-sm text-gray-500 ml-6">Members will receive both in-app notifications and email alerts</p>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="flex space-x-4 pt-4">
+                    <button type="submit" 
+                            class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-medium">
+                        📅 Schedule Meeting
+                    </button>
+                    <a href="{{ url_for('admin.chama_admin', chama_id=chama.id) }}" 
+                       class="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition font-medium text-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Meeting Guidelines -->
+        <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <h3 class="font-medium text-yellow-900 mb-3">📋 Meeting Guidelines</h3>
+            <ul class="text-sm text-yellow-800 space-y-2">
+                <li>• Schedule meetings at least 24 hours in advance when possible</li>
+                <li>• Include a clear agenda to help members prepare</li>
+                <li>• Consider members' schedules when choosing dates and times</li>
+                <li>• Follow up with meeting minutes after the meeting</li>
+                <li>• Regular meetings help maintain group engagement</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set minimum date to today
+document.getElementById('meeting_date').min = new Date().toISOString().split('T')[0];
+
+// Auto-suggest next meeting based on chama schedule
+{% if chama.meeting_day and not chama.next_meeting_date %}
+    // Calculate next occurrence of meeting day
+    const meetingDay = '{{ chama.meeting_day }}';
+    const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const targetDay = daysOfWeek.indexOf(meetingDay.toLowerCase());
+    
+    if (targetDay !== -1) {
+        const today = new Date();
+        const daysUntilNext = (targetDay - today.getDay() + 7) % 7;
+        const nextMeeting = new Date(today);
+        nextMeeting.setDate(today.getDate() + (daysUntilNext === 0 ? 7 : daysUntilNext));
+        
+        document.getElementById('meeting_date').value = nextMeeting.toISOString().split('T')[0];
+    }
+{% endif %}
+</script>
+{% endblock %}
