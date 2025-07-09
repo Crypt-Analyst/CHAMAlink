@@ -338,7 +338,7 @@ def founder_dashboard():
     from app.models.subscription import UserSubscription, SubscriptionPayment
     from app.models.enterprise import EnterpriseSubscriptionPayment
     
-    total_users = User.query.count()
+    # Chama statistics only (no user personal data)
     total_chamas = Chama.query.count()
     active_chamas = Chama.query.filter_by(status='active').count()
     
@@ -374,7 +374,6 @@ def founder_dashboard():
         recent_payments = []
     
     return render_template('founder/dashboard.html',
-                         total_users=total_users,
                          total_chamas=total_chamas,
                          active_chamas=active_chamas,
                          total_revenue=total_revenue,
