@@ -187,6 +187,90 @@ class LeeBot {
         
         // Knowledge base for intelligent responses
         this.knowledgeBase = {
+            // Conversational responses
+            'greeting': {
+                keywords: ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy', 'greetings'],
+                response: `👋 **Hello there!** 
+
+I'm LeeBot, your friendly ChamaLink assistant! I'm here to help you with everything related to managing your chama.
+
+I can assist you with:
+🏦 Creating and setting up your chama
+💰 Understanding our subscription plans and pricing
+📱 M-Pesa integration and payment setup
+👥 Managing members and invitations
+📊 Generating reports and analytics
+💬 Answering questions about features
+
+**What would you like to know more about?** Just ask me in your own words - I understand natural language!
+
+*For example, try: "How do I start a chama?" or "What's the best plan for my group?"*`,
+                followUp: ['chama creation', 'subscription plans', 'member management']
+            },
+            
+            'how_are_you': {
+                keywords: ['how are you', 'how do you do', 'how\'s it going', 'what\'s up', 'how have you been'],
+                response: `😊 **I'm doing great, thank you for asking!**
+
+I'm feeling energetic and ready to help you succeed with your chama! 
+
+As an AI assistant, I'm always:
+✅ Available 24/7 to help you
+🧠 Learning from every conversation
+💪 Getting better at understanding your needs
+🚀 Excited to help your chama grow and thrive
+
+**How are YOU doing?** More importantly, how can I help you with your chama management needs today?
+
+Feel free to ask me anything about:
+• Setting up your first chama
+• Managing members and contributions
+• Understanding our features and pricing
+• Troubleshooting any issues`,
+                followUp: ['chama setup help', 'feature overview', 'troubleshooting']
+            },
+            
+            'who_are_you': {
+                keywords: ['who are you', 'what are you', 'tell me about yourself', 'introduce yourself'],
+                response: `🤖 **I'm LeeBot - Your Intelligent ChamaLink Assistant!**
+
+**About Me:**
+• I'm an AI-powered chatbot created specifically for ChamaLink users
+• Named after our founder's commitment to innovation and user support
+• Designed to make chama management as easy as possible for you
+
+**What I Can Do:**
+🎯 **Instant Help**: Get immediate answers to your questions
+🧠 **Smart Understanding**: I comprehend natural language, so talk to me normally!
+📚 **Deep Knowledge**: I know everything about ChamaLink's features
+🔄 **Always Learning**: I improve with every conversation
+🚀 **Problem Solving**: Help you overcome any challenges
+
+**My Mission:**
+To make digital chama management accessible and effortless for everyone, from tech-savvy users to those just starting their digital journey.
+
+**What would you like to explore together?**`,
+                followUp: ['getting started', 'feature tour', 'pricing information']
+            },
+            
+            'thank_you': {
+                keywords: ['thank you', 'thanks', 'appreciate', 'grateful', 'cheers'],
+                response: `🙏 **You're very welcome!**
+
+I'm so happy I could help you! That's exactly what I'm here for - making your ChamaLink experience smooth and successful.
+
+**Remember:**
+• I'm always here when you need assistance
+• No question is too basic or too complex
+• Feel free to come back anytime you need guidance
+• Your success is my success!
+
+**Keep growing your chama!** 🚀
+
+Is there anything else I can help you with today? I'm just a message away whenever you need support with your chama management journey.`,
+                followUp: ['more questions', 'feature exploration', 'success tips']
+            },
+            
             // Chama Management
             'chama_creation': {
                 keywords: ['create chama', 'start chama', 'new chama', 'setup chama', 'register chama', 'how to create'],
@@ -467,17 +551,55 @@ Is there anything specific you'd like me to let the agent know about?`,
 
     // Enhanced intent recognition
     analyzeIntent(message) {
-        const lowerMessage = message.toLowerCase();
+        const lowerMessage = message.toLowerCase().trim();
         
-        // Check for direct topic matches
+        // Handle empty or very short messages
+        if (lowerMessage.length === 0) {
+            return { topic: 'general', confidence: 0.1, data: null };
+        }
+        
+        // Enhanced pattern matching for better conversation
+        let bestMatch = { topic: 'general', confidence: 0, data: null };
+        
         for (const [topic, data] of Object.entries(this.knowledgeBase)) {
-            if (data.keywords.some(keyword => lowerMessage.includes(keyword))) {
-                return { topic, confidence: 0.9, data };
+            let confidence = 0;
+            
+            // Exact keyword matches (highest confidence)
+            for (const keyword of data.keywords) {
+                if (lowerMessage === keyword.toLowerCase()) {
+                    confidence = 1.0;
+                    break;
+                } else if (lowerMessage.includes(keyword.toLowerCase())) {
+                    confidence = Math.max(confidence, 0.8);
+                }
+            }
+            
+            // Partial word matches for flexibility
+            const messageWords = lowerMessage.split(' ');
+            const keywordWords = data.keywords.flatMap(k => k.toLowerCase().split(' '));
+            
+            const matchedWords = messageWords.filter(word => 
+                keywordWords.some(kwWord => kwWord.includes(word) || word.includes(kwWord))
+            );
+            
+            if (matchedWords.length > 0) {
+                const partialConfidence = (matchedWords.length / messageWords.length) * 0.6;
+                confidence = Math.max(confidence, partialConfidence);
+            }
+            
+            // Update best match if this is better
+            if (confidence > bestMatch.confidence) {
+                bestMatch = { topic, confidence, data };
             }
         }
-
-        // Fallback for general queries
-        return { topic: 'general', confidence: 0.3, data: null };
+        
+        // Return best match if confidence is good enough
+        if (bestMatch.confidence >= 0.3) {
+            return bestMatch;
+        }
+        
+        // Fallback for unmatched queries
+        return { topic: 'general', confidence: 0.1, data: null };
     }
 
     // Generate response based on intent
@@ -493,17 +615,45 @@ Is there anything specific you'd like me to let the agent know about?`,
             return intent.data.response;
         }
 
-        // Fallback response
-        return `I understand you're asking about "${userMessage}". While I don't have specific information about that, I can help you with:
+        // Fallback response with better understanding
+        const responses = [
+            `🤔 **I'm not quite sure about "${userMessage}"**, but I'm here to help!
 
-🏦 Creating and managing chamas
-💰 Understanding subscription plans
-📱 M-Pesa integration and payments
-👥 Member management
-📊 Reports and analytics
-🔧 Troubleshooting issues
+Let me suggest some popular topics I can definitely assist you with:
 
-Could you rephrase your question or try one of the quick help topics below?`;
+🏦 **Chama Setup**: "How do I create a chama?" or "Getting started guide"
+👥 **Member Management**: "How to add members?" or "Managing member roles"
+💰 **Payments & M-Pesa**: "Setting up M-Pesa" or "Payment integration"
+📊 **Reports**: "How to generate reports?" or "Financial analytics"
+� **Troubleshooting**: "I need help with..." or "Problem with..."
+
+**Just ask me naturally!** For example:
+• "Can you help me set up my first chama?"
+• "What payment methods do you support?"
+• "How much does ChamaLink cost?"
+
+*What would you like to know more about?*`,
+
+            `💭 **I didn't quite catch that**, but I'm eager to help you succeed!
+
+Here are some things I'm really good at explaining:
+
+🚀 **Getting Started**: Complete setup guides and walkthroughs
+� **Feature Explanations**: Detailed information about all ChamaLink features
+💳 **Pricing & Plans**: Help you choose the right subscription
+�️ **Technical Support**: Troubleshooting and problem-solving
+📈 **Best Practices**: Tips for successful chama management
+
+**Try rephrasing your question** or ask about:
+• Chama creation and setup
+• Member invitation and management
+• Financial tracking and reporting
+• Payment integration options
+
+*I understand natural language, so just talk to me like you would a friend!*`
+        ];
+        
+        return responses[Math.floor(Math.random() * responses.length)];
     }
 
     // Handle agent escalation

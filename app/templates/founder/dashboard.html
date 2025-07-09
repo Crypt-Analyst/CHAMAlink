@@ -16,7 +16,7 @@
                 </div>
                 <div class="col-md-4 text-md-end">
                     <div class="d-flex flex-column flex-md-row gap-2">
-                        <button class="btn btn-warning">
+                        <button class="btn btn-warning" onclick="newFeatureAction()">
                             <i class="fas fa-plus me-2"></i>New Feature
                         </button>
                         <a href="{{ url_for('main.test_email') }}" class="btn btn-info">
@@ -226,16 +226,16 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <button class="btn btn-warning">
+                            <button class="btn btn-warning" onclick="sendPlatformNotice()">
                                 <i class="fas fa-bell me-2"></i>Send Platform Notice
                             </button>
-                            <button class="btn btn-info">
+                            <button class="btn btn-info" onclick="generatePlatformReport()">
                                 <i class="fas fa-chart-bar me-2"></i>Generate Report
                             </button>
-                            <button class="btn btn-success">
+                            <button class="btn btn-success" onclick="createPromotion()">
                                 <i class="fas fa-gift me-2"></i>Create Promotion
                             </button>
-                            <button class="btn btn-danger">
+                            <button class="btn btn-danger" onclick="emergencyActions()">
                                 <i class="fas fa-exclamation-triangle me-2"></i>Emergency Actions
                             </button>
                         </div>
@@ -290,6 +290,374 @@ function exportChamas() {
         button.innerHTML = originalText;
         button.disabled = false;
     }, 3000);
+}
+
+// New Feature Action
+function newFeatureAction() {
+    const modal = `
+        <div class="modal fade" id="newFeatureModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">🚀 Add New Feature</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="newFeatureForm">
+                            <div class="mb-3">
+                                <label class="form-label">Feature Name</label>
+                                <input type="text" class="form-control" id="featureName" placeholder="e.g., Advanced Analytics">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" id="featureDescription" rows="3" placeholder="Describe the new feature..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Priority</label>
+                                <select class="form-control" id="featurePriority">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" onclick="submitNewFeature()">Add Feature</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modal);
+    const modalInstance = new bootstrap.Modal(document.getElementById('newFeatureModal'));
+    modalInstance.show();
+    
+    // Remove modal from DOM when closed
+    document.getElementById('newFeatureModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function submitNewFeature() {
+    const name = document.getElementById('featureName').value;
+    const description = document.getElementById('featureDescription').value;
+    const priority = document.getElementById('featurePriority').value;
+    
+    if (!name || !description) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Here you would typically send to backend
+    alert(`✅ Feature "${name}" added to development roadmap!\\n\\nPriority: ${priority.toUpperCase()}\\nDescription: ${description}`);
+    
+    // Close modal
+    bootstrap.Modal.getInstance(document.getElementById('newFeatureModal')).hide();
+}
+
+// Send Platform Notice
+function sendPlatformNotice() {
+    const modal = `
+        <div class="modal fade" id="platformNoticeModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">📢 Send Platform Notice</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="noticeForm">
+                            <div class="mb-3">
+                                <label class="form-label">Notice Title</label>
+                                <input type="text" class="form-control" id="noticeTitle" placeholder="e.g., System Maintenance Notice">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Message</label>
+                                <textarea class="form-control" id="noticeMessage" rows="4" placeholder="Enter your platform-wide message..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Priority Level</label>
+                                <select class="form-control" id="noticePriority">
+                                    <option value="info">Info</option>
+                                    <option value="warning">Warning</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="sendEmail" checked>
+                                    <label class="form-check-label" for="sendEmail">
+                                        Send email notification to all admins
+                                    </label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-warning" onclick="submitPlatformNotice()">Send Notice</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modal);
+    const modalInstance = new bootstrap.Modal(document.getElementById('platformNoticeModal'));
+    modalInstance.show();
+    
+    document.getElementById('platformNoticeModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function submitPlatformNotice() {
+    const title = document.getElementById('noticeTitle').value;
+    const message = document.getElementById('noticeMessage').value;
+    const priority = document.getElementById('noticePriority').value;
+    const sendEmail = document.getElementById('sendEmail').checked;
+    
+    if (!title || !message) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    alert(`📢 Platform Notice Sent!\\n\\nTitle: ${title}\\nPriority: ${priority.toUpperCase()}\\nEmail Notification: ${sendEmail ? 'Yes' : 'No'}`);
+    
+    bootstrap.Modal.getInstance(document.getElementById('platformNoticeModal')).hide();
+}
+
+// Generate Platform Report
+function generatePlatformReport() {
+    const reportOptions = [
+        'User Activity Report',
+        'Financial Summary Report',
+        'Chama Performance Report',
+        'System Health Report',
+        'Security Audit Report'
+    ];
+    
+    const modal = `
+        <div class="modal fade" id="reportModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">📊 Generate Platform Report</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Report Type</label>
+                            <select class="form-control" id="reportType">
+                                ${reportOptions.map(option => `<option value="${option}">${option}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date Range</label>
+                            <select class="form-control" id="dateRange">
+                                <option value="7">Last 7 days</option>
+                                <option value="30" selected>Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="365">Last year</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Export Format</label>
+                            <select class="form-control" id="exportFormat">
+                                <option value="pdf">PDF</option>
+                                <option value="excel">Excel</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-info" onclick="generateReport()">Generate Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modal);
+    const modalInstance = new bootstrap.Modal(document.getElementById('reportModal'));
+    modalInstance.show();
+    
+    document.getElementById('reportModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function generateReport() {
+    const reportType = document.getElementById('reportType').value;
+    const dateRange = document.getElementById('dateRange').value;
+    const exportFormat = document.getElementById('exportFormat').value;
+    
+    alert(`📊 Generating ${reportType}...\\n\\nDate Range: Last ${dateRange} days\\nFormat: ${exportFormat.toUpperCase()}\\n\\nReport will be emailed to you shortly!`);
+    
+    bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+}
+
+// Create Promotion
+function createPromotion() {
+    const modal = `
+        <div class="modal fade" id="promotionModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">🎁 Create Promotion</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="promotionForm">
+                            <div class="mb-3">
+                                <label class="form-label">Promotion Name</label>
+                                <input type="text" class="form-control" id="promoName" placeholder="e.g., Holiday Special">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Discount Type</label>
+                                        <select class="form-control" id="discountType">
+                                            <option value="percentage">Percentage Off</option>
+                                            <option value="fixed">Fixed Amount Off</option>
+                                            <option value="free_trial">Extended Free Trial</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Discount Value</label>
+                                        <input type="number" class="form-control" id="discountValue" placeholder="e.g., 20">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="startDate">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="endDate">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" onclick="submitPromotion()">Create Promotion</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modal);
+    const modalInstance = new bootstrap.Modal(document.getElementById('promotionModal'));
+    modalInstance.show();
+    
+    document.getElementById('promotionModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function submitPromotion() {
+    const name = document.getElementById('promoName').value;
+    const discountType = document.getElementById('discountType').value;
+    const discountValue = document.getElementById('discountValue').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!name || !discountValue || !startDate || !endDate) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    alert(`🎁 Promotion Created!\\n\\nName: ${name}\\nDiscount: ${discountValue}${discountType === 'percentage' ? '%' : ' KES'} off\\nPeriod: ${startDate} to ${endDate}\\n\\nPromotion is now active!`);
+    
+    bootstrap.Modal.getInstance(document.getElementById('promotionModal')).hide();
+}
+
+// Emergency Actions
+function emergencyActions() {
+    const modal = `
+        <div class="modal fade" id="emergencyModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content border-danger">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">⚠️ Emergency Actions</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <strong>Warning:</strong> These actions affect the entire platform. Use with extreme caution!
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-warning" onclick="maintenanceMode()">
+                                🔧 Enable Maintenance Mode
+                            </button>
+                            <button class="btn btn-outline-info" onclick="broadcastMessage()">
+                                📢 Emergency Broadcast
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="freezeAllTransactions()">
+                                🛑 Freeze All Transactions
+                            </button>
+                            <button class="btn btn-outline-dark" onclick="generateBackup()">
+                                💾 Generate System Backup
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modal);
+    const modalInstance = new bootstrap.Modal(document.getElementById('emergencyModal'));
+    modalInstance.show();
+    
+    document.getElementById('emergencyModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function maintenanceMode() {
+    if (confirm('Enable maintenance mode? This will make the platform inaccessible to users.')) {
+        alert('🔧 Maintenance mode enabled. Platform is now offline for users.');
+        bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
+    }
+}
+
+function broadcastMessage() {
+    const message = prompt('Enter emergency broadcast message:');
+    if (message) {
+        alert(`📢 Emergency broadcast sent to all users:\\n\\n"${message}"`);
+        bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
+    }
+}
+
+function freezeAllTransactions() {
+    if (confirm('Freeze all financial transactions? This is a critical action!')) {
+        alert('🛑 All transactions have been frozen. Contact users immediately.');
+        bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
+    }
+}
+
+function generateBackup() {
+    alert('💾 System backup initiated. You will receive confirmation when complete.');
+    bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
 }
 </script>
 

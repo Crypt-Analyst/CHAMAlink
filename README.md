@@ -63,7 +63,7 @@ ChamaLink is a comprehensive digital platform for managing Chama (investment gro
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/chamalink.git
+   git clone https://github.com/RahasoftBwire/chamalink.git
    cd chamalink
    ```
 
