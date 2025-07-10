@@ -58,7 +58,7 @@ def test_login_page_forgot_password_link():
         # Test the forgot password page
         print("🔹 Testing forgot password page accessibility...")
         try:
-            response = requests.get("http://localhost:5000/auth/forgot_password", timeout=10)
+            response = requests.get("http://localhost:5000/auth/forgot-password", timeout=10)
             if response.status_code == 200:
                 print("✅ Forgot password page accessible")
             else:
