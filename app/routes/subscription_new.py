@@ -12,7 +12,13 @@ subscription_new_bp = Blueprint("subscription_new", __name__)
 def pricing():
     """Display pricing plans"""
     plans = EnterpriseSubscriptionPlan.query.filter_by(is_active=True).order_by(EnterpriseSubscriptionPlan.price_monthly).all()
-    return render_template("subscription/pricing.html", plans=plans)
+    return render_template("subscription/pricing_clean.html", plans=plans)
+
+@subscription_new_bp.route("/pricing-test")
+def pricing_test():
+    """Test pricing page with simpler template"""
+    plans = EnterpriseSubscriptionPlan.query.filter_by(is_active=True).order_by(EnterpriseSubscriptionPlan.price_monthly).all()
+    return render_template("subscription/pricing_test.html", plans=plans)
 
 @subscription_new_bp.route("/enterprise/contact")
 def enterprise_contact():

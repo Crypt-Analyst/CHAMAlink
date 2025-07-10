@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Chama - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Create New Chama
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form id="createChamaForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="chamaName" class="form-label">Chama Name *</label>
+                                <input type="text" class="form-control" id="chamaName" name="name" required 
+                                       placeholder="Enter chama name">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="monthlyContribution" class="form-label">Monthly Contribution (KES) *</label>
+                                <input type="number" class="form-control" id="monthlyContribution" 
+                                       name="monthly_contribution" required min="100" 
+                                       placeholder="e.g. 5000">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="chamaDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="chamaDescription" name="description" 
+                                      rows="3" placeholder="Brief description of your chama"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="chamaGoal" class="form-label">Goal</label>
+                            <input type="text" class="form-control" id="chamaGoal" name="goal" 
+                                   placeholder="What is the main goal of this chama?">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="meetingDay" class="form-label">Meeting Day</label>
+                            <select class="form-select" id="meetingDay" name="meeting_day">
+                                <option value="">Select meeting day</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Chama
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('createChamaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    
+    // Validate
+    if (!data.name || !data.monthly_contribution) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Submit
+    fetch('/chama/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Chama created successfully!');
+            window.location.href = `/chama/${data.chama_id}`;
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the chama');
+    });
+});
+</script>
+{% endblock %}

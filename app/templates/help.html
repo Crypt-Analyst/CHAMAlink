@@ -8,6 +8,18 @@
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold text-primary mb-4">Help & Support</h1>
         <p class="lead text-muted">Find answers to common questions and get help with ChamaLink</p>
+        
+        <!-- Search Box -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-6">
+                <div class="input-group input-group-lg">
+                    <input type="text" class="form-control" placeholder="Search for help topics..." id="helpSearch">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Quick Actions -->
@@ -172,6 +184,260 @@
         </div>
     </div>
     
+    <!-- Video Tutorials Section -->
+    <div id="videos" class="mb-5">
+        <h2 class="mb-4">Video Tutorials</h2>
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="video-thumbnail position-relative">
+                        <img src="https://via.placeholder.com/400x225/667eea/ffffff?text=Getting+Started" class="card-img-top" alt="Getting Started Tutorial">
+                        <div class="play-overlay position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-primary btn-lg rounded-circle" onclick="playVideo('getting-started-video')">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <span class="badge bg-primary position-absolute top-0 end-0 m-2">5:30</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Getting Started with ChamaLink</h5>
+                        <p class="card-text small text-muted">Learn how to create your account, set up your first chama, and invite members.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="video-thumbnail position-relative">
+                        <img src="https://via.placeholder.com/400x225/28a745/ffffff?text=Managing+Contributions" class="card-img-top" alt="Managing Contributions">
+                        <div class="play-overlay position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-success btn-lg rounded-circle" onclick="playVideo('contributions-video')">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <span class="badge bg-success position-absolute top-0 end-0 m-2">8:15</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Managing Contributions</h5>
+                        <p class="card-text small text-muted">Track payments, set up automatic reminders, and manage contribution schedules.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="video-thumbnail position-relative">
+                        <img src="https://via.placeholder.com/400x225/ffc107/000000?text=Financial+Reports" class="card-img-top" alt="Financial Reports">
+                        <div class="play-overlay position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-warning btn-lg rounded-circle" onclick="playVideo('reports-video')">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">6:45</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Generating Financial Reports</h5>
+                        <p class="card-text small text-muted">Create detailed reports, export data, and track your chama's financial progress.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="video-thumbnail position-relative">
+                        <img src="https://via.placeholder.com/400x225/dc3545/ffffff?text=Loan+Management" class="card-img-top" alt="Loan Management">
+                        <div class="play-overlay position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-danger btn-lg rounded-circle" onclick="playVideo('loans-video')">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">7:20</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Loan Management</h5>
+                        <p class="card-text small text-muted">Process loan applications, track repayments, and manage interest calculations.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="video-thumbnail position-relative">
+                        <img src="https://via.placeholder.com/400x225/6f42c1/ffffff?text=Investment+Tracking" class="card-img-top" alt="Investment Tracking">
+                        <div class="play-overlay position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-purple btn-lg rounded-circle" onclick="playVideo('investments-video')">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <span class="badge bg-purple position-absolute top-0 end-0 m-2">9:10</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Investment Tracking</h5>
+                        <p class="card-text small text-muted">Record investments, monitor performance, and track returns on your chama's portfolio.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="video-thumbnail position-relative">
+                        <img src="https://via.placeholder.com/400x225/17a2b8/ffffff?text=Mobile+App" class="card-img-top" alt="Mobile App Guide">
+                        <div class="play-overlay position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-info btn-lg rounded-circle" onclick="playVideo('mobile-video')">
+                                <i class="fas fa-play"></i>
+                            </button>
+                        </div>
+                        <span class="badge bg-info position-absolute top-0 end-0 m-2">4:50</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Using the Mobile App</h5>
+                        <p class="card-text small text-muted">Access ChamaLink on your phone, receive notifications, and manage on-the-go.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Troubleshooting Section -->
+    <div id="troubleshooting" class="mb-5">
+        <h2 class="mb-4">Troubleshooting</h2>
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-wifi text-danger me-3 fs-4"></i>
+                            <h5 class="mb-0">Connection Issues</h5>
+                        </div>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Check your internet connection</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Try refreshing the page</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Clear browser cache and cookies</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Try a different browser</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-key text-warning me-3 fs-4"></i>
+                            <h5 class="mb-0">Login Problems</h5>
+                        </div>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Check your email and password</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Use "Forgot Password" if needed</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Verify your email address</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Disable browser auto-fill temporarily</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-mobile-alt text-info me-3 fs-4"></i>
+                            <h5 class="mb-0">Mobile Issues</h5>
+                        </div>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Update your browser app</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Check mobile data/WiFi connection</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Close other apps to free memory</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Restart your device if needed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-credit-card text-purple me-3 fs-4"></i>
+                            <h5 class="mb-0">Payment Issues</h5>
+                        </div>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Check your payment method details</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Ensure sufficient funds/credit</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Try a different payment method</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i>Contact your bank if card is declined</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Best Practices Section -->
+    <div id="best-practices" class="mb-5">
+        <h2 class="mb-4">Chama Best Practices</h2>
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-handshake text-primary fs-1 mb-3"></i>
+                        <h5>Build Trust</h5>
+                        <p class="text-muted small">Establish clear rules, maintain transparency, and communicate regularly with all members.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-calendar-check text-success fs-1 mb-3"></i>
+                        <h5>Set Regular Meetings</h5>
+                        <p class="text-muted small">Schedule monthly meetings to discuss progress, investments, and address any concerns.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-chart-line text-warning fs-1 mb-3"></i>
+                        <h5>Track Everything</h5>
+                        <p class="text-muted small">Record all transactions, maintain accurate records, and generate regular reports.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-shield-alt text-info fs-1 mb-3"></i>
+                        <h5>Plan for Risks</h5>
+                        <p class="text-muted small">Discuss and plan for potential risks, maintain emergency funds, and have clear policies.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-graduation-cap text-purple fs-1 mb-3"></i>
+                        <h5>Financial Education</h5>
+                        <p class="text-muted small">Continuously educate members about investments, savings, and financial planning.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-users-cog text-danger fs-1 mb-3"></i>
+                        <h5>Good Governance</h5>
+                        <p class="text-muted small">Rotate leadership roles, make decisions democratically, and maintain accountability.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FAQ Section -->
     <div id="faq" class="mb-5">
         <h2 class="mb-4">Frequently Asked Questions</h2>
@@ -258,4 +524,165 @@
         </div>
     </div>
 </div>
+
+<!-- Video Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="videoModalLabel">Tutorial Video</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="ratio ratio-16x9">
+                    <iframe id="videoFrame" src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.video-thumbnail {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.play-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.video-thumbnail:hover .play-overlay {
+    opacity: 1;
+}
+
+.video-thumbnail::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease;
+}
+
+.video-thumbnail:hover::after {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.btn-purple {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    color: white;
+}
+
+.btn-purple:hover {
+    background-color: #5a369d;
+    border-color: #5a369d;
+    color: white;
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+.text-purple {
+    color: #6f42c1 !important;
+}
+
+.fs-1 {
+    font-size: 2.5rem;
+}
+
+#helpSearch {
+    border-radius: 50px;
+}
+
+.accordion-button {
+    font-weight: 500;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(102, 126, 234, 0.1);
+    border-color: rgba(102, 126, 234, 0.2);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+}
+
+.play-overlay button {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<script>
+// Video URLs mapping (replace with actual video URLs)
+const videoUrls = {
+    'getting-started-video': 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    'contributions-video': 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    'reports-video': 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    'loans-video': 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    'investments-video': 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    'mobile-video': 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+};
+
+function playVideo(videoId) {
+    const videoFrame = document.getElementById('videoFrame');
+    const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+    
+    if (videoUrls[videoId]) {
+        videoFrame.src = videoUrls[videoId];
+        modal.show();
+    }
+}
+
+// Clear video when modal is closed
+document.getElementById('videoModal').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('videoFrame').src = '';
+});
+
+// Help search functionality
+document.getElementById('helpSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.card');
+    
+    cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        if (text.includes(searchTerm) || searchTerm === '') {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// Smooth scrolling for anchor links
+document.addEventListener('DOMContentLoaded', function() {
+    const anchorLinks = document.querySelectorAll('a[href^="#"]');
+    
+    anchorLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app.models.chama import Chama, ChamaMember, Contribution, Receipt
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 from app.utils.email_service import send_email
 
@@ -393,3 +393,157 @@ def request_agent_help():
             
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+@api_bp.route('/api/agent-help', methods=['GET', 'POST'])
+def api_agent_help():
+    """API endpoint for LeeBot agent help - accessible for testing"""
+    if request.method == 'GET':
+        return jsonify({
+            'status': 'ready',
+            'message': 'LeeBot Agent Help API is operational',
+            'endpoints': {
+                'POST /api/agent-help': 'Send message to agent',
+                'GET /api/agent-help': 'Check API status'
+            }
+        })
+    
+    # Handle POST requests
+    try:
+        data = request.get_json() if request.is_json else {}
+        message = data.get('message', '') if data else ''
+        
+        # Simple response for testing
+        response = {
+            'success': True,
+            'message': 'Message received',
+            'agent_response': f'Hello! I received your message: "{message}". How can I help you with ChamaLink today?',
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'message': 'Failed to process agent help request'
+        }), 500
+
+@api_bp.route('/agent-help', methods=['POST'])
+def agent_help():
+    """Handle agent escalation requests"""
+    try:
+        data = request.get_json()
+        
+        # Log the agent help request for security monitoring
+        from datetime import datetime
+        import logging
+        
+        # Set up logging if not already configured
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger(__name__)
+        
+        # Get request details for security monitoring
+        user_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR'))
+        user_agent = request.headers.get('User-Agent', 'Unknown')
+        
+        # Log the request
+        logger.info(f"Agent help request from IP: {user_ip}, User-Agent: {user_agent}, User ID: {data.get('user_id', 'anonymous')}")
+        
+        # Create support ticket or notification
+        conversation_history = data.get('conversation_history', [])
+        user_id = data.get('user_id', 'anonymous')
+        
+        # In a real implementation, you would:
+        # 1. Create a support ticket in your system
+        # 2. Send notification to support team
+        # 3. Store conversation history
+        
+        return jsonify({
+            'success': True,
+            'message': 'Support request received successfully',
+            'ticket_id': f'TICKET-{datetime.now().strftime("%Y%m%d%H%M%S")}'
+        })
+        
+    except Exception as e:
+        # Log the error for monitoring
+        logging.error(f"Error in agent_help endpoint: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Unable to process request at this time'
+        }), 500
+
+
+@api_bp.route('/security/stats', methods=['GET'])
+@login_required
+def security_stats():
+    """Get real-time security statistics"""
+    if not current_user.is_super_admin:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    from app.utils.security_monitor import security_monitor
+    
+    # Calculate stats from security logs
+    # In production, this would query a database
+    stats = {
+        'threats_blocked': 42,  # Calculate from actual logs
+        'blocked_ips': len(security_monitor.blocked_ips),
+        'recent_events': [
+            {
+                'id': '1',
+                'timestamp': datetime.now().isoformat(),
+                'event_type': 'ATTACK_PATTERN_DETECTED',
+                'severity': 'CRITICAL',
+                'ip': '192.168.1.100',
+                'details': 'SQL injection attempt detected'
+            },
+            {
+                'id': '2',
+                'timestamp': (datetime.now() - timedelta(minutes=5)).isoformat(),
+                'event_type': 'SUSPICIOUS_USER_AGENT',
+                'severity': 'MEDIUM',
+                'ip': '10.0.0.1',
+                'details': 'Suspicious user agent: sqlmap/1.0'
+            }
+        ]
+    }
+    
+    return jsonify(stats)
+
+@api_bp.route('/security/block-ip', methods=['POST'])
+@login_required
+def block_ip():
+    """Manually block an IP address"""
+    if not current_user.is_super_admin:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    from app.utils.security_monitor import security_monitor
+    
+    data = request.get_json()
+    ip = data.get('ip')
+    
+    if not ip:
+        return jsonify({'error': 'IP address required'}), 400
+    
+    # Add IP to blocked list
+    security_monitor.blocked_ips.add(ip)
+    
+    # Log the manual block
+    security_monitor.log_security_event(
+        'MANUAL_IP_BLOCK',
+        'HIGH',
+        f"IP {ip} manually blocked by admin {current_user.email}"
+    )
+    
+    return jsonify({'success': True, 'message': f'IP {ip} blocked successfully'})
+
+@api_bp.route('/security/export-report', methods=['GET'])
+@login_required
+def export_security_report():
+    """Export security report"""
+    if not current_user.is_super_admin:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    # Generate security report
+    # In production, this would generate a comprehensive PDF/CSV report
+    return jsonify({'message': 'Security report generation would be implemented here'})

@@ -1,0 +1,77 @@
+{
+  "timestamp": "2025-07-10T15:27:58.562918",
+  "base_url": "http://localhost:5000",
+  "basic_pages": {
+    "Homepage": {
+      "status": 200,
+      "success": true,
+      "size": 103770
+    },
+    "About Page": {
+      "status": 200,
+      "success": true,
+      "size": 49565
+    },
+    "Features Page": {
+      "status": 200,
+      "success": true,
+      "size": 43977
+    },
+    "FAQ Page": {
+      "status": 200,
+      "success": true,
+      "size": 43314
+    },
+    "Help Page": {
+      "status": 200,
+      "success": true,
+      "size": 42571
+    },
+    "Login Page": {
+      "status": 200,
+      "success": true,
+      "size": 41711
+    },
+    "Register Page": {
+      "status": 200,
+      "success": true,
+      "size": 44195
+    }
+  },
+  "security_features": {
+    "normal_login": true,
+    "api_access": true,
+    "security_dashboard": true
+  },
+  "chat_functionality": {
+    "chat_page": true,
+    "chat_api": true
+  },
+  "mobile_responsiveness": {
+    "mobile_home": {
+      "status": 200,
+      "has_viewport": true,
+      "has_responsive_css": true,
+      "mobile_ready": true
+    },
+    "mobile_aboutabout": {
+      "status": 200,
+      "has_viewport": true,
+      "has_responsive_css": true,
+      "mobile_ready": true
+    },
+    "mobile_featuresfeatures": {
+      "status": 200,
+      "has_viewport": true,
+      "has_responsive_css": true,
+      "mobile_ready": true
+    },
+    "mobile_dashboarddashboard": {
+      "status": 400,
+      "has_viewport": false,
+      "has_responsive_css": false,
+      "mobile_ready": false
+    }
+  },
+  "overall_score": 93.75
+}

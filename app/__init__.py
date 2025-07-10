@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Flask
+from flask import Flask, render_template, jsonify, request, flash, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -48,7 +48,7 @@ def create_app():
     login_manager.init_app(app)
     mail.init_app(app)
     login_manager.login_view = 'auth.login'
-    login_manager.login_message = 'Please log in to access this page.'
+    login_manager.login_message = None  # Disable automatic login messages
     login_manager.login_message_category = 'info'
     login_manager.session_protection = 'strong'  # Better session protection
 
@@ -58,6 +58,13 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+    
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        # Only show login message for protected pages, not homepage
+        if request.endpoint and request.endpoint != 'main.home':
+            flash('Please log in to access this page.', 'info')
+        return redirect(url_for('auth.login'))
 
     # 🕐 Template context processor to make datetime available in templates
     @app.context_processor
@@ -74,6 +81,7 @@ def create_app():
     from app.routes.notifications import notifications_bp
     from app.routes.settings import settings_bp
     from app.routes.membership import membership_bp
+    from app.routes.preferences import preferences_bp
     from app.routes.subscription import subscription_bp
     from app.routes.subscription_new import subscription_new_bp
     from app.routes.multisig import multisig_bp
@@ -95,6 +103,7 @@ def create_app():
     app.register_blueprint(notifications_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(membership_bp)
+    app.register_blueprint(preferences_bp)
     app.register_blueprint(subscription_bp, url_prefix='/subscription')
     app.register_blueprint(subscription_new_bp, url_prefix='/plans')
     app.register_blueprint(multisig_bp, url_prefix='/multisig')
@@ -106,5 +115,76 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(enterprise_bp, url_prefix='/enterprise')
+
+    # 🌍 Initialize internationalization
+    from app.utils.internationalization import get_current_language, get_current_theme, get_current_font, load_translations
+    
+    @app.context_processor
+    def inject_user_preferences():
+        """Make user preferences available in all templates"""
+        try:
+            language = get_current_language()
+            theme = get_current_theme()
+            font = get_current_font()
+            translations = load_translations(language)
+            return {
+                'user_language': language,
+                'user_theme': theme,
+                'user_font': font,
+                'translations': translations,
+                't': lambda key, default=None: translations.get(key, default or key)
+            }
+        except:
+            return {
+                'user_language': 'en',
+                'user_theme': 'light',
+                'user_font': 'default',
+                'translations': {},
+                't': lambda key, default=None: default or key
+            }
+
+    # 🔒 Initialize security monitoring
+    from app.utils.security_monitor import init_security
+    app = init_security(app)
+
+    # 🔐 Initialize Security Monitor and Email Notifier
+    from app.utils.security_monitor import security_monitor
+    from app.utils.email_notifier import security_notifier
+    
+    # Initialize email notifier with app
+    security_notifier.init_app(app)
+
+    # 🚨 Error Handlers
+    @app.errorhandler(404)
+    def not_found_error(error):
+        try:
+            return render_template('errors/404.html'), 404
+        except:
+            return '<h1>404 - Page Not Found</h1><p>The page you are looking for does not exist.</p>', 404
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        try:
+            db.session.rollback()
+            # Generate unique error ID for support reference
+            import uuid
+            error_id = str(uuid.uuid4())[:8].upper()
+            return render_template('errors/500.html', error_id=error_id), 500
+        except:
+            return '<h1>500 - Internal Server Error</h1><p>Something went wrong on our end.</p>', 500
+    
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        try:
+            return render_template('errors/404.html'), 403  # Use 404 template for security
+        except:
+            return '<h1>403 - Access Denied</h1><p>You do not have permission to access this resource.</p>', 403
+    
+    @app.errorhandler(429)
+    def rate_limit_error(error):
+        return jsonify({
+            'error': 'Too many requests',
+            'message': 'Please wait before trying again'
+        }), 429
 
     return app

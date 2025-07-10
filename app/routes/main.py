@@ -776,3 +776,51 @@ def emergency_broadcast():
         })
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@main.route('/pricing')
+def pricing():
+    """Public pricing page - redirect to subscription plans"""
+    return redirect(url_for('subscription_new.pricing'))
+
+@main.route('/faq')
+def faq():
+    """Frequently Asked Questions page"""
+    return render_template('faq.html')
+
+@main.route('/security-dashboard')
+@login_required
+def security_dashboard():
+    """Security monitoring dashboard - founder only"""
+    if not current_user.is_super_admin:
+        flash('Access denied. Founder privileges required.', 'error')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get security statistics
+    from app.utils.security_monitor import security_monitor
+    
+    # Basic stats for initial page load
+    threats_blocked = 42  # This would be calculated from security logs
+    blocked_ips_count = len(security_monitor.blocked_ips)
+    
+    return render_template('security_dashboard.html', 
+                         threats_blocked=threats_blocked,
+                         blocked_ips_count=blocked_ips_count)
+
+@main.route('/health')
+def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Test database connection
+        db.session.execute(db.text('SELECT 1'))
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'database': 'connected',
+            'version': '1.0.0'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'error': str(e)
+        }), 500

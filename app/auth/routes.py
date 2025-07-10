@@ -8,10 +8,12 @@ from .forms import RegistrationForm, LoginForm, ForgotPasswordForm, ResetPasswor
 from datetime import datetime, timedelta
 import secrets
 import re
+from app.utils.security_monitor import security_check, security_monitor
 
 auth = Blueprint('auth', __name__)
 
 @auth.route('/register', methods=['GET', 'POST'])
+@security_check
 def register():
     # Redirect if already logged in
     if current_user.is_authenticated:
@@ -96,6 +98,7 @@ def register():
     return render_template('register.html', form=form, plan=plan)
 
 @auth.route('/login', methods=['GET', 'POST'])
+@security_check
 def login():
     # Redirect if already logged in
     if current_user.is_authenticated:
@@ -109,6 +112,13 @@ def login():
         # Get user IP and user agent for security logging
         ip_address = request.remote_addr
         user_agent = request.headers.get('User-Agent', '')
+        
+        # Log the login attempt with enhanced security monitoring
+        security_monitor.log_security_event(
+            'LOGIN_ATTEMPT',
+            'INFO',
+            f"Login attempt for email: {email} from IP: {ip_address}"
+        )
         
         # Find user
         user = User.query.filter_by(email=email).first()

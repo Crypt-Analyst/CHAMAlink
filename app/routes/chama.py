@@ -1,13 +1,69 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from app.models import Chama, Transaction, Event, User, chama_members, RegistrationFeePayment, ChamaMembershipRequest, Notification, ManualPaymentVerification
+from app.models import (
+    Chama, User, Transaction, Event, chama_members, 
+    ChamaMembershipRequest, Notification, ManualPaymentVerification, RegistrationFeePayment
+)
 from app.utils.permissions import chama_member_required, chama_admin_required, user_can_access_chama
+from app.utils.mpesa import initiate_stk_push
 from app import db
 from datetime import datetime, date
-from sqlalchemy import desc
-from app.utils.mpesa import initiate_stk_push
+from sqlalchemy import desc, and_, or_, func
 
 chama_bp = Blueprint('chama', __name__, url_prefix='/chama')
+
+@chama_bp.route('/create', methods=['GET', 'POST'])
+@login_required
+def create_chama():
+    """Create a new chama"""
+    if request.method == 'GET':
+        return render_template('chama/create.html')
+    
+    try:
+        data = request.get_json() if request.is_json else request.form
+        
+        # Validate required fields
+        if not data.get('name'):
+            return jsonify({'success': False, 'message': 'Chama name is required'}), 400
+        
+        if not data.get('monthly_contribution'):
+            return jsonify({'success': False, 'message': 'Monthly contribution is required'}), 400
+        
+        # Create new chama
+        chama = Chama(
+            name=data['name'],
+            description=data.get('description', ''),
+            goal=data.get('goal', ''),
+            monthly_contribution=float(data['monthly_contribution']),
+            meeting_day=data.get('meeting_day', ''),
+            creator_id=current_user.id
+        )
+        
+        db.session.add(chama)
+        db.session.flush()  # Get the chama ID
+        
+        # Add creator as admin member
+        membership = chama_members.insert().values(
+            user_id=current_user.id,
+            chama_id=chama.id,
+            role='creator'
+        )
+        db.session.execute(membership)
+        db.session.commit()
+        
+        if request.is_json:
+            return jsonify({'success': True, 'message': 'Chama created successfully!', 'chama_id': chama.id})
+        else:
+            flash('Chama created successfully!', 'success')
+            return redirect(url_for('chama.chama_detail', chama_id=chama.id))
+    
+    except Exception as e:
+        db.session.rollback()
+        if request.is_json:
+            return jsonify({'success': False, 'message': str(e)}), 400
+        else:
+            flash(f'Error creating chama: {str(e)}', 'error')
+            return redirect(url_for('chama.create_chama'))
 
 @chama_bp.route('/<int:chama_id>')
 @login_required

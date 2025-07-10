@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing Plans - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary mb-3">Choose Your Plan</h1>
+        <p class="lead text-muted">Empower your chama with the right tools for growth and success</p>
+        <div class="badge bg-success fs-6 mb-4">
+            <i class="fas fa-star"></i> Trusted by 1000+ Chamas across Kenya
+        </div>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="row justify-content-center">
+        {% for plan in plans %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100 {% if plan.plan_type.value == 'advanced' %}border-primary shadow-lg{% endif %} pricing-card">
+                {% if plan.plan_type.value == 'advanced' %}
+                <div class="card-header bg-primary text-white text-center">
+                    <div class="badge bg-warning text-dark">MOST POPULAR</div>
+                </div>
+                {% endif %}
+                
+                <div class="card-body text-center">
+                    <h3 class="card-title text-primary fw-bold">{{ plan.name }}</h3>
+                    <p class="text-muted">{{ plan.description or 'Professional chama management solution' }}</p>
+                    
+                    <!-- Pricing Display -->
+                    <div class="pricing-section mb-4">
+                        {% if plan.plan_type.value == 'enterprise' %}
+                        <div class="price-display">
+                            <span class="h2 fw-bold text-primary">Custom Pricing</span>
+                            <div class="text-muted">Perfect for SACCOs, NGOs, Government & Large Organizations</div>
+                            <div class="small mt-2">
+                                <div><strong>Per Member:</strong> KES {{ plan.price_per_member or 30 }}/month</div>
+                                <div><strong>Service Fee:</strong> KES {{ plan.base_service_fee or 1000 }}/month</div>
+                                <div><strong>Training:</strong> KES {{ plan.training_fee_per_day or 500 }}/day</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="price-display">
+                            <span class="h2 fw-bold text-primary">KES {{ plan.price_monthly or 0 }}</span>
+                            <span class="text-muted">/month</span>
+                        </div>
+                        {% if plan.price_yearly %}
+                        <div class="text-success small mt-2">
+                            <strong>Yearly:</strong> KES {{ plan.price_yearly }} 
+                            (Save KES {{ (plan.get_yearly_savings() or 0)|int }})
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Features List -->
+                    <div class="features-list text-start">
+                        {% for feature in plan.get_feature_list() %}
+                        <div class="feature-item mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {{ feature }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-transparent text-center">
+                    {% if plan.plan_type.value == 'enterprise' %}
+                    <a href="{{ url_for('subscription_new.enterprise_contact') }}" 
+                       class="btn btn-outline-primary btn-lg w-100">
+                        Contact Sales
+                    </a>
+                    {% else %}
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('subscription.subscribe', plan_id=plan.id) }}" 
+                       class="btn {% if plan.plan_type.value == 'advanced' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-lg w-100">
+                        Choose {{ plan.name }}
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.register') }}" 
+                       class="btn {% if plan.plan_type.value == 'advanced' %}btn-primary{% else %}btn-outline-primary{% endif %} btn-lg w-100">
+                        Get Started
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Features Comparison Table -->
+    <div class="mt-5">
+        <h2 class="text-center mb-4">Compare Features</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Feature</th>
+                        {% for plan in plans %}
+                        <th class="text-center">{{ plan.name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Max Chamas</strong></td>
+                        {% for plan in plans %}
+                        <td class="text-center">{{ plan.max_chamas or 'Unlimited' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Members per Chama</strong></td>
+                        {% for plan in plans %}
+                        <td class="text-center">{{ plan.max_members_per_chama or 'Unlimited' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Monthly Loans</strong></td>
+                        {% for plan in plans %}
+                        <td class="text-center">{{ plan.max_loans_per_month or 'Unlimited' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>SMS Notifications</strong></td>
+                        {% for plan in plans %}
+                        <td class="text-center">
+                            {% if plan.has_sms_notifications %}
+                                <i class="fas fa-check text-success"></i>
+                                ({{ plan.max_sms_per_month }}/month)
+                            {% else %}
+                                <i class="fas fa-times text-muted"></i>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Advanced Reporting</strong></td>
+                        {% for plan in plans %}
+                        <td class="text-center">
+                            {% if plan.has_advanced_reporting %}
+                                <i class="fas fa-check text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times text-muted"></i>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>API Access</strong></td>
+                        {% for plan in plans %}
+                        <td class="text-center">
+                            {% if plan.has_api_access %}
+                                <i class="fas fa-check text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times text-muted"></i>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Priority Support</strong></td>
+                        {% for plan in plans %}
+                        <td class="text-center">
+                            {% if plan.has_priority_support %}
+                                <i class="fas fa-check text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times text-muted"></i>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="mt-5">
+        <h2 class="text-center mb-4">Frequently Asked Questions</h2>
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="accordion" id="pricingFAQ">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                What payment methods do you accept?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#pricingFAQ">
+                            <div class="accordion-body">
+                                We accept M-Pesa, bank transfers, and mobile money. All payments are secure and processed through trusted financial partners.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Can I upgrade or downgrade my plan?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                            <div class="accordion-body">
+                                Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Is there a free trial?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#pricingFAQ">
+                            <div class="accordion-body">
+                                Yes! All plans come with a 30-day free trial. No credit card required to start.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center mt-5 py-5 bg-light rounded">
+        <h3 class="mb-3">Ready to Transform Your Chama?</h3>
+        <p class="lead mb-4">Join thousands of chamas already using ChamaLink to manage their finances efficiently.</p>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-5">
+            Start Your Free Trial
+        </a>
+    </div>
+</div>
+
+<style>
+.pricing-card {
+    transition: transform 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-item {
+    font-size: 0.9rem;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+</style>
+{% endblock %}

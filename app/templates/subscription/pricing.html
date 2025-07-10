@@ -55,15 +55,15 @@
                         </div>
                         {% else %}
                         <div class="price-display monthly-price">
-                            <span class="h2 fw-bold text-primary">KES {{ "{:,.0f}".format(plan.price_monthly or 0) }}</span>
+                            <span class="h2 fw-bold text-primary">KES {{ plan.price_monthly|int or 0 }}</span>
                             <span class="text-muted">/month</span>
                         </div>
                         {% if plan.price_yearly %}
                         <div class="price-display yearly-price d-none">
-                            <span class="h2 fw-bold text-primary">KES {{ "{:,.0f}".format(plan.price_yearly or 0) }}</span>
+                            <span class="h2 fw-bold text-primary">KES {{ plan.price_yearly|int or 0 }}</span>
                             <span class="text-muted">/year</span>
                             <div class="text-success small">
-                                Save KES {{ "{:,.0f}".format(plan.get_yearly_savings() or 0) }}
+                                Save KES {{ (plan.get_yearly_savings() or 0)|int }}
                             </div>
                         </div>
                         {% endif %}

@@ -22,6 +22,14 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     
+    # Security Email Notification Configuration
+    SMTP_SERVER = os.environ.get('SMTP_SERVER') or 'smtp.gmail.com'
+    SMTP_PORT = int(os.environ.get('SMTP_PORT') or 587)
+    SMTP_USERNAME = os.environ.get('SMTP_USERNAME') or os.environ.get('MAIL_USERNAME')
+    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or os.environ.get('MAIL_PASSWORD')
+    SECURITY_ADMIN_EMAILS = os.environ.get('SECURITY_ADMIN_EMAILS', 'admin@chamalink.com,security@chamalink.com').split(',')
+    FROM_EMAIL = os.environ.get('FROM_EMAIL') or 'noreply@chamalink.com'
+    
     # Session Configuration
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
     

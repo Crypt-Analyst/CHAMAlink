@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Server Error - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="error-container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="error-content">
+                    <!-- Error Icon -->
+                    <div class="error-icon mb-4">
+                        <i class="fas fa-exclamation-triangle fa-6x text-warning opacity-50"></i>
+                    </div>
+                    
+                    <!-- Error Code -->
+                    <h1 class="error-code display-1 fw-bold text-warning mb-2">500</h1>
+                    
+                    <!-- Error Message -->
+                    <h2 class="error-title h3 mb-3">Internal Server Error</h2>
+                    <p class="error-description text-muted mb-4 lead">
+                        Something went wrong on our end. We're working to fix this issue.
+                    </p>
+                    
+                    <!-- Status Message -->
+                    <div class="alert alert-info d-inline-block mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Our team has been automatically notified about this error.
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="error-actions d-flex flex-column flex-sm-row gap-3 justify-content-center mb-4">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>Go Home
+                        </a>
+                        <button onclick="location.reload()" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-redo me-2"></i>Try Again
+                        </button>
+                        <button onclick="history.back()" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Go Back
+                        </button>
+                    </div>
+                    
+                    <!-- Help Links -->
+                    <div class="error-help">
+                        <p class="text-muted small mb-3">Need immediate assistance?</p>
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <a href="{{ url_for('main.contact') }}" class="text-decoration-none">
+                                <i class="fas fa-envelope me-1"></i>Contact Support
+                            </a>
+                            <a href="mailto:support@chamalink.com" class="text-decoration-none">
+                                <i class="fas fa-phone me-1"></i>Emergency Support
+                            </a>
+                            <a href="{{ url_for('main.help') }}" class="text-decoration-none">
+                                <i class="fas fa-question-circle me-1"></i>Help Center
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Error ID (for support reference) -->
+                    <div class="error-id mt-4">
+                        <small class="text-muted">
+                            Error ID: {{ error_id or 'ERR-' + moment().format('YYYYMMDDHHmmss') }}
+                            <br>
+                            <span class="small">Please reference this ID when contacting support.</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-container {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    min-height: 100vh;
+}
+
+.error-content {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.error-icon {
+    animation: shake 2s infinite;
+}
+
+.error-code {
+    color: #856404;
+    line-height: 1;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.error-help a {
+    color: #6c757d;
+    transition: color 0.2s ease;
+}
+
+.error-help a:hover {
+    color: #495057;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.error-id {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 576px) {
+    .error-code {
+        font-size: 6rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

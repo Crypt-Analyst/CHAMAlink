@@ -1,0 +1,112 @@
+{
+  "timestamp": "2025-07-10T15:26:36.335974",
+  "overall_score": 82.6086956521739,
+  "test_results": {
+    "Rate Limiting": {
+      "rate_limiting_works": false,
+      "normal_requests_allowed": true,
+      "excessive_requests_blocked": false
+    },
+    "Homepage Elements": {
+      "loads_correctly": true,
+      "has_hero_section": true,
+      "has_cta_buttons": true,
+      "has_testimonials": true,
+      "has_features": true,
+      "video_demo_present": true,
+      "duplicate_elements": []
+    },
+    "Navigation Menu": {
+      "pricing_button_present": true,
+      "all_nav_links_work": true,
+      "mobile_menu_responsive": true,
+      "nav_links_tested": [
+        {
+          "name": "Home",
+          "path": "/",
+          "success": true
+        },
+        {
+          "name": "About",
+          "path": "/about",
+          "success": true
+        },
+        {
+          "name": "Features",
+          "path": "/features",
+          "success": true
+        },
+        {
+          "name": "FAQ",
+          "path": "/faq",
+          "success": true
+        },
+        {
+          "name": "Help",
+          "path": "/help",
+          "success": true
+        },
+        {
+          "name": "Login",
+          "path": "/auth/login",
+          "success": true
+        },
+        {
+          "name": "Register",
+          "path": "/auth/register",
+          "success": true
+        }
+      ]
+    },
+    "Error Pages": {
+      "custom_404_exists": true,
+      "custom_500_exists": false,
+      "error_pages_professional": false
+    },
+    "Chat Interface": {
+      "chat_page_loads": true,
+      "chat_api_responds": true,
+      "chat_responsive": true,
+      "chat_professional": true
+    },
+    "Mobile Responsiveness": {
+      "viewport_meta_present": true,
+      "bootstrap_responsive": true,
+      "mobile_navigation": true,
+      "touch_friendly": true,
+      "pages_tested": {
+        "Homepage": {
+          "loads": true,
+          "viewport": true,
+          "responsive_framework": true
+        },
+        "About": {
+          "loads": true,
+          "viewport": true,
+          "responsive_framework": true
+        },
+        "Features": {
+          "loads": true,
+          "viewport": true,
+          "responsive_framework": true
+        },
+        "FAQ": {
+          "loads": true,
+          "viewport": true,
+          "responsive_framework": true
+        },
+        "Login": {
+          "loads": true,
+          "viewport": true,
+          "responsive_framework": true
+        },
+        "Register": {
+          "loads": true,
+          "viewport": true,
+          "responsive_framework": true
+        }
+      }
+    }
+  },
+  "recommendations": []
+}

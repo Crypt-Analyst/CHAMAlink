@@ -43,6 +43,11 @@ class User(UserMixin, db.Model):
     last_login = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # User Preferences
+    preferred_language = db.Column(db.String(5), default='en')
+    preferred_theme = db.Column(db.String(20), default='light')
+    preferred_font = db.Column(db.String(20), default='default')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing Plans - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Pricing Plans</h1>
+    
+    <div class="row">
+        {% for plan in plans %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3>{{ plan.name }}</h3>
+                    <p>{{ plan.description or 'No description available' }}</p>
+                    <p>Price: KES {{ plan.price_monthly or 0 }}/month</p>
+                    
+                    <!-- Test basic methods -->
+                    {% if plan.price_yearly %}
+                    <p>Yearly: KES {{ plan.price_yearly }}</p>
+                    <p>Savings: KES {{ plan.get_yearly_savings() or 0 }}</p>
+                    {% endif %}
+                    
+                    <!-- Test feature list -->
+                    <h4>Features:</h4>
+                    <ul>
+                        {% for feature in plan.get_feature_list() %}
+                        <li>{{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <a href="#" class="btn btn-primary">Choose Plan</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

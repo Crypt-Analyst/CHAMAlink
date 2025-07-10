@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block title %}{{ t('settings') }} - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-cog me-2"></i>{{ t('settings') }}
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">{{ t('dashboard') }}</a></li>
+                        <li class="breadcrumb-item active">{{ t('settings') }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Language Settings -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">
+                        <i class="fas fa-language text-primary me-2"></i>{{ t('language_settings') }}
+                    </h5>
+                    <p class="text-muted mb-3">{{ t('current') }}: {{ supported_languages[current_language] }}</p>
+                    
+                    <div class="language-options">
+                        {% for code, name in supported_languages.items() %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="language" 
+                                   id="lang-{{ code }}" value="{{ code }}" 
+                                   {{ 'checked' if code == current_language else '' }}
+                                   onchange="changeLanguage('{{ code }}')">
+                            <label class="form-check-label" for="lang-{{ code }}">
+                                <span class="flag me-2">
+                                    {% if code == 'en' %}🇺🇸
+                                    {% elif code == 'sw' %}🇰🇪
+                                    {% elif code == 'fr' %}🇫🇷
+                                    {% elif code == 'ar' %}🇸🇦
+                                    {% endif %}
+                                </span>
+                                {{ name }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Settings -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">
+                        <i class="fas fa-palette text-success me-2"></i>{{ t('theme_settings') }}
+                    </h5>
+                    <p class="text-muted mb-3">{{ t('current') }}: {{ supported_themes[current_theme] }}</p>
+                    
+                    <div class="theme-options">
+                        {% for theme_code, theme_name in supported_themes.items() %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="theme" 
+                                   id="theme-{{ theme_code }}" value="{{ theme_code }}" 
+                                   {{ 'checked' if theme_code == current_theme else '' }}
+                                   onchange="changeTheme('{{ theme_code }}')">
+                            <label class="form-check-label d-flex align-items-center" for="theme-{{ theme_code }}">
+                                <span class="theme-preview me-2">
+                                    {% if theme_code == 'light' %}
+                                    <span class="badge bg-light text-dark">◯</span>
+                                    {% elif theme_code == 'dark' %}
+                                    <span class="badge bg-dark text-light">●</span>
+                                    {% elif theme_code == 'blue' %}
+                                    <span class="badge bg-primary text-white">●</span>
+                                    {% elif theme_code == 'green' %}
+                                    <span class="badge bg-success text-white">●</span>
+                                    {% endif %}
+                                </span>
+                                {{ theme_name }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Font Settings -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">
+                        <i class="fas fa-font text-warning me-2"></i>{{ t('font_settings') }}
+                    </h5>
+                    <p class="text-muted mb-3">{{ t('current') }}: {{ supported_fonts[current_font] }}</p>
+                    
+                    <div class="font-options">
+                        {% for font_code, font_name in supported_fonts.items() %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="font" 
+                                   id="font-{{ font_code }}" value="{{ font_code }}" 
+                                   {{ 'checked' if font_code == current_font else '' }}
+                                   onchange="changeFont('{{ font_code }}')">
+                            <label class="form-check-label" for="font-{{ font_code }}" 
+                                   style="font-family: {% if font_code != 'default' %}{{ font_code }}{% else %}inherit{% endif %};">
+                                {{ font_name }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Settings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-4">
+                        <i class="fas fa-rocket text-info me-2"></i>{{ t('quick_actions') }}
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-grid">
+                                <button class="btn btn-outline-primary" onclick="resetToDefaults()">
+                                    <i class="fas fa-undo me-2"></i>{{ t('reset_to_defaults') }}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-grid">
+                                <button class="btn btn-outline-success" onclick="saveSettings()">
+                                    <i class="fas fa-save me-2"></i>{{ t('save_settings') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeLanguage(languageCode) {
+    showLoading('Changing language...');
+    window.location.href = `/preferences/language/${languageCode}`;
+}
+
+function changeTheme(themeCode) {
+    showLoading('Changing theme...');
+    window.location.href = `/preferences/theme/${themeCode}`;
+}
+
+function changeFont(fontCode) {
+    showLoading('Changing font...');
+    window.location.href = `/preferences/font/${fontCode}`;
+}
+
+function resetToDefaults() {
+    if (confirm('{{ t("confirm_reset_settings") }}')) {
+        showLoading('Resetting to defaults...');
+        
+        fetch('/preferences/api/set', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                language: 'en',
+                theme: 'light',
+                font: 'default'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', '{{ t("settings_reset_successfully") }}');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert('error', data.message);
+            }
+            hideLoading();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', '{{ t("error_resetting_settings") }}');
+            hideLoading();
+        });
+    }
+}
+
+function saveSettings() {
+    const language = document.querySelector('input[name="language"]:checked')?.value;
+    const theme = document.querySelector('input[name="theme"]:checked')?.value;
+    const font = document.querySelector('input[name="font"]:checked')?.value;
+    
+    showLoading('Saving settings...');
+    
+    fetch('/preferences/api/set', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            language: language,
+            theme: theme,
+            font: font
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', '{{ t("settings_saved_successfully") }}');
+        } else {
+            showAlert('error', data.message);
+        }
+        hideLoading();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('error', '{{ t("error_saving_settings") }}');
+        hideLoading();
+    });
+}
+
+function showLoading(message) {
+    // You can implement a loading indicator here
+    console.log(message);
+}
+
+function hideLoading() {
+    // Hide loading indicator
+}
+
+function showAlert(type, message) {
+    // You can implement alerts here or use your existing alert system
+    if (type === 'success') {
+        alert('✅ ' + message);
+    } else {
+        alert('❌ ' + message);
+    }
+}
+</script>
+
+<style>
+.theme-preview {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.font-options label {
+    font-size: 16px;
+    padding: 8px 0;
+}
+
+.flag {
+    font-size: 1.2em;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+.form-check-input:checked + .form-check-label {
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+</style>
+{% endblock %}

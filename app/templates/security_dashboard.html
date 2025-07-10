@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Security Dashboard - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-shield-alt text-primary me-2"></i>
+                    Security Dashboard
+                </h1>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh
+                    </button>
+                    <button class="btn btn-success" onclick="exportSecurityReport()">
+                        <i class="fas fa-download me-2"></i>Export Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Security Status Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-shield-check fs-4 text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Security Status</h6>
+                            <h4 class="text-success mb-0">SECURE</h4>
+                            <small class="text-muted">All systems operational</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-exclamation-triangle fs-4 text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Threats Blocked</h6>
+                            <h4 class="text-warning mb-0" id="threatsBlocked">{{ threats_blocked }}</h4>
+                            <small class="text-muted">Last 24 hours</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-danger bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-ban fs-4 text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Blocked IPs</h6>
+                            <h4 class="text-danger mb-0" id="blockedIPs">{{ blocked_ips_count }}</h4>
+                            <small class="text-muted">Active blocks</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                                <i class="fas fa-eye fs-4 text-info"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Monitoring</h6>
+                            <h4 class="text-info mb-0">ACTIVE</h4>
+                            <small class="text-muted">Real-time protection</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Security Events -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Security Events
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Event Type</th>
+                                    <th>Severity</th>
+                                    <th>IP Address</th>
+                                    <th>Details</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="securityEventsTable">
+                                <!-- Events will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Attack Types Chart -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Attack Types (24h)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="attackTypesChart" height="200"></canvas>
+                </div>
+            </div>
+            
+            <!-- Geographic Threats -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Geographic Threats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="threat-locations" id="threatLocations">
+                        <!-- Location data will be loaded -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh dashboard every 30 seconds
+setInterval(refreshDashboard, 30000);
+
+function refreshDashboard() {
+    // Update counters
+    fetch('/api/security/stats')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('threatsBlocked').textContent = data.threats_blocked;
+            document.getElementById('blockedIPs').textContent = data.blocked_ips;
+            updateSecurityEvents(data.recent_events);
+        })
+        .catch(error => console.error('Error refreshing dashboard:', error));
+}
+
+function updateSecurityEvents(events) {
+    const tbody = document.getElementById('securityEventsTable');
+    tbody.innerHTML = '';
+    
+    events.forEach(event => {
+        const row = document.createElement('tr');
+        
+        const severityClass = {
+            'CRITICAL': 'text-danger',
+            'HIGH': 'text-warning',
+            'MEDIUM': 'text-info',
+            'LOW': 'text-secondary',
+            'INFO': 'text-muted'
+        }[event.severity] || 'text-muted';
+        
+        row.innerHTML = `
+            <td>${new Date(event.timestamp).toLocaleString()}</td>
+            <td><span class="badge bg-secondary">${event.event_type}</span></td>
+            <td><span class="badge ${severityClass.replace('text-', 'bg-')}">${event.severity}</span></td>
+            <td><code>${event.ip}</code></td>
+            <td>${event.details.substring(0, 50)}...</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="viewEventDetails('${event.id}')">
+                    <i class="fas fa-eye"></i>
+                </button>
+                ${event.severity === 'CRITICAL' ? 
+                    '<button class="btn btn-sm btn-outline-danger" onclick="blockIP(\'' + event.ip + '\')"><i class="fas fa-ban"></i></button>' : 
+                    ''
+                }
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+function viewEventDetails(eventId) {
+    // Show detailed view of security event
+    fetch(`/api/security/events/${eventId}`)
+        .then(response => response.json())
+        .then(event => {
+            // Show modal with full event details
+            showEventModal(event);
+        })
+        .catch(error => console.error('Error fetching event details:', error));
+}
+
+function blockIP(ip) {
+    if (confirm(`Are you sure you want to block IP ${ip}?`)) {
+        fetch('/api/security/block-ip', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ip: ip })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('IP blocked successfully');
+                refreshDashboard();
+            } else {
+                alert('Error blocking IP: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error blocking IP:', error));
+    }
+}
+
+function exportSecurityReport() {
+    // Generate and download security report
+    const startDate = prompt('Enter start date (YYYY-MM-DD):') || 
+                     new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const endDate = prompt('Enter end date (YYYY-MM-DD):') || 
+                   new Date().toISOString().split('T')[0];
+    
+    window.open(`/api/security/export-report?start=${startDate}&end=${endDate}`, '_blank');
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    refreshDashboard();
+});
+</script>
+
+{% endblock %}

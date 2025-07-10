@@ -99,6 +99,7 @@
                         </h5>
                     </div>
                     <div class="card-body">
+                        {% if user_chamas %}
                         <div class="row g-3">
                             <!-- Dynamic Chama Cards -->
                             {% for chama in user_chamas %}
@@ -184,6 +185,63 @@
                                 </div>
                             </div>
                         </div>
+                        {% else %}
+                        <!-- Enhanced Empty State for New Users -->
+                        <div class="empty-state-chamas text-center py-5">
+                            <div class="empty-state-visual mb-4">
+                                <i class="fas fa-users fa-4x text-primary mb-3"></i>
+                                <h4 class="text-primary mb-2">Welcome to ChamaLink!</h4>
+                                <p class="text-muted lead mb-4">Let's get started by creating your first chama or joining an existing one</p>
+                            </div>
+                            
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <div class="onboarding-option bg-light p-4 rounded-3 h-100">
+                                        <i class="fas fa-plus-circle text-success fs-2 mb-3"></i>
+                                        <h5>Create a New Chama</h5>
+                                        <p class="text-muted small mb-3">Start fresh with your own chama group. Invite members and begin building wealth together.</p>
+                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createChamaModal">
+                                            <i class="fas fa-plus me-2"></i>Create Chama
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="onboarding-option bg-light p-4 rounded-3 h-100">
+                                        <i class="fas fa-user-plus text-primary fs-2 mb-3"></i>
+                                        <h5>Join Existing Chama</h5>
+                                        <p class="text-muted small mb-3">Get invited to a chama by a friend or search for public chamas in your area.</p>
+                                        <button class="btn btn-primary" onclick="showJoinChamaModal()">
+                                            <i class="fas fa-search me-2"></i>Find Chamas
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="getting-started-tips">
+                                <h6 class="text-muted mb-3">💡 Getting Started Tips:</h6>
+                                <div class="row g-2 text-start">
+                                    <div class="col-md-4">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>
+                                            Set up your profile first
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>
+                                            Choose a subscription plan
+                                        </small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>
+                                            Invite friends to join
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 

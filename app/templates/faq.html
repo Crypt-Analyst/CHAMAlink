@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Frequently Asked Questions - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary mb-4">Frequently Asked Questions</h1>
+        <p class="lead text-muted">Get answers to common questions about ChamaLink</p>
+    </div>
+    
+    <!-- FAQ Categories -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="faq-categories d-flex justify-content-center flex-wrap gap-2 mb-4">
+                <button class="btn btn-outline-primary btn-sm" onclick="filterFAQ('all')">All</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="filterFAQ('getting-started')">Getting Started</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="filterFAQ('payments')">Payments</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="filterFAQ('pricing')">Pricing</button>
+                <button class="btn btn-outline-primary btn-sm" onclick="filterFAQ('security')">Security</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Items -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="accordion" id="faqAccordion">
+                
+                <!-- Getting Started -->
+                <div class="faq-item" data-category="getting-started">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                <i class="fas fa-play-circle text-primary me-3"></i>
+                                How do I get started with ChamaLink?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Getting started is easy:</p>
+                                <ol>
+                                    <li><strong>Sign up</strong> for a free account</li>
+                                    <li><strong>Choose a plan</strong> that fits your chama size</li>
+                                    <li><strong>Create your chama</strong> or join an existing one</li>
+                                    <li><strong>Invite members</strong> and start managing finances</li>
+                                </ol>
+                                <p>Our onboarding process guides you through each step!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-category="getting-started">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                <i class="fas fa-users text-success me-3"></i>
+                                Can I join multiple chamas?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! You can join multiple chamas with a single ChamaLink account. Each chama will have its own dashboard and financial tracking, keeping everything organized and separate.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payments -->
+                <div class="faq-item" data-category="payments">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                <i class="fas fa-mobile-alt text-info me-3"></i>
+                                How does M-Pesa integration work?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Our M-Pesa integration makes payments seamless:</p>
+                                <ul>
+                                    <li><strong>STK Push</strong> - Receive payment prompts directly on your phone</li>
+                                    <li><strong>Automatic Recording</strong> - All payments are automatically recorded</li>
+                                    <li><strong>Instant Notifications</strong> - Get confirmed when payments are received</li>
+                                    <li><strong>Digital Receipts</strong> - Automatic receipt generation for all transactions</li>
+                                </ul>
+                                <p>No more manual cash handling or record keeping!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-category="payments">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                <i class="fas fa-receipt text-warning me-3"></i>
+                                Are transaction fees included in pricing?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Standard M-Pesa transaction fees apply as per Safaricom's rates. ChamaLink platform fees are separate and clearly outlined in our pricing plans. We don't add hidden fees to your transactions.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pricing -->
+                <div class="faq-item" data-category="pricing">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                <i class="fas fa-money-bill-wave text-success me-3"></i>
+                                What's included in the Enterprise plan?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>Our Enterprise plan includes everything you need:</p>
+                                <ul>
+                                    <li>Unlimited members and transactions</li>
+                                    <li>Advanced financial reporting</li>
+                                    <li>Loan management system</li>
+                                    <li>Penalty tracking</li>
+                                    <li>Meeting scheduling</li>
+                                    <li>M-Pesa integration</li>
+                                    <li>24/7 support</li>
+                                    <li>Training and onboarding</li>
+                                </ul>
+                                <p><strong>Pricing:</strong> KES 30 per member + KES 1000 service fee + KES 500 training fee</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-category="pricing">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+                                <i class="fas fa-calendar-alt text-primary me-3"></i>
+                                Can I change my plan later?
+                            </button>
+                        </h2>
+                        <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! You can upgrade or downgrade your plan at any time. Changes take effect at your next billing cycle, and we'll prorate any differences.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security -->
+                <div class="faq-item" data-category="security">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq7">
+                                <i class="fas fa-shield-alt text-danger me-3"></i>
+                                How secure is my chama's financial data?
+                            </button>
+                        </h2>
+                        <div id="faq7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>We take security very seriously:</p>
+                                <ul>
+                                    <li><strong>Bank-grade encryption</strong> for all data</li>
+                                    <li><strong>Secure hosting</strong> with daily backups</li>
+                                    <li><strong>Role-based access</strong> control</li>
+                                    <li><strong>Audit trails</strong> for all transactions</li>
+                                    <li><strong>Two-factor authentication</strong> available</li>
+                                    <li><strong>Regular security audits</strong></li>
+                                </ul>
+                                <p>Your data is protected to international banking standards.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-item" data-category="security">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq8">
+                                <i class="fas fa-backup text-info me-3"></i>
+                                What happens to my data if I cancel?
+                            </button>
+                        </h2>
+                        <div id="faq8" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                You can export all your data before canceling. We keep your data for 30 days after cancellation for recovery purposes, then it's permanently deleted per our privacy policy.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact CTA -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <div class="cta-section bg-light p-5 rounded-3">
+                <h3 class="mb-3">Still have questions?</h3>
+                <p class="text-muted mb-4">Our support team is here to help you succeed</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('main.contact') }}" class="btn btn-primary">
+                        <i class="fas fa-envelope me-2"></i>Contact Support
+                    </a>
+                    <a href="mailto:support@chamalink.com" class="btn btn-outline-primary">
+                        <i class="fas fa-mail-bulk me-2"></i>Email Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterFAQ(category) {
+    const items = document.querySelectorAll('.faq-item');
+    const buttons = document.querySelectorAll('.faq-categories .btn');
+    
+    // Update button states
+    buttons.forEach(btn => btn.classList.remove('btn-primary'));
+    buttons.forEach(btn => btn.classList.add('btn-outline-primary'));
+    event.target.classList.remove('btn-outline-primary');
+    event.target.classList.add('btn-primary');
+    
+    // Filter items
+    items.forEach(item => {
+        if (category === 'all' || item.dataset.category === category) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
+
+{% endblock %}

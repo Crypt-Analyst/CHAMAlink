@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, make_response, s
 from flask_login import login_required, current_user
 from app import db
 from app.models import Chama, Transaction, LoanApplication, Penalty, MpesaTransaction, User, chama_members
-from app.routes.decorators import chama_admin_required, chama_member_required
+from app.utils.permissions import chama_member_required, chama_admin_required
 from datetime import datetime, timedelta
 from sqlalchemy import func, and_, or_
 import pandas as pd
