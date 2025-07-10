@@ -342,11 +342,31 @@ function submitNewFeature() {
         return;
     }
     
-    // Here you would typically send to backend
-    alert(`✅ Feature "${name}" added to development roadmap!\\n\\nPriority: ${priority.toUpperCase()}\\nDescription: ${description}`);
-    
-    // Close modal
-    bootstrap.Modal.getInstance(document.getElementById('newFeatureModal')).hide();
+    // Send to backend
+    fetch('/founder-dashboard/new-feature', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: name,
+            description: description,
+            priority: priority
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ ${data.message}`);
+            bootstrap.Modal.getInstance(document.getElementById('newFeatureModal')).hide();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while adding the feature');
+    });
 }
 
 // Send Platform Notice
@@ -416,9 +436,32 @@ function submitPlatformNotice() {
         return;
     }
     
-    alert(`📢 Platform Notice Sent!\\n\\nTitle: ${title}\\nPriority: ${priority.toUpperCase()}\\nEmail Notification: ${sendEmail ? 'Yes' : 'No'}`);
-    
-    bootstrap.Modal.getInstance(document.getElementById('platformNoticeModal')).hide();
+    // Send to backend
+    fetch('/founder-dashboard/platform-notice', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            title: title,
+            message: message,
+            priority: priority,
+            send_email: sendEmail
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`📢 ${data.message}`);
+            bootstrap.Modal.getInstance(document.getElementById('platformNoticeModal')).hide();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while sending the notice');
+    });
 }
 
 // Generate Platform Report
@@ -487,9 +530,31 @@ function generateReport() {
     const dateRange = document.getElementById('dateRange').value;
     const exportFormat = document.getElementById('exportFormat').value;
     
-    alert(`📊 Generating ${reportType}...\\n\\nDate Range: Last ${dateRange} days\\nFormat: ${exportFormat.toUpperCase()}\\n\\nReport will be emailed to you shortly!`);
-    
-    bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+    // Send to backend
+    fetch('/founder-dashboard/generate-report', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            report_type: reportType,
+            date_range: dateRange,
+            export_format: exportFormat
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`📊 ${data.message}`);
+            bootstrap.Modal.getInstance(document.getElementById('reportModal')).hide();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while generating the report');
+    });
 }
 
 // Create Promotion
@@ -572,9 +637,33 @@ function submitPromotion() {
         return;
     }
     
-    alert(`🎁 Promotion Created!\\n\\nName: ${name}\\nDiscount: ${discountValue}${discountType === 'percentage' ? '%' : ' KES'} off\\nPeriod: ${startDate} to ${endDate}\\n\\nPromotion is now active!`);
-    
-    bootstrap.Modal.getInstance(document.getElementById('promotionModal')).hide();
+    // Send to backend
+    fetch('/founder-dashboard/create-promotion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: name,
+            discount_type: discountType,
+            discount_value: discountValue,
+            start_date: startDate,
+            end_date: endDate
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`🎁 ${data.message}`);
+            bootstrap.Modal.getInstance(document.getElementById('promotionModal')).hide();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the promotion');
+    });
 }
 
 // Emergency Actions
@@ -625,16 +714,63 @@ function emergencyActions() {
 
 function maintenanceMode() {
     if (confirm('Enable maintenance mode? This will make the platform inaccessible to users.')) {
-        alert('🔧 Maintenance mode enabled. Platform is now offline for users.');
-        bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
+        const message = prompt('Enter maintenance message (optional):', 'System under maintenance. We\'ll be back shortly!');
+        
+        fetch('/founder-dashboard/maintenance-mode', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                enable: true,
+                message: message || 'System under maintenance'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`🔧 ${data.message}`);
+                bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while enabling maintenance mode');
+        });
     }
 }
 
 function broadcastMessage() {
     const message = prompt('Enter emergency broadcast message:');
     if (message) {
-        alert(`📢 Emergency broadcast sent to all users:\\n\\n"${message}"`);
-        bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
+        const sendSMS = confirm('Also send via SMS? (if configured)');
+        
+        fetch('/founder-dashboard/emergency-broadcast', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                send_sms: sendSMS,
+                send_email: true
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`📢 ${data.message}`);
+                bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while sending emergency broadcast');
+        });
     }
 }
 

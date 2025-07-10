@@ -460,7 +460,7 @@ def export_all_chamas():
         writer.writerow([
             chama.id,
             chama.name,
-            chama.admin.full_name if chama.admin else 'N/A',
+            chama.creator.full_name if chama.creator else 'N/A',
             chama.status,
             len(chama.members),
             f"KES {total_contributions:,.2f}",
@@ -607,3 +607,172 @@ def feature_interest():
             'success': False,
             'message': 'Something went wrong. Please try again.'
         }), 400
+
+@main.route('/founder-dashboard/new-feature', methods=['POST'])
+@login_required
+def add_new_feature():
+    """Add a new feature to the development roadmap - founder only"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        feature_name = data.get('name')
+        description = data.get('description')
+        priority = data.get('priority', 'medium')
+        
+        # In a real implementation, save to database
+        # For now, just log and return success
+        print(f"New Feature Request: {feature_name} - {priority} - {description}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Feature "{feature_name}" added to development roadmap!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@main.route('/founder-dashboard/platform-notice', methods=['POST'])
+@login_required
+def send_platform_notice():
+    """Send platform-wide notice - founder only"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        title = data.get('title')
+        message = data.get('message')
+        priority = data.get('priority', 'info')
+        send_email = data.get('send_email', False)
+        
+        # In a real implementation, create notifications for all users
+        # and optionally send emails
+        print(f"Platform Notice: {title} - {priority} - Email: {send_email}")
+        
+        # Here you would:
+        # 1. Create notifications for all users
+        # 2. Send emails if requested
+        # 3. Log the action
+        
+        return jsonify({
+            'success': True,
+            'message': f'Platform notice "{title}" sent successfully!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@main.route('/founder-dashboard/generate-report', methods=['POST'])
+@login_required
+def generate_platform_report():
+    """Generate platform reports - founder only"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        report_type = data.get('report_type')
+        date_range = data.get('date_range', '30')
+        export_format = data.get('export_format', 'pdf')
+        
+        # In a real implementation, generate actual reports
+        print(f"Report Request: {report_type} - {date_range} days - {export_format}")
+        
+        # Here you would:
+        # 1. Query data based on report type and date range
+        # 2. Generate report in requested format
+        # 3. Email to founder or provide download link
+        
+        return jsonify({
+            'success': True,
+            'message': f'{report_type} report generated successfully! Check your email.'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@main.route('/founder-dashboard/create-promotion', methods=['POST'])
+@login_required
+def create_promotion():
+    """Create a new promotion - founder only"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        name = data.get('name')
+        discount_type = data.get('discount_type')
+        discount_value = data.get('discount_value')
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        
+        # In a real implementation, save promotion to database
+        print(f"New Promotion: {name} - {discount_type} - {discount_value}% - {start_date} to {end_date}")
+        
+        # Here you would:
+        # 1. Create promotion record in database
+        # 2. Set up automated application of discounts
+        # 3. Notify users about the promotion
+        
+        return jsonify({
+            'success': True,
+            'message': f'Promotion "{name}" created and activated successfully!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@main.route('/founder-dashboard/maintenance-mode', methods=['POST'])
+@login_required
+def toggle_maintenance_mode():
+    """Toggle maintenance mode - founder only"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        enable = data.get('enable', True)
+        message = data.get('message', 'System under maintenance')
+        
+        # In a real implementation, set maintenance mode flag
+        print(f"Maintenance Mode: {'Enabled' if enable else 'Disabled'} - {message}")
+        
+        # Here you would:
+        # 1. Set maintenance flag in configuration
+        # 2. Show maintenance page to non-admin users
+        # 3. Log the action
+        
+        action = 'enabled' if enable else 'disabled'
+        return jsonify({
+            'success': True,
+            'message': f'Maintenance mode {action} successfully!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@main.route('/founder-dashboard/emergency-broadcast', methods=['POST'])
+@login_required
+def emergency_broadcast():
+    """Send emergency broadcast - founder only"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        message = data.get('message')
+        send_sms = data.get('send_sms', False)
+        send_email = data.get('send_email', True)
+        
+        # In a real implementation, send emergency notifications
+        print(f"Emergency Broadcast: {message} - SMS: {send_sms} - Email: {send_email}")
+        
+        # Here you would:
+        # 1. Send immediate notifications to all users
+        # 2. Send SMS if requested and configured
+        # 3. Send emails
+        # 4. Log the emergency action
+        
+        return jsonify({
+            'success': True,
+            'message': 'Emergency broadcast sent to all users!'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500

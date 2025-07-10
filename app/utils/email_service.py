@@ -176,12 +176,8 @@ class EmailService:
         """Send password reset link"""
         try:
             from flask import render_template
-            from datetime import datetime
             
-            html_content = render_template('email/password_reset.html', 
-                                         user=user, 
-                                         reset_url=reset_url,
-                                         current_year=datetime.now().year)
+            html_content = render_template('email/password_reset.html', user=user, reset_url=reset_url)
             
             text_content = f"""
             Hello {user.first_name or user.username},
