@@ -30,6 +30,9 @@ pyotp==2.9.0
 requests==2.31.0
 python-dotenv==1.0.1
 
+# SMS and Communication
+africastalking==1.2.5
+
 # Image processing - Use older Pillow for 3.11
 qrcode==7.4.2
 Pillow==9.5.0  # 10.x has Python 3.13 specific optimizations
