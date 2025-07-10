@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: chamalink
+    runtime: python
+    env: python
+    repo: https://github.com/RahasoftBwire/CHAMAlink
+    region: oregon
+    plan: free
+    branch: master
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: chamalink-db
+          property: connectionString
+    domains:
+      - chamalink.onrender.com
