@@ -1,5 +1,16 @@
 # ChamaLink Deployment Guide - Render.com
 
+## 🚨 CRITICAL: Python Version Requirements
+
+**IMPORTANT**: ChamaLink MUST use Python 3.11.x on Render.com. Python 3.13 will cause greenlet compilation failures.
+
+Files that enforce Python 3.11:
+- `runtime.txt` (contains: python-3.11.9)
+- `.python-version` (contains: 3.11.9)
+- `requirements.txt` (optimized for Python 3.11)
+
+If deployment fails with greenlet errors, see `RENDER_TROUBLESHOOTING.md`.
+
 ## Quick Deployment Steps
 
 ### 1. Repository Setup
