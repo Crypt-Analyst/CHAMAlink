@@ -21,7 +21,20 @@ else
 fi
 
 echo "==> Installing dependencies..."
-pip install -r requirements.txt
+
+# Try full requirements first
+if pip install -r requirements.txt; then
+    echo "✅ Full requirements installed successfully"
+else
+    echo "⚠️  Full requirements failed, trying minimal requirements..."
+    if pip install -r requirements-minimal.txt; then
+        echo "✅ Minimal requirements installed successfully"
+        echo "🔧 Application will use fallback implementations for missing features"
+    else
+        echo "❌ Even minimal requirements failed"
+        exit 1
+    fi
+fi
 
 # Optionally install SMS service if needed
 if [ "$ENABLE_SMS_SERVICE" = "true" ] || [ -n "$AFRICASTALKING_API_KEY" ]; then
