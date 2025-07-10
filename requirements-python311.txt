@@ -3,7 +3,7 @@
 # DO NOT use with Python 3.12+ or 3.13+ - known compatibility issues
 
 # Core Flask framework - 3.11 tested versions
-Flask==3.0.3
+Flask==2.3.3
 Flask-Login==0.6.3
 Flask-Mail==0.9.1  # Older version for 3.11 compatibility
 Flask-SQLAlchemy==3.0.5
@@ -14,7 +14,7 @@ psycopg2-binary==2.9.7  # 2.9.9 has Python 3.13 build issues
 SQLAlchemy==2.0.23
 
 # Core Flask dependencies
-Werkzeug==3.0.3
+Werkzeug==2.3.7
 Jinja2==3.1.4
 itsdangerous==2.2.0
 click==8.1.7
@@ -22,7 +22,7 @@ blinker==1.7.0
 MarkupSafe==2.1.5
 
 # Forms and validation
-Flask-WTF==1.1.1
+Flask-WTF==1.0.1
 WTForms==3.1.2
 
 # Security and utilities
