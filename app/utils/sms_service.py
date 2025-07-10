@@ -3,7 +3,6 @@ SMS service for sending 2FA codes and notifications
 """
 import requests
 import os
-import africastalking
 from flask import current_app
 
 class SMSService:
@@ -13,8 +12,19 @@ class SMSService:
         api_key = os.getenv('AFRICASTALKING_API_KEY')
         
         if api_key:
-            africastalking.initialize(username, api_key)
-            self.sms = africastalking.SMS
+            try:
+                import africastalking
+                africastalking.initialize(username, api_key)
+                self.sms = africastalking.SMS
+            except ImportError:
+                # Only log if we're in an application context
+                try:
+                    from flask import current_app
+                    current_app.logger.warning("Africa's Talking package not found. SMS service disabled.")
+                except RuntimeError:
+                    # We're outside application context, which is fine during import
+                    pass
+                self.sms = None
         else:
             # Only log if we're in an application context
             try:

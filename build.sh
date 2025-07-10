@@ -23,4 +23,10 @@ fi
 echo "==> Installing dependencies..."
 pip install -r requirements.txt
 
+# Optionally install SMS service if needed
+if [ "$ENABLE_SMS_SERVICE" = "true" ] || [ -n "$AFRICASTALKING_API_KEY" ]; then
+    echo "==> Installing optional SMS service dependencies..."
+    pip install africastalking==1.2.5
+fi
+
 echo "==> Build completed successfully!"
