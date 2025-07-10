@@ -1,0 +1,16 @@
+# Optional Analytics Requirements
+# Install these when you need advanced reporting and analytics features
+# pip install -r requirements-analytics.txt
+
+pandas==2.1.4
+matplotlib==3.8.4
+seaborn==0.13.2
+reportlab==4.2.2
+python-dateutil==2.9.0
+numpy==1.26.4
+
+# SMS Integration (optional)
+africastalking==1.2.5
+
+# Enhanced Database Features (optional)
+supabase==2.7.4

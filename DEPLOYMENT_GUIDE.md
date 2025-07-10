@@ -24,7 +24,7 @@ MAIL_DEFAULT_SENDER=your_gmail@gmail.com
 ### 3. Build Settings
 - **Build Command**: `pip install -r requirements.txt`
 - **Start Command**: `gunicorn run:app`
-- **Environment**: Python 3.13.x
+- **Environment**: Python 3.11.x (recommended for better package compatibility)
 
 ### 4. Database Setup
 1. Create a PostgreSQL database on Supabase or Render
@@ -95,8 +95,9 @@ with app.app_context():
 
 #### Build Fails
 - Check requirements.txt for correct package versions
-- Ensure Python version compatibility (3.13.x)
+- Ensure Python version compatibility (3.11.x recommended)
 - Latest fix: Updated Flask-Mail from 0.10.1 to 0.10.0
+- Latest fix: Removed problematic packages (pandas, matplotlib) that cause compilation issues
 
 #### Database Connection Fails
 - Verify DATABASE_URL is correct

@@ -5,19 +5,40 @@ from app.models import Chama, Transaction, LoanApplication, Penalty, MpesaTransa
 from app.utils.permissions import chama_member_required, chama_admin_required
 from datetime import datetime, timedelta
 from sqlalchemy import func, and_, or_
-import pandas as pd
 import io
 import base64
-import matplotlib.pyplot as plt
-import seaborn as sns
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib.colors import black, grey, blue, green, red
-from reportlab.lib import colors
-import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
+
+# Optional analytics imports - gracefully handle if not installed
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
+
+try:
+    import matplotlib
+    matplotlib.use('Agg')  # Use non-interactive backend
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+
+try:
+    import seaborn as sns
+    SEABORN_AVAILABLE = True
+except ImportError:
+    SEABORN_AVAILABLE = False
+
+try:
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib.colors import black, grey, blue, green, red
+    from reportlab.lib import colors
+    REPORTLAB_AVAILABLE = True
+except ImportError:
+    REPORTLAB_AVAILABLE = False
 
 reports_bp = Blueprint('reports', __name__, url_prefix='/reports')
 
@@ -137,23 +158,23 @@ def export_csv(chama, start_dt, end_dt):
         Transaction.created_at < end_dt
     ).all()
     
-    # Create DataFrame
-    data = []
-    for transaction in transactions:
-        data.append({
-            'Date': transaction.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'Type': transaction.type.replace('_', ' ').title(),
-            'Amount': transaction.amount,
-            'Description': transaction.description,
-            'User': transaction.user.username if transaction.user else 'System',
-            'Status': transaction.status
-        })
-    
-    df = pd.DataFrame(data)
-    
-    # Create CSV file
+    # Create CSV content manually
     output = io.StringIO()
-    df.to_csv(output, index=False)
+    
+    # Write header
+    output.write('Date,Type,Amount,Description,User,Status\n')
+    
+    # Write data rows
+    for transaction in transactions:
+        date = transaction.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        trans_type = transaction.type.replace('_', ' ').title()
+        amount = str(transaction.amount)
+        description = transaction.description.replace(',', ';') if transaction.description else ''
+        user = transaction.user.username if transaction.user else 'System'
+        status = transaction.status
+        
+        output.write(f'"{date}","{trans_type}",{amount},"{description}","{user}","{status}"\n')
+    
     output.seek(0)
     
     response = make_response(output.getvalue())
@@ -164,6 +185,14 @@ def export_csv(chama, start_dt, end_dt):
 
 def export_pdf(chama, start_dt, end_dt):
     """Export financial report as PDF"""
+    
+    if not REPORTLAB_AVAILABLE:
+        # Return an error response if reportlab is not available
+        return jsonify({
+            'error': 'PDF export not available. Please install analytics packages.',
+            'install_command': 'pip install -r requirements-analytics.txt'
+        }), 503
+    
     # Create PDF buffer
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -284,6 +313,14 @@ def export_pdf(chama, start_dt, end_dt):
 @chama_member_required
 def generate_chart(chama_id, chart_type):
     """Generate charts for financial data"""
+    
+    if not MATPLOTLIB_AVAILABLE or not SEABORN_AVAILABLE:
+        # Return an error response if matplotlib/seaborn is not available
+        return jsonify({
+            'error': 'Chart generation not available. Please install analytics packages.',
+            'install_command': 'pip install -r requirements-analytics.txt'
+        }), 503
+    
     chama = Chama.query.get_or_404(chama_id)
     
     # Get date range
