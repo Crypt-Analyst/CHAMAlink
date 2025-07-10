@@ -9,7 +9,7 @@ services:
     branch: master
     rootDir: .
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn run:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
