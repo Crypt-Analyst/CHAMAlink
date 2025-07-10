@@ -38,7 +38,7 @@
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <div class="stat-content">
-                        <h3 class="stat-number">{{ "{:,}".format(admin_users) }}</h3>
+                        <h3 class="stat-number">{{ "{:,}".format(admin_users or 0) }}</h3>
                         <p class="stat-label">Admin Users</p>
                         <small class="stat-change">
                             <i class="fas fa-crown"></i> System administrators
@@ -52,7 +52,7 @@
                         <i class="fas fa-building"></i>
                     </div>
                     <div class="stat-content">
-                        <h3 class="stat-number">{{ "{:,}".format(total_chamas) }}</h3>
+                        <h3 class="stat-number">{{ "{:,}".format(total_chamas or 0) }}</h3>
                         <p class="stat-label">Total Chamas</p>
                         <small class="stat-change">
                             <i class="fas fa-check-circle"></i> {{ active_chamas }} active
@@ -66,7 +66,7 @@
                         <i class="fas fa-money-bill-wave"></i>
                     </div>
                     <div class="stat-content">
-                        <h3 class="stat-number">KES {{ "{:,.0f}".format(total_revenue) }}</h3>
+                        <h3 class="stat-number">KES {{ "{:,.0f}".format(total_revenue or 0) }}</h3>
                         <p class="stat-label">Total Revenue</p>
                         <small class="stat-change">
                             <i class="fas fa-chart-line"></i> Platform revenue
@@ -80,7 +80,7 @@
                         <i class="fas fa-heart"></i>
                     </div>
                     <div class="stat-content">
-                        <h3 class="stat-number">{{ "{:.1f}".format(active_chama_percentage) }}%</h3>
+                        <h3 class="stat-number">{{ "{:.1f}".format(active_chama_percentage or 0) }}%</h3>
                         <p class="stat-label">Chama Health</p>
                         <small class="stat-change">
                             <i class="fas fa-smile"></i> Active communities

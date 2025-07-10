@@ -7,6 +7,11 @@ class PlanType(Enum):
     ADVANCED = "advanced" 
     ENTERPRISE = "enterprise"
 
+class EnterpriseBillingType(Enum):
+    FIXED = "fixed"  # Fixed monthly/yearly fee
+    PER_MEMBER = "per_member"  # Per member pricing
+    HYBRID = "hybrid"  # Base fee + per member
+
 class EnterpriseSubscriptionPlan(db.Model):
     """Enhanced subscription plans with enterprise features"""
     __tablename__ = 'enterprise_subscription_plans'
@@ -14,8 +19,14 @@ class EnterpriseSubscriptionPlan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     plan_type = db.Column(db.Enum(PlanType), nullable=False)
+    billing_type = db.Column(db.Enum(EnterpriseBillingType), default=EnterpriseBillingType.FIXED)
+    
+    # Pricing structure
     price_monthly = db.Column(db.Float, nullable=False)
     price_yearly = db.Column(db.Float)  # Optional yearly pricing
+    price_per_member = db.Column(db.Float, default=0)  # Per member pricing (KES 30 for SACCO/NGO)
+    base_service_fee = db.Column(db.Float, default=0)  # Base service fee (KES 1000 for SACCO/NGO)
+    training_fee_per_day = db.Column(db.Float, default=0)  # Training fee (KES 500/day)
     currency = db.Column(db.String(3), default='KES')
     
     # Feature limits
@@ -58,17 +69,31 @@ class EnterpriseSubscriptionPlan(db.Model):
         """Get list of features for this plan"""
         features = []
         
-        # Basic features for all plans
-        features.extend([
-            f"Up to {self.max_chamas} chama{'s' if self.max_chamas > 1 else ''}",
-            f"Up to {self.max_members_per_chama} members per chama",
-            f"{self.max_loans_per_month} loans per month",
-            "Basic financial tracking",
-            "Member management",
-            "Basic reporting"
-        ])
+        # Special messaging for Enterprise plan (includes SACCO/NGO/Government features)
+        if self.plan_type == PlanType.ENTERPRISE:
+            features.extend([
+                "Perfect for SACCOs, NGOs & Government",
+                "Large organizations & institutions",
+                f"Pay per member: KES {self.price_per_member or 30}/member/month",
+                f"Monthly service fee: KES {self.base_service_fee or 1000}",
+                f"Training support: KES {self.training_fee_per_day or 500}/day",
+                "Scale from 1 to 10,000+ members",
+                "Unlimited chamas/groups",
+                "Dedicated account manager",
+                "Priority enterprise support"
+            ])
+        else:
+            # Basic features for other plans
+            features.extend([
+                f"Up to {self.max_chamas} chama{'s' if self.max_chamas > 1 else ''}",
+                f"Up to {self.max_members_per_chama} members per chama",
+                f"{self.max_loans_per_month} loans per month",
+                "Basic financial tracking",
+                "Member management",
+                "Basic reporting"
+            ])
         
-        # Advanced features
+        # Advanced features for all plans
         if self.has_sms_notifications:
             features.append(f"{self.max_sms_per_month} SMS notifications per month")
         
@@ -163,7 +188,7 @@ class EnterpriseSubscriptionPlan(db.Model):
                 'has_custom_branding': True,
                 'has_dedicated_manager': True,
                 'has_training_support': True,
-                'description': 'Comprehensive solution for SACCOs, NGOs, and large organizations'
+                'description': 'Enterprise solution for SACCOs, NGOs, Government agencies, and large organizations with flexible per-member pricing'
             }
         ]
         
@@ -177,6 +202,44 @@ class EnterpriseSubscriptionPlan(db.Model):
     
     def __repr__(self):
         return f'<EnterpriseSubscriptionPlan {self.name}>'
+
+    def calculate_monthly_cost(self, member_count=0, include_service=False, training_days=0):
+        """Calculate monthly cost based on billing type and member count"""
+        if self.billing_type == EnterpriseBillingType.FIXED:
+            return self.price_monthly
+        
+        elif self.billing_type == EnterpriseBillingType.PER_MEMBER:
+            # SACCO/NGO pricing: KES 30 per member
+            member_cost = member_count * self.price_per_member
+            service_cost = self.base_service_fee if include_service else 0
+            training_cost = training_days * self.training_fee_per_day
+            return member_cost + service_cost + training_cost
+        
+        elif self.billing_type == EnterpriseBillingType.HYBRID:
+            # Base fee + per member pricing
+            base_cost = self.price_monthly
+            member_cost = member_count * self.price_per_member
+            service_cost = self.base_service_fee if include_service else 0
+            training_cost = training_days * self.training_fee_per_day
+            return base_cost + member_cost + service_cost + training_cost
+        
+        return self.price_monthly
+
+    def get_member_limit_for_payment(self, payment_amount):
+        """Calculate how many members are allowed based on payment amount"""
+        if self.billing_type == EnterpriseBillingType.PER_MEMBER and self.price_per_member > 0:
+            # Subtract service fee if it was included
+            remaining_amount = payment_amount - self.base_service_fee
+            if remaining_amount <= 0:
+                return 0
+            return int(remaining_amount / self.price_per_member)
+        return self.max_members_per_chama
+
+    def can_add_member(self, current_member_count, paid_member_limit):
+        """Check if organization can add another member based on their payment"""
+        if self.billing_type == EnterpriseBillingType.PER_MEMBER:
+            return current_member_count < paid_member_limit
+        return current_member_count < self.max_members_per_chama
 
 class EnterpriseUserSubscription(db.Model):
     """Enhanced user subscription with enterprise features"""
@@ -198,12 +261,18 @@ class EnterpriseUserSubscription(db.Model):
     next_payment_date = db.Column(db.DateTime)
     payment_frequency = db.Column(db.String(10), default='monthly')  # monthly, yearly
     
-    # Usage tracking
+    # Usage tracking and limits
     current_chamas = db.Column(db.Integer, default=0)
     current_members = db.Column(db.Integer, default=0)
+    paid_member_limit = db.Column(db.Integer, default=0)  # Members allowed based on payment
     monthly_loans = db.Column(db.Integer, default=0)
     monthly_sms_sent = db.Column(db.Integer, default=0)
     storage_used_mb = db.Column(db.Float, default=0.0)
+    
+    # Payment tracking for per-member billing
+    last_payment_amount = db.Column(db.Float, default=0.0)
+    service_fee_paid = db.Column(db.Boolean, default=False)
+    training_days_purchased = db.Column(db.Integer, default=0)
     
     # Enterprise features
     custom_domain = db.Column(db.String(100))
@@ -325,3 +394,43 @@ class EnterpriseSubscriptionPayment(db.Model):
     
     def __repr__(self):
         return f'<EnterpriseSubscriptionPayment {self.amount} {self.currency} - {self.status}>'
+
+class BankTransferPayment(db.Model):
+    """Bank transfer payment records for manual verification"""
+    __tablename__ = 'bank_transfer_payments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    plan_id = db.Column(db.Integer, db.ForeignKey('subscription_plans.id'), nullable=False)
+    pricing_id = db.Column(db.Integer, db.ForeignKey('subscription_plan_pricing.id'), nullable=False)
+    
+    # Transfer details
+    amount = db.Column(db.Float, nullable=False)
+    transfer_reference = db.Column(db.String(100), nullable=False)
+    transfer_date = db.Column(db.Date, nullable=False)
+    sender_name = db.Column(db.String(100), nullable=False)
+    notes = db.Column(db.Text)
+    
+    # Bank details
+    bank_name = db.Column(db.String(50), default='Cooperative Bank')
+    account_number = db.Column(db.String(50), default='01116844755200')
+    paybill = db.Column(db.String(20), default='400200')
+    
+    # Verification status
+    status = db.Column(db.String(30), default='pending_verification')  # pending_verification, verified, rejected
+    verified_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    verified_at = db.Column(db.DateTime)
+    admin_notes = db.Column(db.Text)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], back_populates='bank_transfers')
+    plan = db.relationship('SubscriptionPlan', backref='bank_transfers')
+    pricing = db.relationship('SubscriptionPlanPricing', backref='bank_transfers')
+    verified_by_user = db.relationship('User', foreign_keys=[verified_by])
+    
+    def __repr__(self):
+        return f'<BankTransferPayment {self.amount} KES - {self.status}>'

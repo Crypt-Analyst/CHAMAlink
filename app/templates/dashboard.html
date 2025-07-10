@@ -49,7 +49,7 @@
                         <i class="fas fa-money-bill-wave"></i>
                     </div>
                     <div class="stat-content">
-                        <h3 class="stat-number">KES {{ "{:,.0f}".format(total_savings) }}</h3>
+                        <h3 class="stat-number">KES {{ "{:,.0f}".format(total_savings or 0) }}</h3>
                         <p class="stat-label">Total Savings</p>
                         <small class="stat-change text-success">
                             <i class="fas fa-arrow-up"></i> +15% this month
@@ -63,7 +63,7 @@
                         <i class="fas fa-hand-holding-usd"></i>
                     </div>
                     <div class="stat-content">
-                        <h3 class="stat-number">KES {{ "{:,.0f}".format(monthly_contributions) }}</h3>
+                        <h3 class="stat-number">KES {{ "{:,.0f}".format(monthly_contributions or 0) }}</h3>
                         <p class="stat-label">Monthly Contributions</p>
                         <small class="stat-change text-info">
                             <i class="fas fa-clock"></i> Due in 5 days

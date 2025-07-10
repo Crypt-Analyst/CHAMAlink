@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, flash, redirect, url_for
 from flask_login import login_required, current_user
 from app.models import Chama, Transaction, MpesaTransaction, User
-from app.utils.mpesa import mpesa_api
+from app.utils.mpesa import get_mpesa_api
 from app.utils.permissions import user_can_access_chama
 from app import db
 from datetime import datetime
@@ -49,7 +49,7 @@ def initiate_payment():
         account_reference = f"CHAMA{chama_id}T{transaction.id}"
         transaction_desc = f"Contribution to {chama.name}"
         
-        mpesa_result = mpesa_api.stk_push(
+        mpesa_result = get_mpesa_api().stk_push(
             phone_number=phone_number,
             amount=amount,
             account_reference=account_reference,
@@ -110,7 +110,7 @@ def check_payment_status():
             return jsonify({'success': False, 'message': 'Transaction not found'}), 404
         
         # Check payment status with M-Pesa
-        status_result = mpesa_api.query_transaction_status(checkout_request_id)
+        status_result = get_mpesa_api().query_transaction_status(checkout_request_id)
         
         if status_result.get('ResultCode') == '0':
             # Payment successful

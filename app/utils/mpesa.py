@@ -7,12 +7,25 @@ from flask import current_app
 
 class MpesaAPI:
     def __init__(self):
+        # Use environment variables first, fallback to config if in app context
         self.consumer_key = os.getenv('MPESA_CONSUMER_KEY')
         self.consumer_secret = os.getenv('MPESA_CONSUMER_SECRET')
         self.business_short_code = os.getenv('MPESA_BUSINESS_SHORT_CODE', '174379')
         self.passkey = os.getenv('MPESA_PASSKEY')
         self.callback_url = os.getenv('MPESA_CALLBACK_URL', 'https://chamalink.com/api/mpesa/callback')
-        self.environment = os.getenv('MPESA_ENVIRONMENT', 'sandbox')  # sandbox or production
+        self.environment = os.getenv('MPESA_ENVIRONMENT', 'sandbox')
+        
+        # Try to get from Flask config if available and env vars are not set
+        try:
+            if not self.consumer_key and current_app:
+                self.consumer_key = current_app.config.get('MPESA_CONSUMER_KEY')
+            if not self.consumer_secret and current_app:
+                self.consumer_secret = current_app.config.get('MPESA_CONSUMER_SECRET')
+            if not self.passkey and current_app:
+                self.passkey = current_app.config.get('MPESA_PASSKEY')
+        except RuntimeError:
+            # No application context, use environment variables only
+            pass
         
         # Subscription payments go to till 5625121
         self.subscription_till = '5625121'
@@ -195,18 +208,25 @@ class MpesaAPI:
             current_app.logger.error(f"M-Pesa query error: {e}")
             return {'success': False, 'message': str(e)}
 
-# Initialize M-Pesa API
-mpesa_api = MpesaAPI()
+# Initialize M-Pesa API lazily
+mpesa_api = None
+
+def get_mpesa_api():
+    """Get M-Pesa API instance"""
+    global mpesa_api
+    if mpesa_api is None:
+        mpesa_api = MpesaAPI()
+    return mpesa_api
 
 # Helper function for easy import
 def initiate_stk_push(phone_number, amount, account_reference, transaction_desc):
     """Helper function to initiate STK push payment"""
-    return mpesa_api.stk_push(phone_number, amount, account_reference, transaction_desc)
+    return get_mpesa_api().stk_push(phone_number, amount, account_reference, transaction_desc)
 
 def initiate_subscription_payment(phone_number, amount, account_reference, transaction_desc):
     """Helper function to initiate subscription payment to till 5625121"""
-    return mpesa_api.stk_push_subscription(phone_number, amount, account_reference, transaction_desc)
+    return get_mpesa_api().stk_push_subscription(phone_number, amount, account_reference, transaction_desc)
 
 def query_stk_push_status(checkout_request_id):
     """Helper function to query STK push status"""
-    return mpesa_api.query_transaction_status(checkout_request_id)
+    return get_mpesa_api().query_transaction_status(checkout_request_id)

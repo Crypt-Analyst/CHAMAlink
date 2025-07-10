@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Enterprise Plans{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h2>🏛️ Enterprise Plans</h2>
+            <p class="lead">Choose the perfect plan for your SACCO or NGO</p>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for plan in plans %}
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 {% if plan.plan_type.value == 'sacco_ngo' %}border-primary{% endif %}">
+                {% if plan.plan_type.value == 'sacco_ngo' %}
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>{{ plan.name }}</h4>
+                    <div class="badge bg-warning">🏆 Recommended for SACCOs/NGOs</div>
+                </div>
+                {% else %}
+                <div class="card-header text-center">
+                    <h4>{{ plan.name }}</h4>
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if plan.plan_type.value == 'enterprise' %}
+                        <h2 class="text-primary">Custom Pricing</h2>
+                        <p class="text-muted">SACCOs, NGOs, Government & Large Organizations</p>
+                        <p class="small">Per member: KES {{ plan.price_per_member or 30 }}/month</p>
+                        <p class="small">Service fee: KES {{ plan.base_service_fee or 1000 }}/month</p>
+                        <p class="small">Training: KES {{ plan.training_fee_per_day or 500 }}/day</p>
+                        {% else %}
+                        <h2 class="text-primary">KES {{ "{:,.0f}".format(plan.price_monthly or 0) }}</h2>
+                        <p class="text-muted">per month</p>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="card-text">{{ plan.description }}</p>
+                    
+                    <ul class="list-unstyled">
+                        {% if plan.plan_type.value == 'enterprise' %}
+                        <li>✅ Perfect for SACCOs, NGOs & Government</li>
+                        <li>✅ Large organizations & institutions</li>
+                        <li>✅ Pay per active member (KES 30/member)</li>
+                        <li>✅ Monthly service fee: KES 1,000</li>
+                        <li>✅ Training support: KES 500/day</li>
+                        <li>✅ Dedicated account manager</li>
+                        {% endif %}
+                        
+                        <li>✅ Up to {{ plan.max_chamas or 0 }} chamas</li>
+                        <li>✅ Up to {{ plan.max_members_per_chama or "Unlimited" }} members</li>
+                        <li>✅ {{ plan.max_loans_per_month or 0 }} loans/month</li>
+                        
+                        {% if plan.has_sms_notifications %}
+                        <li>✅ SMS notifications</li>
+                        {% endif %}
+                        
+                        {% if plan.has_advanced_reporting %}
+                        <li>✅ Advanced reporting</li>
+                        {% endif %}
+                        
+                        {% if plan.has_api_access %}
+                        <li>✅ API access</li>
+                        {% endif %}
+                        
+                        {% if plan.has_training_support %}
+                        <li>✅ Training support</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <div class="card-footer">
+                    {% if plan.plan_type.value == 'sacco_ngo' %}
+                    <button class="btn btn-primary w-100" onclick="selectSaccoNgoPlan()">
+                        🚀 Get Started
+                    </button>
+                    {% else %}
+                    <button class="btn btn-outline-primary w-100" onclick="selectPlan({{ plan.id }})">
+                        Select Plan
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- SACCO/NGO Pricing Calculator -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🧮 SACCO/NGO Pricing Calculator</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Number of Members</label>
+                                <input type="number" class="form-control" id="calcMembers" min="1" value="100" oninput="updateCalculator()">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="calcService" checked onchange="updateCalculator()">
+                                    <label class="form-check-label" for="calcService">
+                                        Include Service Fee (KES 1,000/month)
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Training Days per Month</label>
+                                <input type="number" class="form-control" id="calcTraining" min="0" value="0" oninput="updateCalculator()">
+                                <small class="text-muted">KES 500 per day</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>Monthly Cost Breakdown:</h6>
+                                    <div id="calcBreakdown">
+                                        <!-- JavaScript will populate this -->
+                                    </div>
+                                    <hr>
+                                    <h5 class="text-primary">Total: KES <span id="calcTotal">3000</span>/month</h5>
+                                    
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <strong>Example:</strong><br>
+                                            • 100 members = KES 3,000 + KES 1,000 = KES 4,000/month<br>
+                                            • 200 members = KES 6,000 + KES 1,000 = KES 7,000/month<br>
+                                            • 500 members = KES 15,000 + KES 1,000 = KES 16,000/month
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateCalculator() {
+    const members = parseInt(document.getElementById('calcMembers').value) || 0;
+    const includeService = document.getElementById('calcService').checked;
+    const trainingDays = parseInt(document.getElementById('calcTraining').value) || 0;
+    
+    const memberCost = members * 30;
+    const serviceCost = includeService ? 1000 : 0;
+    const trainingCost = trainingDays * 500;
+    const total = memberCost + serviceCost + trainingCost;
+    
+    let breakdown = '';
+    if (memberCost > 0) {
+        breakdown += `<div>Members (${members} × KES 30): KES ${memberCost.toLocaleString()}</div>`;
+    }
+    if (serviceCost > 0) {
+        breakdown += `<div>Service Fee: KES ${serviceCost.toLocaleString()}</div>`;
+    }
+    if (trainingCost > 0) {
+        breakdown += `<div>Training (${trainingDays} days): KES ${trainingCost.toLocaleString()}</div>`;
+    }
+    
+    document.getElementById('calcBreakdown').innerHTML = breakdown;
+    document.getElementById('calcTotal').textContent = total.toLocaleString();
+}
+
+function selectSaccoNgoPlan() {
+    // Redirect to billing dashboard or signup
+    window.location.href = '/enterprise/billing';
+}
+
+function selectPlan(planId) {
+    // Handle other plan selection
+    alert('Contact sales for this plan: sales@chamalink.co.ke');
+}
+
+// Initialize calculator
+updateCalculator();
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+[
+  {
+    "test": "Home Page Load",
+    "status": "PASS",
+    "message": "Home page loaded successfully",
+    "timestamp": "2025-07-10T03:06:08.326720"
+  },
+  {
+    "test": "Registration Page",
+    "status": "PASS",
+    "message": "Registration page loaded",
+    "timestamp": "2025-07-10T03:06:10.398839"
+  },
+  {
+    "test": "Login Page",
+    "status": "PASS",
+    "message": "Login page loaded",
+    "timestamp": "2025-07-10T03:06:12.446271"
+  },
+  {
+    "test": "Subscription Plans",
+    "status": "PASS",
+    "message": "Plans page loaded",
+    "timestamp": "2025-07-10T03:06:16.530003"
+  },
+  {
+    "test": "Payment Options",
+    "status": "WARN",
+    "message": "Payment options page loaded but missing payment methods",
+    "timestamp": "2025-07-10T03:06:24.751029"
+  },
+  {
+    "test": "Enterprise Billing",
+    "status": "PASS",
+    "message": "Enterprise billing route exists",
+    "timestamp": "2025-07-10T03:06:28.842505"
+  },
+  {
+    "test": "M-Pesa Callback",
+    "status": "PASS",
+    "message": "Callback endpoint accessible",
+    "timestamp": "2025-07-10T03:06:34.463372"
+  },
+  {
+    "test": "API Endpoint /subscription/plans",
+    "status": "PASS",
+    "message": "GET endpoint exists",
+    "timestamp": "2025-07-10T03:06:38.548670"
+  },
+  {
+    "test": "API Endpoint /subscription/pricing",
+    "status": "PASS",
+    "message": "GET endpoint exists",
+    "timestamp": "2025-07-10T03:06:42.879832"
+  },
+  {
+    "test": "API Endpoint /enterprise/plans",
+    "status": "PASS",
+    "message": "GET endpoint exists",
+    "timestamp": "2025-07-10T03:06:45.919612"
+  },
+  {
+    "test": "API Endpoint /mpesa/callback",
+    "status": "PASS",
+    "message": "POST endpoint exists",
+    "timestamp": "2025-07-10T03:06:47.963239"
+  },
+  {
+    "test": "Static Asset /static/css/bootstrap.min.css",
+    "status": "PASS",
+    "message": "Asset loaded",
+    "timestamp": "2025-07-10T03:06:50.168012"
+  },
+  {
+    "test": "Static Asset /static/js/bootstrap.bundle.min.js",
+    "status": "PASS",
+    "message": "Asset loaded",
+    "timestamp": "2025-07-10T03:06:52.194527"
+  }
+]

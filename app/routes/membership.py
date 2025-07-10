@@ -119,101 +119,153 @@ def submit_leave_request():
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 400
 
-@membership_bp.route('/approve_request/<int:request_id>', methods=['POST'])
+@membership_bp.route('/approve/<int:request_id>', methods=['POST'])
 @login_required
 def approve_request(request_id):
-    """Approve or reject membership request"""
+    """Approve a membership request"""
     try:
-        data = request.get_json()
-        action = data.get('action')  # 'approve' or 'reject'
-        comments = data.get('comments', '').strip()
-        
         membership_request = ChamaMembershipRequest.query.get_or_404(request_id)
-        chama = membership_request.chama
         
-        # Security check - only admins can approve
-        user_role = db.session.query(chama_members.c.role).filter(
-            and_(chama_members.c.user_id == current_user.id, 
-                 chama_members.c.chama_id == membership_request.chama_id)
-        ).scalar()
-        
+        # Check if user is admin of the chama
+        user_role = get_user_chama_role(current_user.id, membership_request.chama_id)
         if user_role not in ['admin', 'creator']:
-            return jsonify({'success': False, 'message': 'You do not have permission to approve requests'}), 403
+            return jsonify({'success': False, 'message': 'You do not have permission to approve this request'}), 403
         
-        # Check if today is a meeting day for join requests
-        if membership_request.request_type == 'join' and action == 'approve':
-            if not chama.can_approve_today:
-                return jsonify({
-                    'success': False, 
-                    'message': f'Members can only be approved on meeting days ({chama.meeting_day.title() if chama.meeting_day else "Not set"})'
-                }), 400
+        # Update request status
+        membership_request.status = 'approved'
+        membership_request.approval_date = datetime.utcnow()
         
-        # Check if already approved by this admin
-        existing_approval = MembershipApproval.query.filter_by(
-            membership_request_id=request_id,
-            admin_id=current_user.id
-        ).first()
-        
-        if existing_approval:
-            return jsonify({'success': False, 'message': 'You have already voted on this request'}), 400
+        # Add user to chama if it's a join request
+        if membership_request.request_type == 'join':
+            chama = Chama.query.get(membership_request.chama_id)
+            user = User.query.get(membership_request.user_id)
+            
+            # Check if user is already a member
+            if user not in chama.members:
+                chama.members.append(user)
         
         # Create approval record
         approval = MembershipApproval(
-            membership_request_id=request_id,
-            admin_id=current_user.id,
-            status=action,
-            comments=comments
+            request_id=request_id,
+            approved_by=current_user.id,
+            approval_date=datetime.utcnow(),
+            status='approved'
         )
-        
         db.session.add(approval)
         
-        # Check if request should be approved (3 approvals required)
-        if action == 'approve':
-            approval_count = membership_request.approval_count + 1
-            
-            if approval_count >= 3:
-                membership_request.status = 'approved'
-                membership_request.decision_date = datetime.utcnow()
-                
-                # Process the membership change
-                if membership_request.request_type == 'leave':
-                    # Remove user from chama
-                    chama = Chama.query.get(membership_request.chama_id)
-                    user = User.query.get(membership_request.user_id)
-                    chama.members.remove(user)
-                
-                # Notify user
-                notification = Notification(
-                    title=f'Membership Request {action.title()}d',
-                    message=f'Your {membership_request.request_type} request for {membership_request.chama.name} has been {action}d',
-                    type='membership',
-                    user_id=membership_request.user_id,
-                    chama_id=membership_request.chama_id
-                )
-                db.session.add(notification)
+        # Create notification for the requester
+        notification = Notification(
+            title='Membership Request Approved',
+            message=f'Your request to join {membership_request.chama.name} has been approved',
+            type='membership',
+            user_id=membership_request.user_id,
+            chama_id=membership_request.chama_id
+        )
+        db.session.add(notification)
         
-        # Check if request should be rejected (any rejection)
-        elif action == 'reject':
-            membership_request.status = 'rejected'
-            membership_request.decision_date = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Request approved successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@membership_bp.route('/reject/<int:request_id>', methods=['POST'])
+@login_required
+def reject_request(request_id):
+    """Reject a membership request"""
+    try:
+        membership_request = ChamaMembershipRequest.query.get_or_404(request_id)
+        
+        # Check if user is admin of the chama
+        user_role = get_user_chama_role(current_user.id, membership_request.chama_id)
+        if user_role not in ['admin', 'creator']:
+            return jsonify({'success': False, 'message': 'You do not have permission to reject this request'}), 403
+        
+        # Get rejection reason from request data
+        data = request.get_json() or {}
+        reason = data.get('reason', '')
+        
+        # Update request status
+        membership_request.status = 'rejected'
+        membership_request.rejection_reason = reason
+        
+        # Create approval record (with rejected status)
+        approval = MembershipApproval(
+            request_id=request_id,
+            approved_by=current_user.id,
+            approval_date=datetime.utcnow(),
+            status='rejected',
+            notes=reason
+        )
+        db.session.add(approval)
+        
+        # Create notification for the requester
+        notification_message = f'Your request to join {membership_request.chama.name} has been rejected'
+        if reason:
+            notification_message += f': {reason}'
             
-            # Notify user
+        notification = Notification(
+            title='Membership Request Rejected',
+            message=notification_message,
+            type='membership',
+            user_id=membership_request.user_id,
+            chama_id=membership_request.chama_id
+        )
+        db.session.add(notification)
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Request rejected successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@membership_bp.route('/cancel/<int:request_id>', methods=['POST'])
+@login_required
+def cancel_request(request_id):
+    """Cancel a membership request"""
+    try:
+        membership_request = ChamaMembershipRequest.query.get_or_404(request_id)
+        
+        # Check if user owns this request
+        if membership_request.user_id != current_user.id:
+            return jsonify({'success': False, 'message': 'You can only cancel your own requests'}), 403
+        
+        # Check if request is still pending
+        if membership_request.status != 'pending':
+            return jsonify({'success': False, 'message': 'Only pending requests can be canceled'}), 400
+        
+        # Update request status
+        membership_request.status = 'canceled'
+        
+        # Create notification for chama admins
+        chama = Chama.query.get(membership_request.chama_id)
+        admin_ids = db.session.query(chama_members.c.user_id).filter(
+            and_(chama_members.c.chama_id == chama.id,
+                 chama_members.c.role.in_(['admin', 'creator']))
+        ).all()
+        
+        for admin_id_tuple in admin_ids:
+            admin_id = admin_id_tuple[0]
             notification = Notification(
-                title=f'Membership Request {action.title()}d',
-                message=f'Your {membership_request.request_type} request for {membership_request.chama.name} has been {action}d',
+                title='Membership Request Canceled',
+                message=f'{current_user.username} has canceled their request to join {chama.name}',
                 type='membership',
-                user_id=membership_request.user_id,
-                chama_id=membership_request.chama_id
+                user_id=admin_id,
+                chama_id=chama.id
             )
             db.session.add(notification)
         
         db.session.commit()
         
-        return jsonify({'success': True, 'message': f'Request {action}d successfully'})
+        return jsonify({'success': True, 'message': 'Request canceled successfully'})
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @membership_bp.route('/join/<int:chama_id>')
 @login_required

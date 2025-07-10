@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}Membership Requests - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-users me-2"></i>Membership Requests
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Membership Requests</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Your Membership Requests -->
+        <div class="col-xl-6 col-lg-12 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-plus me-2"></i>Your Membership Requests
+                    </h6>
+                    <span class="badge badge-info">{{ user_requests|length }} requests</span>
+                </div>
+                <div class="card-body">
+                    {% if user_requests %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Chama</th>
+                                        <th>Status</th>
+                                        <th>Request Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in user_requests %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar me-3">
+                                                    <i class="fas fa-users text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-weight-bold">{{ request.chama.name }}</div>
+                                                    <div class="text-muted small">{{ request.chama.description[:50] }}...</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if request.status == 'pending' %}
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-clock me-1"></i>Pending
+                                                </span>
+                                            {% elif request.status == 'approved' %}
+                                                <span class="badge badge-success">
+                                                    <i class="fas fa-check me-1"></i>Approved
+                                                </span>
+                                            {% elif request.status == 'rejected' %}
+                                                <span class="badge badge-danger">
+                                                    <i class="fas fa-times me-1"></i>Rejected
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ request.request_date.strftime('%b %d, %Y') }}</span>
+                                            <br>
+                                            <small class="text-muted">{{ request.request_date.strftime('%I:%M %p') }}</small>
+                                        </td>
+                                        <td>
+                                            {% if request.status == 'pending' %}
+                                                <button class="btn btn-sm btn-outline-danger" 
+                                                        onclick="cancelRequest({{ request.id }})"
+                                                        title="Cancel Request">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            {% elif request.status == 'approved' %}
+                                                <a href="{{ url_for('main.chama_details', chama_id=request.chama.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   title="View Chama">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Membership Requests</h5>
+                            <p class="text-muted">You haven't made any membership requests yet.</p>
+                            <a href="{{ url_for('main.search_chamas') }}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Find Chamas to Join
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Approvals (for admins) -->
+        <div class="col-xl-6 col-lg-12 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-user-check me-2"></i>Pending Approvals
+                    </h6>
+                    <span class="badge badge-warning">{{ pending_approvals|length }} pending</span>
+                </div>
+                <div class="card-body">
+                    {% if pending_approvals %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Chama</th>
+                                        <th>Request Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in pending_approvals %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar me-3">
+                                                    <img src="https://via.placeholder.com/40x40/007bff/ffffff?text={{ request.user.first_name[0] }}{{ request.user.last_name[0] }}" 
+                                                         alt="User Avatar" class="rounded-circle" width="40" height="40">
+                                                </div>
+                                                <div>
+                                                    <div class="font-weight-bold">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+                                                    <div class="text-muted small">{{ request.user.email }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="font-weight-bold">{{ request.chama.name }}</div>
+                                            <div class="text-muted small">{{ request.chama.members.count() }} members</div>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ request.request_date.strftime('%b %d, %Y') }}</span>
+                                            <br>
+                                            <small class="text-muted">{{ request.request_date.strftime('%I:%M %p') }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-success" 
+                                                        onclick="approveRequest({{ request.id }})"
+                                                        title="Approve">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" 
+                                                        onclick="rejectRequest({{ request.id }})"
+                                                        title="Reject">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-check fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Pending Approvals</h5>
+                            <p class="text-muted">
+                                {% if current_user.chamas %}
+                                    All membership requests have been processed.
+                                {% else %}
+                                    You need to be an admin of a chama to approve members.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Requests
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ user_requests|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-plus fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Approved
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ user_requests|selectattr('status', 'equalto', 'approved')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Pending
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ user_requests|selectattr('status', 'equalto', 'pending')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Need Approval
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_approvals|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<!-- Approve Request Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Approve Membership Request</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to approve this membership request?</p>
+                <p class="text-muted">The user will be added to the chama and notified.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmApprove">
+                    <i class="fas fa-check me-2"></i>Approve
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Request Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Membership Request</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to reject this membership request?</p>
+                <div class="form-group">
+                    <label for="rejectionReason">Reason (optional)</label>
+                    <textarea class="form-control" id="rejectionReason" rows="3" 
+                              placeholder="Provide a reason for rejection..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmReject">
+                    <i class="fas fa-times me-2"></i>Reject
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentRequestId = null;
+
+function approveRequest(requestId) {
+    currentRequestId = requestId;
+    $('#approveModal').modal('show');
+}
+
+function rejectRequest(requestId) {
+    currentRequestId = requestId;
+    $('#rejectModal').modal('show');
+}
+
+function cancelRequest(requestId) {
+    if (confirm('Are you sure you want to cancel this membership request?')) {
+        // Send AJAX request to cancel
+        fetch(`/membership/cancel/${requestId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error canceling request: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while canceling the request.');
+        });
+    }
+}
+
+document.getElementById('confirmApprove').addEventListener('click', function() {
+    if (currentRequestId) {
+        fetch(`/membership/approve/${currentRequestId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#approveModal').modal('hide');
+                location.reload();
+            } else {
+                alert('Error approving request: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while approving the request.');
+        });
+    }
+});
+
+document.getElementById('confirmReject').addEventListener('click', function() {
+    if (currentRequestId) {
+        const reason = document.getElementById('rejectionReason').value;
+        
+        fetch(`/membership/reject/${currentRequestId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                reason: reason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#rejectModal').modal('hide');
+                location.reload();
+            } else {
+                alert('Error rejecting request: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while rejecting the request.');
+        });
+    }
+});
+
+// Auto-refresh every 30 seconds for real-time updates
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+
+<style>
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+
+.avatar img {
+    object-fit: cover;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #5a5c69;
+}
+
+.btn-group .btn {
+    margin-right: 0;
+}
+
+.card {
+    border: 1px solid #e3e6f0;
+}
+
+.text-gray-800 {
+    color: #5a5c69 !important;
+}
+
+.text-gray-300 {
+    color: #dddfeb !important;
+}
+</style>
+{% endblock %}

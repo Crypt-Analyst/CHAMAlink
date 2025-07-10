@@ -45,20 +45,25 @@
                     <div class="pricing-section mb-4">
                         {% if plan.plan_type.value == 'enterprise' %}
                         <div class="price-display">
-                            <span class="h2 fw-bold text-primary">Custom</span>
-                            <div class="text-muted">Contact us for pricing</div>
+                            <span class="h2 fw-bold text-primary">Custom Pricing</span>
+                            <div class="text-muted">Perfect for SACCOs, NGOs, Government & Large Organizations</div>
+                            <div class="small mt-2">
+                                <div><strong>Per Member:</strong> KES {{ plan.price_per_member or 30 }}/month</div>
+                                <div><strong>Service Fee:</strong> KES {{ plan.base_service_fee or 1000 }}/month</div>
+                                <div><strong>Training:</strong> KES {{ plan.training_fee_per_day or 500 }}/day</div>
+                            </div>
                         </div>
                         {% else %}
                         <div class="price-display monthly-price">
-                            <span class="h2 fw-bold text-primary">KES {{ "{:,.0f}".format(plan.price_monthly) }}</span>
+                            <span class="h2 fw-bold text-primary">KES {{ "{:,.0f}".format(plan.price_monthly or 0) }}</span>
                             <span class="text-muted">/month</span>
                         </div>
                         {% if plan.price_yearly %}
                         <div class="price-display yearly-price d-none">
-                            <span class="h2 fw-bold text-primary">KES {{ "{:,.0f}".format(plan.price_yearly) }}</span>
+                            <span class="h2 fw-bold text-primary">KES {{ "{:,.0f}".format(plan.price_yearly or 0) }}</span>
                             <span class="text-muted">/year</span>
                             <div class="text-success small">
-                                Save KES {{ "{:,.0f}".format(plan.get_yearly_savings()) }}
+                                Save KES {{ "{:,.0f}".format(plan.get_yearly_savings() or 0) }}
                             </div>
                         </div>
                         {% endif %}
@@ -78,7 +83,7 @@
                 
                 <div class="card-footer bg-transparent text-center">
                     {% if plan.plan_type.value == 'enterprise' %}
-                    <a href="{{ url_for('subscription.enterprise_contact') }}" 
+                    <a href="{{ url_for('subscription_new.enterprise_contact') }}" 
                        class="btn btn-outline-primary btn-lg w-100">
                         Contact Sales
                     </a>

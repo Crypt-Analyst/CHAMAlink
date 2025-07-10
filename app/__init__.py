@@ -84,6 +84,7 @@ def create_app():
     from app.routes.minutes import minutes_bp
     from app.routes.admin import admin_bp
     from app.routes.api import api_bp
+    from app.routes.enterprise import enterprise_bp
 
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(main_blueprint)
@@ -104,5 +105,6 @@ def create_app():
     app.register_blueprint(minutes_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(enterprise_bp, url_prefix='/enterprise')
 
     return app

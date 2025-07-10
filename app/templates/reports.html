@@ -27,7 +27,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h6 class="text-muted mb-1">Total Contributions</h6>
-                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_contributions) }}</h4>
+                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_contributions or 0) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h6 class="text-muted mb-1">Total Loans</h6>
-                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_loans) }}</h4>
+                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_loans or 0) }}</h4>
                         </div>
                     </div>
                 </div>
@@ -59,7 +59,7 @@
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h6 class="text-muted mb-1">Total Penalties</h6>
-                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_penalties) }}</h4>
+                            <h4 class="mb-0">KES {{ "{:,.2f}".format(total_penalties or 0) }}</h4>
                         </div>
                     </div>
                 </div>

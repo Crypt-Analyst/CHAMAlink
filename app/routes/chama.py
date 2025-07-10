@@ -120,6 +120,36 @@ def contribute(chama_id):
 def invite_member(chama_id):
     """Invite a new member to the chama (admin only)"""
     try:
+        # Check member limits first
+        from app.models.enterprise import EnterpriseUserSubscription, EnterpriseBillingType
+        from app.utils.enterprise_limits import update_member_count
+        
+        subscription = EnterpriseUserSubscription.query.filter_by(
+            user_id=current_user.id,
+            is_active=True
+        ).first()
+        
+        # Check if user can add more members based on their enterprise subscription
+        if subscription:
+            if subscription.plan.billing_type == EnterpriseBillingType.PER_MEMBER:
+                if subscription.current_members >= subscription.paid_member_limit:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Member limit reached! You have paid for {subscription.paid_member_limit} members. Please upgrade your payment to add more members.',
+                        'upgrade_required': True,
+                        'current_members': subscription.current_members,
+                        'paid_limit': subscription.paid_member_limit,
+                        'cost_per_member': subscription.plan.price_per_member
+                    }), 403
+            else:
+                chama = Chama.query.get(chama_id)
+                if len(chama.members) >= subscription.plan.max_members_per_chama:
+                    return jsonify({
+                        'success': False,
+                        'message': f'Member limit reached! Your plan allows {subscription.plan.max_members_per_chama} members. Please upgrade your plan.',
+                        'upgrade_required': True
+                    }), 403
+        
         data = request.get_json()
         email = data.get('email')
         
@@ -138,6 +168,11 @@ def invite_member(chama_id):
         
         # Add user to chama
         chama.members.append(user)
+        
+        # Update member count for enterprise subscription
+        if subscription:
+            update_member_count(current_user.id, 1)
+        
         db.session.commit()
         
         return jsonify({'success': True, 'message': f'{user.username} has been added to the chama!'})
@@ -172,6 +207,19 @@ def remove_member(chama_id):
         
         # Remove user from chama
         chama.members.remove(user)
+        
+        # Update member count for enterprise subscription
+        from app.utils.enterprise_limits import update_member_count
+        from app.models.enterprise import EnterpriseUserSubscription
+        
+        subscription = EnterpriseUserSubscription.query.filter_by(
+            user_id=current_user.id,
+            is_active=True
+        ).first()
+        
+        if subscription:
+            update_member_count(current_user.id, -1)
+        
         db.session.commit()
         
         return jsonify({'success': True, 'message': f'{user.username} has been removed from the chama!'})
@@ -366,6 +414,18 @@ def remove_chama_member(chama_id, member_id):
         success, message = chama.remove_member(member_id)
         
         if success:
+            # Update member count for enterprise subscription
+            from app.utils.enterprise_limits import update_member_count
+            from app.models.enterprise import EnterpriseUserSubscription
+            
+            subscription = EnterpriseUserSubscription.query.filter_by(
+                user_id=current_user.id,
+                is_active=True
+            ).first()
+            
+            if subscription:
+                update_member_count(current_user.id, -1)
+            
             # Send notification to removed member
             notification = Notification(
                 user_id=member_id,

@@ -98,6 +98,10 @@ class User(UserMixin, db.Model):
     def is_account_locked(self):
         return self.locked_until and datetime.utcnow() < self.locked_until
     
+    # Relationships
+    bank_transfers = db.relationship('BankTransferPayment', foreign_keys='BankTransferPayment.user_id', 
+                                   back_populates='user', lazy='dynamic')
+    
     # Flask-Login required properties
     def get_id(self):
         """Return the user ID as a string"""

@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block title %}Choose Payment Method - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-c                        <li>Transfer <strong>KES {{ "{:,.0f}".format(pricing.total_price or 0) }}</strong> to the above account</li>ntent-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-6 fw-bold text-primary mb-3">Choose Your Payment Method</h1>
+                <p class="lead text-muted">Select how you'd like to pay for your {{ plan.name }} plan</p>
+            </div>
+
+            <!-- Plan Summary -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="mb-1">{{ plan.name }} Plan</h5>
+                            <p class="text-muted mb-0">{{ plan.description }}</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <h3 class="text-primary mb-0">KES {{ "{:,.0f}".format(pricing.total_price or 0) }}</h3>
+                            <small class="text-muted">
+                                {{ pricing.months }} month{{ 's' if pricing.months > 1 else '' }}
+                                {% if pricing.bonus_months > 0 %}
+                                    + {{ pricing.bonus_months }} FREE
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skip Trial Option -->
+            <div class="alert alert-info mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle fa-2x me-3"></i>
+                    <div>
+                        <h6 class="mb-1">Skip Free Trial and Pay Now</h6>
+                        <p class="mb-0">Pay immediately to activate your full plan without waiting. No trial limitations!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="row">
+                <!-- M-Pesa Payment -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 payment-method-card" onclick="selectPaymentMethod('mpesa')">
+                        <div class="card-body text-center">
+                            <div class="payment-icon mb-3">
+                                <i class="fas fa-mobile-alt fa-3x text-success"></i>
+                            </div>
+                            <h5>M-Pesa Payment</h5>
+                            <p class="text-muted">Pay instantly via M-Pesa STK Push</p>
+                            <ul class="list-unstyled text-start">
+                                <li><i class="fas fa-check text-success me-2"></i>Instant activation</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Secure STK push</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Automatic confirmation</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Receipt via SMS</li>
+                            </ul>
+                            <button class="btn btn-success btn-lg w-100 mt-3">
+                                <i class="fas fa-mobile-alt me-2"></i>Pay with M-Pesa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bank Transfer -->
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 payment-method-card" onclick="selectPaymentMethod('bank')">
+                        <div class="card-body text-center">
+                            <div class="payment-icon mb-3">
+                                <i class="fas fa-university fa-3x text-primary"></i>
+                            </div>
+                            <h5>Bank Transfer</h5>
+                            <p class="text-muted">Transfer to our Cooperative Bank account</p>
+                            <ul class="list-unstyled text-start">
+                                <li><i class="fas fa-check text-success me-2"></i>Bank to bank transfer</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Manual verification</li>
+                                <li><i class="fas fa-check text-success me-2"></i>24-48 hour activation</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Secure banking</li>
+                            </ul>
+                            <button class="btn btn-primary btn-lg w-100 mt-3">
+                                <i class="fas fa-university me-2"></i>Bank Transfer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Start Free Trial Option -->
+            <div class="text-center mt-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6>Or start with free trial</h6>
+                        <p class="text-muted mb-3">Try all features free for 30 days, then pay</p>
+                        <a href="{{ url_for('subscription.subscribe', plan_id=plan.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-gift me-2"></i>Start 30-Day Free Trial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- M-Pesa Payment Modal -->
+<div class="modal fade" id="mpesaModal" tabindex="-1" aria-labelledby="mpesaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mpesaModalLabel">M-Pesa Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="mpesaForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">M-Pesa Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">+254</span>
+                            <input type="tel" class="form-control" id="phone_number" 
+                                   placeholder="7XXXXXXXX" required>
+                        </div>
+                        <div class="form-text">You'll receive an M-Pesa prompt on this number</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6>Payment Summary:</h6>
+                        <p class="mb-1"><strong>Plan:</strong> {{ plan.name }}</p>
+                        <p class="mb-1"><strong>Duration:</strong> {{ pricing.months }} month(s)
+                            {% if pricing.bonus_months > 0 %}+ {{ pricing.bonus_months }} FREE{% endif %}</p>
+                        <p class="mb-0"><strong>Total:</strong> KES {{ "{:,.0f}".format(pricing.total_price or 0) }}</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="mpesaPayBtn">
+                        <i class="fas fa-mobile-alt me-2"></i>Pay Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bank Transfer Modal -->
+<div class="modal fade" id="bankModal" tabindex="-1" aria-labelledby="bankModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bankModalLabel">Bank Transfer Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Bank Details -->
+                <div class="alert alert-primary">
+                    <h6><i class="fas fa-university me-2"></i>Bank Transfer Details</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Bank:</strong> Cooperative Bank</p>
+                            <p class="mb-1"><strong>Paybill:</strong> 400200</p>
+                            <p class="mb-0"><strong>Account:</strong> 01116844755200</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Amount:</strong> KES {{ "{:,.0f}".format(pricing.total_price or 0) }}</p>
+                            <p class="mb-1"><strong>Reference:</strong> {{ plan.name|upper }}-{{ current_user.id }}</p>
+                            <p class="mb-0"><strong>Name:</strong> ChamaLink Ltd</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="mb-4">
+                    <h6>Transfer Instructions:</h6>
+                    <ol>
+                        <li>Transfer <strong>KES {{ "{:,.0f}".format(pricing.total_price) }}</strong> to the above account</li>
+                        <li>Use reference <strong>{{ plan.name|upper }}-{{ current_user.id }}</strong></li>
+                        <li>Submit your transfer confirmation below</li>
+                        <li>We'll verify and activate your account within 24-48 hours</li>
+                    </ol>
+                </div>
+
+                <!-- Transfer Confirmation Form -->
+                <form id="bankTransferForm">
+                    <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                    <input type="hidden" name="pricing_id" value="{{ pricing.id }}">
+                    <input type="hidden" name="amount" value="{{ pricing.total_price }}">
+                    
+                    <div class="mb-3">
+                        <label for="transfer_reference" class="form-label">Transfer Reference/Receipt Number</label>
+                        <input type="text" class="form-control" id="transfer_reference" 
+                               placeholder="Enter your bank transfer reference number" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="transfer_date" class="form-label">Transfer Date</label>
+                        <input type="date" class="form-control" id="transfer_date" 
+                               value="{{ moment().format('YYYY-MM-DD') }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sender_name" class="form-label">Sender Name (as it appears on bank record)</label>
+                        <input type="text" class="form-control" id="sender_name" 
+                               placeholder="Full name of person making transfer" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="transfer_notes" class="form-label">Additional Notes (Optional)</label>
+                        <textarea class="form-control" id="transfer_notes" rows="3"
+                                  placeholder="Any additional information about the transfer"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="bankTransferForm" class="btn btn-primary" id="bankSubmitBtn">
+                    <i class="fas fa-paper-plane me-2"></i>Submit Transfer Confirmation
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectPaymentMethod(method) {
+    if (method === 'mpesa') {
+        const modal = new bootstrap.Modal(document.getElementById('mpesaModal'));
+        modal.show();
+    } else if (method === 'bank') {
+        const modal = new bootstrap.Modal(document.getElementById('bankModal'));
+        modal.show();
+    }
+}
+
+// M-Pesa Payment Processing
+document.getElementById('mpesaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const phoneNumber = document.getElementById('phone_number').value;
+    const payBtn = document.getElementById('mpesaPayBtn');
+    
+    // Validate phone number
+    if (!phoneNumber.match(/^[17]\d{8}$/)) {
+        alert('Please enter a valid Kenyan phone number (7XXXXXXXX or 1XXXXXXXX)');
+        return;
+    }
+    
+    // Disable button and show loading
+    payBtn.disabled = true;
+    payBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    
+    // Process M-Pesa payment
+    fetch('/subscription/process-direct-payment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            plan_id: {{ plan.id }},
+            pricing_id: {{ pricing.id }},
+            phone_number: '254' + phoneNumber,
+            payment_method: 'mpesa',
+            skip_trial: true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('M-Pesa prompt sent! Please complete the payment on your phone.');
+            
+            // Poll for payment status
+            checkPaymentStatus(data.payment_id);
+        } else {
+            alert('Payment failed: ' + data.message);
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="fas fa-mobile-alt me-2"></i>Pay Now';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Payment failed. Please try again.');
+        payBtn.disabled = false;
+        payBtn.innerHTML = '<i class="fas fa-mobile-alt me-2"></i>Pay Now';
+    });
+});
+
+// Bank Transfer Submission
+document.getElementById('bankTransferForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('bankSubmitBtn');
+    const formData = new FormData(this);
+    
+    // Add extra fields
+    formData.append('transfer_reference', document.getElementById('transfer_reference').value);
+    formData.append('transfer_date', document.getElementById('transfer_date').value);
+    formData.append('sender_name', document.getElementById('sender_name').value);
+    formData.append('transfer_notes', document.getElementById('transfer_notes').value);
+    formData.append('payment_method', 'bank_transfer');
+    formData.append('skip_trial', 'true');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    
+    fetch('/subscription/process-bank-transfer', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Transfer confirmation submitted! We will verify and activate your account within 24-48 hours.');
+            window.location.href = '/subscription/status';
+        } else {
+            alert('Submission failed: ' + data.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Transfer Confirmation';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Submission failed. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Transfer Confirmation';
+    });
+});
+
+function checkPaymentStatus(paymentId) {
+    const interval = setInterval(() => {
+        fetch(`/subscription/payment-status/${paymentId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'completed') {
+                clearInterval(interval);
+                alert('Payment successful! Your account has been activated.');
+                window.location.href = '/main/dashboard';
+            } else if (data.status === 'failed') {
+                clearInterval(interval);
+                alert('Payment failed. Please try again.');
+                location.reload();
+            }
+            // Keep polling if still pending
+        })
+        .catch(error => {
+            console.error('Status check error:', error);
+        });
+    }, 3000); // Check every 3 seconds
+    
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+        clearInterval(interval);
+    }, 300000);
+}
+
+// Add click handlers to payment method cards
+document.querySelectorAll('.payment-method-card').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-5px)';
+        this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+    });
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+    });
+});
+</script>
+
+<style>
+.payment-method-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.payment-method-card:hover {
+    border-color: #007bff;
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.payment-icon {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

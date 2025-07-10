@@ -149,273 +149,375 @@ def process_multi_month_payment():
 @subscription_bp.route('/subscribe/<int:plan_id>')
 @login_required
 def subscribe(plan_id):
-    """Subscribe to a plan"""
+    """Subscribe to a plan - redirect to payment options"""
     plan = SubscriptionPlan.query.get_or_404(plan_id)
+    duration = request.args.get('duration', 1, type=int)
     
-    # Check if user already has an active subscription
-    current_subscription = current_user.current_subscription
-    if current_subscription and current_subscription.is_active:
-        flash('You already have an active subscription.', 'info')
+    # Redirect to payment options page
+    return redirect(url_for('subscription.payment_options', 
+                          plan=plan.name, 
+                          duration=duration))
+
+@subscription_bp.route('/payment-options')
+@login_required
+def payment_options():
+    """Show payment options page with skip trial functionality"""
+    plan_name = request.args.get('plan')
+    duration = int(request.args.get('duration', 1))
+    
+    from app.models.subscription import SubscriptionPlan, SubscriptionPlanPricing
+    
+    # Get the plan
+    plan = SubscriptionPlan.query.filter_by(name=plan_name).first()
+    if not plan:
+        flash('Invalid plan selected.', 'error')
         return redirect(url_for('subscription.plans'))
     
-    # Create new subscription with trial period
-    trial_end = datetime.utcnow() + timedelta(days=30)  # 1 month trial
-    subscription_end = trial_end
-    
-    subscription = UserSubscription(
-        user_id=current_user.id,
+    # Get the pricing for the selected duration
+    pricing = SubscriptionPlanPricing.query.filter_by(
         plan_id=plan.id,
-        status='trial',
-        trial_end_date=trial_end,
-        end_date=subscription_end,
-        is_trial=True
-    )
+        months=duration
+    ).first()
     
-    db.session.add(subscription)
-    db.session.commit()
-    
-    # Send welcome email
-    send_subscription_email(
-        current_user.email,
-        'subscription_welcome',
-        {
-            'user': current_user,
-            'plan': plan,
-            'trial_days': 30
-        }
-    )
-    
-    flash(f'Successfully subscribed to {plan.name} plan with 30-day free trial!', 'success')
-    return redirect(url_for('main.dashboard'))
-
-@subscription_bp.route('/pay/<int:subscription_id>')
-@login_required
-def pay_subscription(subscription_id):
-    """Process subscription payment"""
-    subscription = UserSubscription.query.get_or_404(subscription_id)
-    
-    # Verify ownership
-    if subscription.user_id != current_user.id:
-        flash('Access denied.', 'error')
+    if not pricing:
+        flash('Invalid duration selected.', 'error')
         return redirect(url_for('subscription.plans'))
     
-    # Check if payment is needed
-    if subscription.status == 'active' and subscription.end_date > datetime.utcnow():
-        flash('Subscription is already active.', 'info')
-        return redirect(url_for('subscription.plans'))
-    
-    return render_template('subscription/pay.html', subscription=subscription)
+    return render_template('subscription/payment_options.html',
+                         plan=plan,
+                         pricing=pricing,
+                         duration=duration)
 
-@subscription_bp.route('/process_payment', methods=['POST'])
+@subscription_bp.route('/process-direct-payment', methods=['POST'])
 @login_required
-def process_payment():
-    """Process M-Pesa payment for subscription"""
-    subscription_id = request.form.get('subscription_id')
-    phone_number = request.form.get('phone_number')
+def process_direct_payment():
+    """Process direct payment (skip trial)"""
+    data = request.get_json()
     
-    subscription = UserSubscription.query.get_or_404(subscription_id)
+    plan_id = data.get('plan_id')
+    pricing_id = data.get('pricing_id')
+    phone_number = data.get('phone_number')
+    payment_method = data.get('payment_method', 'mpesa')
+    skip_trial = data.get('skip_trial', False)
     
-    # Verify ownership
-    if subscription.user_id != current_user.id:
-        return jsonify({'success': False, 'message': 'Access denied'})
+    from app.models.subscription import SubscriptionPlan, SubscriptionPlanPricing
     
-    # Validate phone number
-    if not phone_number or len(phone_number) < 10:
-        return jsonify({'success': False, 'message': 'Invalid phone number'})
+    plan = SubscriptionPlan.query.get(plan_id)
+    pricing = SubscriptionPlanPricing.query.get(pricing_id)
     
-    # Format phone number
-    if phone_number.startswith('0'):
-        phone_number = '254' + phone_number[1:]
-    elif phone_number.startswith('+254'):
-        phone_number = phone_number[1:]
-    elif not phone_number.startswith('254'):
-        phone_number = '254' + phone_number
+    if not plan or not pricing:
+        return jsonify({'success': False, 'message': 'Invalid plan or pricing'})
     
     try:
         # Create payment record
         payment = SubscriptionPayment(
             user_id=current_user.id,
-            subscription_id=subscription.id,
-            amount=subscription.plan.price,
-            payment_status='pending'
+            pricing_id=pricing.id,
+            amount=pricing.total_price,
+            months_purchased=pricing.months,
+            bonus_months=pricing.bonus_months,
+            payment_status='pending',
+            payment_method=payment_method
         )
+        
+        db.session.add(payment)
+        db.session.flush()  # Get payment ID
+        
+        if payment_method == 'mpesa':
+            # Initiate M-Pesa STK push
+            from app.utils.mpesa import initiate_subscription_payment
+            
+            description = f"ChamaLink {plan.name.title()} Plan - {pricing.months}M"
+            response = initiate_subscription_payment(
+                phone_number=phone_number,
+                amount=int(pricing.total_price),
+                account_reference=f"DIRECT-{payment.id}",
+                transaction_desc=description
+            )
+            
+            if response and response.get('success'):
+                # Store checkout request ID for callback processing
+                payment.mpesa_receipt_number = response.get('checkout_request_id')
+                db.session.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'M-Pesa prompt sent! Please complete payment on your phone.',
+                    'payment_id': payment.id,
+                    'checkout_request_id': response.get('checkout_request_id')
+                })
+            else:
+                payment.payment_status = 'failed'
+                db.session.commit()
+                return jsonify({
+                    'success': False,
+                    'message': response.get('message', 'M-Pesa payment initiation failed')
+                })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Direct payment error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Payment processing failed. Please try again.'
+        })
+
+@subscription_bp.route('/process-bank-transfer', methods=['POST'])
+@login_required
+def process_bank_transfer():
+    """Process bank transfer payment"""
+    try:
+        plan_id = request.form.get('plan_id')
+        pricing_id = request.form.get('pricing_id')
+        amount = float(request.form.get('amount'))
+        transfer_reference = request.form.get('transfer_reference')
+        transfer_date = request.form.get('transfer_date')
+        sender_name = request.form.get('sender_name')
+        transfer_notes = request.form.get('transfer_notes', '')
+        
+        from app.models.subscription import SubscriptionPlan, SubscriptionPlanPricing
+        
+        plan = SubscriptionPlan.query.get(plan_id)
+        pricing = SubscriptionPlanPricing.query.get(pricing_id)
+        
+        if not plan or not pricing:
+            return jsonify({'success': False, 'message': 'Invalid plan or pricing'})
+        
+        # Create bank transfer record
+        from app.models.enterprise import BankTransferPayment  # We'll create this model
+        
+        bank_transfer = BankTransferPayment(
+            user_id=current_user.id,
+            plan_id=plan.id,
+            pricing_id=pricing.id,
+            amount=amount,
+            transfer_reference=transfer_reference,
+            transfer_date=datetime.strptime(transfer_date, '%Y-%m-%d').date(),
+            sender_name=sender_name,
+            notes=transfer_notes,
+            bank_name='Cooperative Bank',
+            account_number='01116844755200',
+            paybill='400200',
+            status='pending_verification'
+        )
+        
+        db.session.add(bank_transfer)
+        
+        # Create corresponding subscription payment record
+        payment = SubscriptionPayment(
+            user_id=current_user.id,
+            pricing_id=pricing.id,
+            amount=amount,
+            months_purchased=pricing.months,
+            bonus_months=pricing.bonus_months,
+            payment_status='pending_verification',
+            payment_method='bank_transfer',
+            bank_transfer_id=bank_transfer.id
+        )
+        
         db.session.add(payment)
         db.session.commit()
         
-        # Initiate M-Pesa STK push for subscription (to till 5625121)
-        description = f"ChamaLink {subscription.plan.name.title()} Plan"
-        response = initiate_subscription_payment(
-            phone_number=phone_number,
-            amount=int(subscription.plan.price),
-            account_reference=f"SUB-{subscription.id}",
-            transaction_desc=description
-        )
+        # Send notification to admins for verification
+        from app.models import Notification, User
         
-        if response and response.get('ResponseCode') == '0':
-            # Store checkout request ID for callback processing
-            payment.mpesa_receipt_number = response.get('CheckoutRequestID')
-            db.session.commit()
-            
-            return jsonify({
-                'success': True,
-                'message': 'Payment request sent to your phone. Please complete the payment.',
-                'checkout_request_id': response.get('CheckoutRequestID')
-            })
-        else:
-            payment.payment_status = 'failed'
-            db.session.commit()
-            return jsonify({
-                'success': False,
-                'message': 'Payment request failed. Please try again.'
-            })
-            
-    except Exception as e:
-        current_app.logger.error(f"Subscription payment error: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': 'An error occurred while processing payment'
-        })
-
-@subscription_bp.route('/callback/mpesa', methods=['POST'])
-def mpesa_callback():
-    """Handle M-Pesa callback for subscription payments"""
-    try:
-        callback_data = request.get_json()
-        
-        if not callback_data:
-            return jsonify({'ResponseCode': '1', 'ResponseDesc': 'Invalid callback data'})
-        
-        # Extract callback data
-        stk_callback = callback_data.get('Body', {}).get('stkCallback', {})
-        result_code = stk_callback.get('ResultCode')
-        checkout_request_id = stk_callback.get('CheckoutRequestID')
-        
-        # Find payment record
-        payment = SubscriptionPayment.query.filter_by(
-            mpesa_receipt_number=checkout_request_id
-        ).first()
-        
-        if not payment:
-            current_app.logger.error(f"Payment not found for checkout request: {checkout_request_id}")
-            return jsonify({'ResponseCode': '1', 'ResponseDesc': 'Payment not found'})
-        
-        if result_code == 0:  # Successful payment
-            # Extract transaction details
-            callback_metadata = stk_callback.get('CallbackMetadata', {}).get('Item', [])
-            mpesa_receipt = None
-            
-            for item in callback_metadata:
-                if item.get('Name') == 'MpesaReceiptNumber':
-                    mpesa_receipt = item.get('Value')
-                    break
-            
-            # Update payment status
-            payment.payment_status = 'completed'
-            payment.payment_date = datetime.utcnow()
-            payment.mpesa_receipt_number = mpesa_receipt or checkout_request_id
-            
-            # Update subscription status
-            subscription = payment.subscription
-            if subscription.is_trial:
-                # Convert trial to active
-                subscription.status = 'active'
-                subscription.is_trial = False
-                subscription.end_date = datetime.utcnow() + timedelta(days=30)
-            else:
-                # Extend subscription
-                if subscription.end_date < datetime.utcnow():
-                    subscription.end_date = datetime.utcnow() + timedelta(days=30)
-                else:
-                    subscription.end_date += timedelta(days=30)
-                subscription.status = 'active'
-            
-            db.session.commit()
-            
-            # Send confirmation email
-            send_subscription_email(
-                subscription.user.email,
-                'payment_confirmation',
-                {
-                    'user': subscription.user,
-                    'plan': subscription.plan,
-                    'payment': payment,
-                    'end_date': subscription.end_date
+        # Create admin notifications
+        admin_users = User.query.filter_by(is_super_admin=True).all()
+        for admin in admin_users:
+            notification = Notification(
+                user_id=admin.id,
+                type='bank_transfer_verification',
+                title='New Bank Transfer for Verification',
+                message=f'{current_user.username} submitted bank transfer for {plan.name} plan',
+                data={
+                    'transfer_id': bank_transfer.id,
+                    'payment_id': payment.id,
+                    'amount': amount,
+                    'sender': sender_name,
+                    'reference': transfer_reference
                 }
             )
-            
-            current_app.logger.info(f"Subscription payment completed for user {subscription.user.id}")
-            
-        else:  # Failed payment
-            payment.payment_status = 'failed'
-            db.session.commit()
-            current_app.logger.error(f"Subscription payment failed for user {payment.user_id}")
+            db.session.add(notification)
         
-        return jsonify({'ResponseCode': '0', 'ResponseDesc': 'Success'})
+        db.session.commit()
+        
+        # Send confirmation email to user
+        from app.utils.email_service import email_service
+        email_service.send_bank_transfer_confirmation(
+            current_user,
+            bank_transfer,
+            plan
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': 'Bank transfer confirmation submitted successfully! We will verify and activate your account within 24-48 hours.',
+            'transfer_id': bank_transfer.id
+        })
         
     except Exception as e:
-        current_app.logger.error(f"Subscription callback error: {str(e)}")
-        return jsonify({'ResponseCode': '1', 'ResponseDesc': 'Error processing callback'})
+        db.session.rollback()
+        current_app.logger.error(f"Bank transfer processing error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to process bank transfer confirmation. Please try again.'
+        })
 
-@subscription_bp.route('/status')
+@subscription_bp.route('/payment-status/<int:payment_id>')
 @login_required
-def subscription_status():
-    """Show current subscription status"""
-    subscription = current_user.current_subscription
-    payment_history = SubscriptionPayment.query.filter_by(
-        user_id=current_user.id
-    ).order_by(SubscriptionPayment.created_at.desc()).all()
-    
-    return render_template('subscription/status.html', 
-                         subscription=subscription, 
-                         payment_history=payment_history)
-
-@subscription_bp.route('/cancel/<int:subscription_id>')
-@login_required
-def cancel_subscription(subscription_id):
-    """Cancel subscription"""
-    subscription = UserSubscription.query.get_or_404(subscription_id)
+def payment_status(payment_id):
+    """Check payment status"""
+    payment = SubscriptionPayment.query.get_or_404(payment_id)
     
     # Verify ownership
-    if subscription.user_id != current_user.id:
-        flash('Access denied.', 'error')
-        return redirect(url_for('subscription.status'))
+    if payment.user_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
     
-    # Cancel subscription
-    subscription.status = 'cancelled'
-    subscription.auto_renew = False
-    db.session.commit()
+    return jsonify({
+        'success': True,
+        'status': payment.payment_status,
+        'payment_id': payment.id,
+        'amount': payment.amount
+    })
+
+@subscription_bp.route('/admin/bank-transfers')
+@login_required
+def admin_bank_transfers():
+    """Admin page to view and manage bank transfers"""
+    if not current_user.is_super_admin:
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('main.dashboard'))
     
-    # Send cancellation email
-    send_subscription_email(
-        current_user.email,
-        'subscription_cancelled',
-        {
-            'user': current_user,
-            'plan': subscription.plan,
-            'end_date': subscription.end_date
+    from app.models.enterprise import BankTransferPayment
+    
+    # Get all bank transfers, ordered by most recent first
+    transfers = BankTransferPayment.query.order_by(
+        BankTransferPayment.created_at.desc()
+    ).all()
+    
+    # Count pending transfers
+    pending_count = BankTransferPayment.query.filter_by(
+        status='pending_verification'
+    ).count()
+    
+    return render_template('admin/bank_transfers.html',
+                         transfers=transfers,
+                         pending_count=pending_count)
+
+@subscription_bp.route('/verify-bank-transfer/<int:transfer_id>', methods=['POST'])
+@login_required
+def verify_bank_transfer(transfer_id):
+    """Admin route to verify bank transfer"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    from app.models.enterprise import BankTransferPayment
+    
+    transfer = BankTransferPayment.query.get_or_404(transfer_id)
+    verification_status = request.json.get('status')  # 'approved' or 'rejected'
+    admin_notes = request.json.get('notes', '')
+    
+    if verification_status == 'approved':
+        # Update transfer status
+        transfer.status = 'verified'
+        transfer.verified_by = current_user.id
+        transfer.verified_at = datetime.utcnow()
+        transfer.admin_notes = admin_notes
+        
+        # Update payment status
+        payment = SubscriptionPayment.query.filter_by(bank_transfer_id=transfer.id).first()
+        if payment:
+            payment.payment_status = 'completed'
+            payment.payment_date = datetime.utcnow()
+            
+            # Create or update subscription
+            user = transfer.user
+            pricing = transfer.pricing
+            
+            current_subscription = user.current_subscription
+            if current_subscription:
+                # Extend existing subscription
+                if current_subscription.end_date > datetime.utcnow():
+                    start_date = current_subscription.end_date
+                else:
+                    start_date = datetime.utcnow()
+                
+                current_subscription.end_date = start_date + timedelta(days=30 * payment.total_months_provided)
+                current_subscription.status = 'active'
+                current_subscription.is_trial = False
+            else:
+                # Create new subscription
+                new_subscription = UserSubscription(
+                    user_id=user.id,
+                    plan_id=transfer.plan.id,
+                    status='active',
+                    start_date=datetime.utcnow(),
+                    end_date=datetime.utcnow() + timedelta(days=30 * payment.total_months_provided),
+                    is_trial=False
+                )
+                db.session.add(new_subscription)
+        
+        db.session.commit()
+        
+        # Send confirmation email to user
+        from app.utils.email_service import email_service
+        email_service.send_subscription_activation_email(user, transfer.plan, payment)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Bank transfer verified and subscription activated'
+        })
+        
+    elif verification_status == 'rejected':
+        transfer.status = 'rejected'
+        transfer.verified_by = current_user.id
+        transfer.verified_at = datetime.utcnow()
+        transfer.admin_notes = admin_notes
+        
+        # Update payment status
+        payment = SubscriptionPayment.query.filter_by(bank_transfer_id=transfer.id).first()
+        if payment:
+            payment.payment_status = 'failed'
+        
+        db.session.commit()
+        
+        # Send rejection email to user
+        from app.utils.email_service import email_service
+        email_service.send_bank_transfer_rejection_email(transfer.user, transfer, admin_notes)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Bank transfer rejected'
+        })
+    
+    return jsonify({'success': False, 'message': 'Invalid verification status'})
+
+@subscription_bp.route('/pricing')
+def get_pricing():
+    """API endpoint to get all pricing options"""
+    from app.models.subscription import SubscriptionPlan, SubscriptionPlanPricing
+    
+    plans = SubscriptionPlan.query.filter_by(is_active=True).all()
+    pricing_data = []
+    
+    for plan in plans:
+        plan_pricing = {
+            'plan_id': plan.id,
+            'plan_name': plan.name,
+            'base_price': plan.price,
+            'options': []
         }
-    )
+        
+        for pricing in plan.pricing_options:
+            if pricing.is_active:
+                plan_pricing['options'].append({
+                    'months': pricing.months,
+                    'bonus_months': pricing.bonus_months,
+                    'total_price': pricing.total_price,
+                    'discount_percentage': pricing.discount_percentage,
+                    'total_months_provided': pricing.total_months_provided
+                })
+        
+        pricing_data.append(plan_pricing)
     
-    flash('Subscription cancelled successfully.', 'success')
-    return redirect(url_for('subscription.status'))
-
-@subscription_bp.route('/renew/<int:subscription_id>')
-@login_required
-def renew_subscription(subscription_id):
-    """Renew subscription"""
-    subscription = UserSubscription.query.get_or_404(subscription_id)
-    
-    # Verify ownership
-    if subscription.user_id != current_user.id:
-        flash('Access denied.', 'error')
-        return redirect(url_for('subscription.status'))
-    
-    # Enable auto-renewal
-    subscription.auto_renew = True
-    if subscription.status == 'cancelled':
-        subscription.status = 'active'
-    
-    db.session.commit()
-    
-    flash('Subscription renewal enabled.', 'success')
-    return redirect(url_for('subscription.status'))
+    return jsonify(pricing_data)
