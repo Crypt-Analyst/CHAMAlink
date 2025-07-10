@@ -48,6 +48,10 @@ def create_app():
     login_manager.init_app(app)
     mail.init_app(app)
     login_manager.login_view = 'auth.login'
+    
+    # 🚨 Initialize error handlers for debugging
+    from app.utils.error_handlers import init_error_handlers
+    init_error_handlers(app)
     login_manager.login_message = None  # Disable automatic login messages
     login_manager.login_message_category = 'info'
     login_manager.session_protection = 'strong'  # Better session protection
@@ -93,6 +97,7 @@ def create_app():
     from app.routes.admin import admin_bp
     from app.routes.api import api_bp
     from app.routes.enterprise import enterprise_bp
+    from app.routes.health import health_bp
 
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(main_blueprint)
@@ -115,6 +120,7 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(enterprise_bp, url_prefix='/enterprise')
+    app.register_blueprint(health_bp)
 
     # 🌍 Initialize internationalization
     from app.utils.internationalization import get_current_language, get_current_theme, get_current_font, load_translations
