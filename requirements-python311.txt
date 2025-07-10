@@ -22,6 +22,7 @@ blinker==1.7.0
 MarkupSafe==2.1.5
 
 # Forms and validation
+Flask-WTF==1.1.1
 WTForms==3.1.2
 
 # Security and utilities
