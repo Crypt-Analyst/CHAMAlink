@@ -7,12 +7,18 @@ from datetime import datetime
 import io
 import csv
 import uuid
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+
+# Optional PDF generation imports - graceful fallback if not available
+try:
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    PDF_AVAILABLE = True
+except ImportError:
+    PDF_AVAILABLE = False
 
 receipts_bp = Blueprint('receipts', __name__)
 
@@ -39,6 +45,10 @@ def view_receipt(receipt_id):
 @login_required
 def download_receipt(receipt_id):
     """Download receipt as PDF"""
+    if not PDF_AVAILABLE:
+        flash('PDF generation is temporarily unavailable. Please contact support.', 'error')
+        return redirect(url_for('receipts.view_receipt', receipt_id=receipt_id))
+    
     receipt = Receipt.query.get_or_404(receipt_id)
     
     # Check if user has access to this receipt
