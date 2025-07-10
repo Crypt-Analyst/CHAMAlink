@@ -13,8 +13,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-      - key: FLASK_ENV
-        value: production
+      - key: FLASK_DEBUG
+        value: false
       - key: DATABASE_URL
         fromDatabase:
           name: chamalink-db
