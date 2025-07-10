@@ -24,7 +24,7 @@ RUN mkdir -p uploads
 
 # Set environment variables
 ENV FLASK_APP=run.py
-ENV FLASK_ENV=production
+ENV FLASK_DEBUG=false
 ENV PYTHONPATH=/app
 
 # Expose port

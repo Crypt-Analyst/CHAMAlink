@@ -37,7 +37,7 @@ class SecurityMonitor:
     
     def __init__(self):
         # Check if we're in development/testing mode
-        self.dev_mode = os.getenv('FLASK_ENV') == 'development' or os.getenv('TESTING') == 'True'
+        self.dev_mode = os.getenv('FLASK_DEBUG') == 'true' or os.getenv('TESTING') == 'True'
         
         self.attack_patterns = {
             'sql_injection': [
