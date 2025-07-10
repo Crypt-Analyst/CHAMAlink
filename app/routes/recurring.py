@@ -4,8 +4,50 @@ from app.models.chama import Chama, ChamaMember, RecurringPayment, Contribution
 from app.models.user import User
 from app import db
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 import json
+
+# Optional dateutil import - graceful fallback if not available
+try:
+    from dateutil.relativedelta import relativedelta
+    DATEUTIL_AVAILABLE = True
+except ImportError:
+    DATEUTIL_AVAILABLE = False
+    
+    def add_months(date, months):
+        """Fallback function to add months to a date"""
+        month = date.month - 1 + months
+        year = date.year + month // 12
+        month = month % 12 + 1
+        day = min(date.day, [31,
+            29 if year % 4 == 0 and (year % 100 != 0 or year % 400 == 0) else 28,
+            31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month-1])
+        return date.replace(year=year, month=month, day=day)
+    
+    def add_years(date, years):
+        """Fallback function to add years to a date"""
+        try:
+            return date.replace(year=date.year + years)
+        except ValueError:  # leap year edge case
+            return date.replace(year=date.year + years, day=28)
+    
+    # Create a simple relativedelta replacement
+    class relativedelta:
+        def __init__(self, months=0, years=0, days=0):
+            self.months = months
+            self.years = years
+            self.days = days
+        
+        def __radd__(self, other):
+            if isinstance(other, datetime):
+                result = other
+                if self.years:
+                    result = add_years(result, self.years)
+                if self.months:
+                    result = add_months(result, self.months)
+                if self.days:
+                    result = result + timedelta(days=self.days)
+                return result
+            return NotImplemented
 
 recurring_bp = Blueprint('recurring', __name__)
 
