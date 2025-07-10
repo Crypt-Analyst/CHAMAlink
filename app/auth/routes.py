@@ -4,7 +4,7 @@ from app.models.user import User
 from app.models.subscription import LoginAttempt, EmailVerification, TwoFactorAuth
 from app.utils.email_service import email_service
 from app import db
-from .forms import RegistrationForm, LoginForm
+from .forms import RegistrationForm, LoginForm, ForgotPasswordForm, ResetPasswordForm
 from datetime import datetime, timedelta
 import secrets
 import re
@@ -264,3 +264,57 @@ def resend_verification():
     
     flash('Verification email sent! Please check your inbox.', 'success')
     return redirect(url_for('auth.login'))
+
+@auth.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    """Handle forgot password requests"""
+    if current_user.is_authenticated:
+        return redirect(url_for('main.dashboard'))
+    
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        
+        if user:
+            # Generate reset token
+            token = user.generate_password_reset_token()
+            
+            # Send password reset email
+            try:
+                reset_url = url_for('auth.reset_password', token=token, _external=True)
+                email_service.send_password_reset(user, reset_url)
+                flash('Password reset link sent to your email. Please check your inbox.', 'info')
+            except Exception as e:
+                current_app.logger.error(f"Failed to send password reset email: {e}")
+                flash('Error sending email. Please try again later.', 'danger')
+        else:
+            # Don't reveal if email exists or not for security
+            flash('If that email address is in our system, you will receive a password reset link.', 'info')
+        
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/forgot_password.html', form=form)
+
+@auth.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Handle password reset with token"""
+    if current_user.is_authenticated:
+        return redirect(url_for('main.dashboard'))
+    
+    # Find user with this token
+    user = User.query.filter_by(password_reset_token=token).first()
+    
+    if not user or not user.verify_password_reset_token(token):
+        flash('Invalid or expired password reset link.', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+    
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        # Update password
+        user.set_password(form.password.data)
+        user.clear_password_reset_token()
+        
+        flash('Your password has been reset successfully. You can now log in.', 'success')
+        return redirect(url_for('auth.login'))
+    
+    return render_template('auth/reset_password.html', form=form, token=token)

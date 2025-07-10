@@ -27,6 +27,10 @@ class User(UserMixin, db.Model):
     failed_login_attempts = db.Column(db.Integer, default=0)
     locked_until = db.Column(db.DateTime)
     
+    # Password Reset
+    password_reset_token = db.Column(db.String(100), unique=True)
+    password_reset_expires = db.Column(db.DateTime)
+    
     # Guardian Information (for users under 18)
     is_minor = db.Column(db.Boolean, default=False)
     guardian_name = db.Column(db.String(100))
@@ -181,6 +185,32 @@ class User(UserMixin, db.Model):
         self.failed_login_attempts = 0
         self.locked_until = None
         self.last_login = datetime.utcnow()
+        db.session.commit()
+    
+    def generate_password_reset_token(self):
+        """Generate a password reset token"""
+        import secrets
+        from datetime import timedelta
+        
+        self.password_reset_token = secrets.token_urlsafe(32)
+        self.password_reset_expires = datetime.utcnow() + timedelta(hours=1)  # 1 hour expiry
+        db.session.commit()
+        return self.password_reset_token
+    
+    def verify_password_reset_token(self, token):
+        """Verify if the password reset token is valid"""
+        if not self.password_reset_token or not self.password_reset_expires:
+            return False
+        
+        if datetime.utcnow() > self.password_reset_expires:
+            return False
+            
+        return self.password_reset_token == token
+    
+    def clear_password_reset_token(self):
+        """Clear password reset token after use"""
+        self.password_reset_token = None
+        self.password_reset_expires = None
         db.session.commit()
     
     def member_since(self, chama_id):

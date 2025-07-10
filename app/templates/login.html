@@ -110,7 +110,7 @@
                                     {{ form.remember_me(class="form-check-input") }}
                                     {{ form.remember_me.label(class="form-check-label") }}
                                 </div>
-                                <a href="#" class="text-decoration-none">Forgot password?</a>
+                                <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none">Forgot password?</a>
                             </div>
 
                             <div class="d-grid mb-4">

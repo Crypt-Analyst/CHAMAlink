@@ -172,6 +172,45 @@ class EmailService:
         
         return self.send_email(user.email, subject, html_content)
     
+    def send_password_reset(self, user, reset_url):
+        """Send password reset link"""
+        try:
+            from flask import render_template
+            from datetime import datetime
+            
+            html_content = render_template('email/password_reset.html', 
+                                         user=user, 
+                                         reset_url=reset_url,
+                                         current_year=datetime.now().year)
+            
+            text_content = f"""
+            Hello {user.first_name or user.username},
+            
+            You have requested to reset your password for your ChamaLink account.
+            
+            Click the link below to reset your password:
+            {reset_url}
+            
+            If the link doesn't work, copy and paste it into your browser.
+            
+            This link will expire in 1 hour for security reasons.
+            
+            If you did not request this password reset, please ignore this email. Your password will remain unchanged.
+            
+            Best regards,
+            ChamaLink Team
+            """
+            
+            return self.send_email(
+                recipient_email=user.email,
+                subject="Reset your ChamaLink password",
+                html_content=html_content,
+                text_content=text_content
+            )
+        except Exception as e:
+            current_app.logger.error(f"Failed to send password reset email: {e}")
+            return False
+    
     def _get_email_template(self, template_name, context):
         """Get email template with context variables"""
         templates = {
