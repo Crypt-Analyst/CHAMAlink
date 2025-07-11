@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 # ✅ Load environment variables from .env
 load_dotenv()
+os.environ["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 
 # 🧠 Initialize core Flask extensions
 db = SQLAlchemy()
@@ -97,7 +98,6 @@ def create_app():
     from app.routes.admin import admin_bp
     from app.routes.api import api_bp
     from app.routes.enterprise import enterprise_bp
-    from app.routes.health import health_bp
 
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(main_blueprint)
@@ -120,7 +120,6 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(enterprise_bp, url_prefix='/enterprise')
-    app.register_blueprint(health_bp)
 
     # 🌍 Initialize internationalization
     from app.utils.internationalization import get_current_language, get_current_theme, get_current_font, load_translations
@@ -172,7 +171,6 @@ def create_app():
     def internal_error(error):
         try:
             db.session.rollback()
-            # Generate unique error ID for support reference
             import uuid
             error_id = str(uuid.uuid4())[:8].upper()
             return render_template('errors/500.html', error_id=error_id), 500
@@ -182,7 +180,7 @@ def create_app():
     @app.errorhandler(403)
     def forbidden_error(error):
         try:
-            return render_template('errors/404.html'), 403  # Use 404 template for security
+            return render_template('errors/404.html'), 403
         except:
             return '<h1>403 - Access Denied</h1><p>You do not have permission to access this resource.</p>', 403
     
