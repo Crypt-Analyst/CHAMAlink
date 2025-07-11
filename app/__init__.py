@@ -9,7 +9,15 @@ from dotenv import load_dotenv
 
 # ✅ Load environment variables from .env
 load_dotenv()
-os.environ["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+
+# Get database URL - prioritize SQLALCHEMY_DATABASE_URI
+database_url = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
+if database_url:
+    os.environ["SQLALCHEMY_DATABASE_URI"] = database_url
+    print("✅ Database URL loaded successfully")
+else:
+    print("❌ No database URL found!")
+    print("Available env vars:", [k for k in os.environ.keys() if 'DATABASE' in k.upper() or 'SQLALCHEMY' in k.upper()])
 
 # 🧠 Initialize core Flask extensions
 db = SQLAlchemy()
@@ -17,14 +25,12 @@ migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
 
-print("DB URI:", os.getenv("DATABASE_URL"))
-
 def create_app():
     app = Flask(__name__)
 
     # 🔐 Configuration
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "chamalink-secret-key")
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['TEMPLATES_AUTO_RELOAD'] = True  # Force template reloading
     
