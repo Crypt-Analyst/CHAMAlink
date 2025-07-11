@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from app.models import Chama, Transaction, Event, User
 from app import db
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timedelta
 from sqlalchemy import desc
 
 main = Blueprint('main', __name__)
@@ -252,39 +252,51 @@ def profile():
 @login_required
 def reports():
     """Financial reports page"""
-    user_chamas = current_user.chamas
-    
-    # Calculate report data
-    total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
-        Transaction.type == 'contribution',
-        Transaction.user_id == current_user.id
-    ).scalar() or 0
-    
-    total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
-        Transaction.type == 'loan',
-        Transaction.user_id == current_user.id
-    ).scalar() or 0
-    
-    total_penalties = db.session.query(db.func.sum(Transaction.amount)).filter(
-        Transaction.type == 'penalty',
-        Transaction.user_id == current_user.id
-    ).scalar() or 0
-    
-    # Get monthly transaction data for charts
-    monthly_data = db.session.query(
-        db.func.date_trunc('month', Transaction.created_at).label('month'),
-        db.func.sum(Transaction.amount).label('total')
-    ).filter(
-        Transaction.user_id == current_user.id,
-        Transaction.type == 'contribution'
-    ).group_by(db.func.date_trunc('month', Transaction.created_at)).all()
-    
-    return render_template('reports.html',
-                         user_chamas=user_chamas,
-                         total_contributions=total_contributions,
-                         total_loans=total_loans,
-                         total_penalties=total_penalties,
-                         monthly_data=monthly_data)
+    try:
+        user_chamas = current_user.chamas
+        
+        # Calculate report data safely
+        total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
+            Transaction.type == 'contribution',
+            Transaction.user_id == current_user.id
+        ).scalar() or 0
+        
+        total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
+            Transaction.type == 'loan',
+            Transaction.user_id == current_user.id
+        ).scalar() or 0
+        
+        total_penalties = db.session.query(db.func.sum(Transaction.amount)).filter(
+            Transaction.type == 'penalty',
+            Transaction.user_id == current_user.id
+        ).scalar() or 0
+        
+        # Get monthly transaction data for charts (simplified)
+        monthly_data = []
+        try:
+            monthly_data = db.session.query(
+                db.func.strftime('%Y-%m', Transaction.created_at).label('month'),
+                db.func.sum(Transaction.amount).label('total')
+            ).filter(
+                Transaction.user_id == current_user.id,
+                Transaction.type == 'contribution'
+            ).group_by(db.func.strftime('%Y-%m', Transaction.created_at)).all()
+        except Exception as e:
+            print(f"Monthly data error: {e}")
+            monthly_data = []
+        
+        return render_template('reports.html',
+                             user_chamas=user_chamas,
+                             total_contributions=total_contributions,
+                             total_loans=total_loans,
+                             total_penalties=total_penalties,
+                             monthly_data=monthly_data,
+                             current_date=datetime.now(),
+                             seven_days_ago=(datetime.now() - timedelta(days=7)))
+    except Exception as e:
+        print(f"Reports route error: {e}")
+        flash('Error loading reports. Please try again.', 'error')
+        return redirect(url_for('main.dashboard'))
 
 @main.route('/terms')
 def terms():
