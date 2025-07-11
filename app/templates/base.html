@@ -281,7 +281,7 @@
                     
                     <!-- Dedicated Pricing Link -->
                     <li class="nav-item">
-                        <a class="nav-link fw-bold" href="{{ url_for('subscription.get_pricing') }}">
+                        <a class="nav-link fw-bold" href="{{ url_for('subscription_new.pricing') }}">
                             <i class="fas fa-tag me-1"></i>Pricing
                         </a>
                     </li>
@@ -890,7 +890,7 @@ function submitInterest(event, feature, actionType) {
 }
 
 function createNewChama() {
-    // Open create chama modal or redirect to creation page
+    // Redirect to create chama page
     window.location.href = '/chama/create';
 }
 
