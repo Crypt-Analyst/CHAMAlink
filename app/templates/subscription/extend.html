@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% block title %}Extend Subscription - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary mb-3">Extend Your Subscription</h1>
+        <p class="lead text-muted">Keep enjoying ChamaLink's premium features</p>
+    </div>
+
+    <!-- Current Subscription Info -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Current Subscription
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Plan:</strong> {{ current_subscription.plan.name.title() }}</p>
+                            <p class="mb-2"><strong>Status:</strong> 
+                                <span class="badge {% if current_subscription.is_active %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ current_subscription.status.title() }}
+                                </span>
+                            </p>
+                            <p class="mb-0"><strong>Current End Date:</strong> {{ current_subscription.end_date.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Days Remaining:</strong> 
+                                <span class="{% if current_subscription.days_remaining < 7 %}text-danger{% elif current_subscription.days_remaining < 30 %}text-warning{% else %}text-success{% endif %}">
+                                    {{ current_subscription.days_remaining }} days
+                                </span>
+                            </p>
+                            <p class="mb-0"><strong>Monthly Price:</strong> KES {{ current_subscription.plan.price|int }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extension Options -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h3 class="text-center mb-4">Choose Extension Duration</h3>
+            <div class="row g-4">
+                {% for pricing in pricing_options %}
+                <div class="col-lg-3 col-md-6">
+                    <div class="card h-100 extension-option {% if loop.index == 3 %}border-success{% endif %}" data-pricing-id="{{ pricing.id }}">
+                        {% if loop.index == 3 %}
+                        <div class="card-header bg-success text-white text-center">
+                            <small class="badge bg-warning text-dark">BEST VALUE</small>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body text-center">
+                            <h4 class="fw-bold text-primary">{{ pricing.months }} Month{{ 's' if pricing.months > 1 else '' }}</h4>
+                            
+                            {% if pricing.bonus_months > 0 %}
+                            <div class="mb-3">
+                                <span class="badge bg-success">+ {{ pricing.bonus_months }} FREE Month{{ 's' if pricing.bonus_months > 1 else '' }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="price-display mb-3">
+                                <h3 class="text-primary mb-1">KES {{ "{:,.0f}".format(pricing.total_price) }}</h3>
+                                {% if pricing.months > 1 %}
+                                <small class="text-muted">
+                                    KES {{ "{:,.0f}".format(pricing.total_price / pricing.months) }}/month
+                                    {% if pricing.discount_percentage > 0 %}
+                                    <br><span class="text-success">Save {{ pricing.discount_percentage }}%</span>
+                                    {% endif %}
+                                </small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="extension-info mb-3">
+                                <small class="text-muted">
+                                    <strong>Extended to:</strong><br>
+                                    {{ pricing.total_months_provided }} month{{ 's' if pricing.total_months_provided > 1 else '' }} added
+                                </small>
+                            </div>
+                            
+                            <button class="btn {% if loop.index == 3 %}btn-success{% else %}btn-outline-primary{% endif %} w-100 extend-btn" 
+                                    data-pricing-id="{{ pricing.id }}"
+                                    data-amount="{{ pricing.total_price }}"
+                                    data-months="{{ pricing.months }}"
+                                    data-bonus="{{ pricing.bonus_months }}">
+                                Extend Subscription
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Methods Info -->
+    <div class="row mt-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="mb-3">💳 Secure Payment Methods</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="payment-method-info mb-3">
+                                <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
+                                <h6>M-Pesa Payment</h6>
+                                <small class="text-muted">Instant activation via STK Push</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="payment-method-info">
+                                <i class="fas fa-university fa-2x text-primary mb-2"></i>
+                                <h6>Bank Transfer</h6>
+                                <small class="text-muted">Manual verification within 24 hours</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- M-Pesa Payment Modal -->
+<div class="modal fade" id="mpesaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">M-Pesa Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="mpesaForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">M-Pesa Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">+254</span>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   placeholder="712345678" required pattern="[17]\d{8}"
+                                   value="{{ current_user.phone_number.replace('+254', '').replace('254', '') if current_user.phone_number else '' }}">
+                        </div>
+                        <small class="form-text text-muted">Enter your M-Pesa registered phone number</small>
+                    </div>
+                    
+                    <div id="payment-summary" class="alert alert-info">
+                        <!-- Payment summary will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="mpesaPayBtn">
+                        <i class="fas fa-mobile-alt me-2"></i>Pay Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedPricing = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle extension button clicks
+    document.querySelectorAll('.extend-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            selectedPricing = {
+                id: this.dataset.pricingId,
+                amount: parseFloat(this.dataset.amount),
+                months: parseInt(this.dataset.months),
+                bonus: parseInt(this.dataset.bonus)
+            };
+            
+            // Update payment summary
+            updatePaymentSummary();
+            
+            // Show M-Pesa modal
+            const modal = new bootstrap.Modal(document.getElementById('mpesaModal'));
+            modal.show();
+        });
+    });
+    
+    // Handle M-Pesa payment form
+    document.getElementById('mpesaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const phoneNumber = document.getElementById('phone_number').value;
+        const payBtn = document.getElementById('mpesaPayBtn');
+        
+        // Validate phone number
+        if (!phoneNumber.match(/^[17]\d{8}$/)) {
+            alert('Please enter a valid Kenyan phone number (7XXXXXXXX or 1XXXXXXXX)');
+            return;
+        }
+        
+        // Disable button and show loading
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        
+        // Process extension payment
+        fetch('/subscription/process-extension', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                pricing_id: selectedPricing.id,
+                phone_number: '254' + phoneNumber,
+                payment_method: 'mpesa'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                
+                if (data.checkout_request_id) {
+                    // Poll for payment status
+                    checkPaymentStatus(data.payment_id);
+                } else {
+                    // Redirect to status page
+                    window.location.href = '/subscription/status';
+                }
+            } else {
+                alert('Payment failed: ' + data.message);
+                payBtn.disabled = false;
+                payBtn.innerHTML = '<i class="fas fa-mobile-alt me-2"></i>Pay Now';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Payment failed. Please try again.');
+            payBtn.disabled = false;
+            payBtn.innerHTML = '<i class="fas fa-mobile-alt me-2"></i>Pay Now';
+        });
+    });
+});
+
+function updatePaymentSummary() {
+    if (!selectedPricing) return;
+    
+    const totalMonths = selectedPricing.months + selectedPricing.bonus;
+    const summary = `
+        <h6>Extension Summary:</h6>
+        <p class="mb-1"><strong>Duration:</strong> ${selectedPricing.months} month${selectedPricing.months > 1 ? 's' : ''}
+            ${selectedPricing.bonus > 0 ? ` + ${selectedPricing.bonus} FREE` : ''}</p>
+        <p class="mb-1"><strong>Total Extension:</strong> ${totalMonths} month${totalMonths > 1 ? 's' : ''}</p>
+        <p class="mb-0"><strong>Amount:</strong> KES ${selectedPricing.amount.toLocaleString()}</p>
+    `;
+    
+    document.getElementById('payment-summary').innerHTML = summary;
+}
+
+function checkPaymentStatus(paymentId) {
+    const interval = setInterval(() => {
+        fetch(`/subscription/payment-status/${paymentId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'completed') {
+                clearInterval(interval);
+                alert('Extension payment successful! Your subscription has been extended.');
+                window.location.href = '/subscription/status';
+            } else if (data.status === 'failed') {
+                clearInterval(interval);
+                alert('Payment failed. Please try again.');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Status check error:', error);
+        });
+    }, 3000);
+    
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+        clearInterval(interval);
+    }, 300000);
+}
+</script>
+
+<style>
+.extension-option {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.extension-option:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.price-display {
+    padding: 1rem 0;
+    border-top: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.payment-method-info {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: white;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}

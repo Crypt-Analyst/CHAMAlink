@@ -254,9 +254,45 @@
                         <a href="{{ url_for('chama.chama_members', chama_id=chama.id) }}" class="btn btn-outline-primary">
                             <i class="fas fa-users me-2"></i>Manage Members
                         </a>
+                        <button class="btn btn-outline-warning" onclick="showRoleAppointmentModal()">
+                            <i class="fas fa-user-tie me-2"></i>Appoint Roles
+                        </button>
                         <a href="{{ url_for('chama.payment_verifications', chama_id=chama.id) }}" class="btn btn-outline-warning">
                             <i class="fas fa-check-circle me-2"></i>Payment Verifications
                         </a>
+                        <a href="{{ url_for('reports.chama_analytics', chama_id=chama.id) }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-pie me-2"></i>Analytics & Reports
+                        </a>
+                        <button class="btn btn-outline-success" onclick="downloadMembersList()">
+                            <i class="fas fa-download me-2"></i>Download Members
+                        </button>
+                        <button class="btn btn-outline-dark" onclick="downloadTransactions()">
+                            <i class="fas fa-file-excel me-2"></i>Download Transactions
+                        </button>
+                        {% endif %}
+                        
+                        {% if user_role == 'secretary' %}
+                        <a href="{{ url_for('minutes.chama_minutes', chama_id=chama.id) }}" class="btn btn-primary">
+                            <i class="fas fa-clipboard me-2"></i>Meeting Minutes
+                        </a>
+                        <a href="{{ url_for('minutes.create_minutes', chama_id=chama.id) }}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Create Minutes
+                        </a>
+                        <button class="btn btn-outline-info" onclick="downloadAllMinutes()">
+                            <i class="fas fa-download me-2"></i>Download All Minutes
+                        </button>
+                        {% endif %}
+                        
+                        {% if user_role == 'treasurer' %}
+                        <a href="{{ url_for('reports.financial_dashboard', chama_id=chama.id) }}" class="btn btn-warning">
+                            <i class="fas fa-calculator me-2"></i>Financial Dashboard
+                        </a>
+                        <a href="{{ url_for('chama.payment_verifications', chama_id=chama.id) }}" class="btn btn-outline-warning">
+                            <i class="fas fa-check-circle me-2"></i>Verify Payments
+                        </a>
+                        <button class="btn btn-outline-success" onclick="downloadFinancialReport()">
+                            <i class="fas fa-file-pdf me-2"></i>Financial Report
+                        </button>
                         {% endif %}
                         {% if chama.registration_fee > 0 %}
                         <button class="btn btn-warning" onclick="showRegistrationFeeModal()">
@@ -277,6 +313,9 @@
                         </a>
                         <a href="{{ url_for('receipts.payment_history', chama_id=chama.id) }}" class="btn btn-outline-secondary">
                             <i class="fas fa-history me-2"></i>Payment History
+                        </a>
+                        <a href="{{ url_for('payments.comprehensive_history', chama_id=chama.id) }}" class="btn btn-outline-success">
+                            <i class="fas fa-chart-line me-2"></i>Enhanced Payment Tracking
                         </a>
                         <a href="{{ url_for('recurring.chama_recurring_payments', chama_id=chama.id) }}" class="btn btn-outline-info">
                             <i class="fas fa-sync-alt me-2"></i>Recurring Payments
@@ -393,6 +432,54 @@
                 <button type="button" class="btn btn-warning" onclick="submitRegistrationFee()">
                     <i class="fas fa-mobile-alt me-2"></i>Pay via M-Pesa
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Role Appointment Modal -->
+<div class="modal fade" id="roleAppointmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-tie me-2"></i>Appoint Role
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="roleAppointmentForm">
+                    <div class="mb-3">
+                        <label class="form-label">Select Member</label>
+                        <select class="form-select" id="memberSelect" required>
+                            <option value="">Choose a member...</option>
+                            {% for member in chama.members %}
+                            <option value="{{ member.id }}">{{ member.username }} ({{ member.email }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select Role</label>
+                        <select class="form-select" id="roleSelect" required>
+                            <option value="">Choose a role...</option>
+                            <option value="secretary">Secretary</option>
+                            <option value="treasurer">Treasurer</option>
+                            <option value="admin">Admin</option>
+                            <option value="member">Member</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Secretary:</strong> Can create and manage meeting minutes<br>
+                            <strong>Treasurer:</strong> Can manage finances and verify payments<br>
+                            <strong>Admin:</strong> Can manage members and chama settings
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="appointRole()">Appoint Role</button>
             </div>
         </div>
     </div>
@@ -533,6 +620,47 @@ function submitInvite() {
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred while sending the invite');
+    });
+}
+
+// Role appointment functions
+function showRoleAppointmentModal() {
+    const modal = new bootstrap.Modal(document.getElementById('roleAppointmentModal'));
+    modal.show();
+}
+
+function appointRole() {
+    const userId = document.getElementById('memberSelect').value;
+    const role = document.getElementById('roleSelect').value;
+    
+    if (!userId || !role) {
+        alert('Please select both a member and a role');
+        return;
+    }
+    
+    fetch(`/chama/{{ chama.id }}/appoint-role`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            user_id: parseInt(userId),
+            role: role
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while appointing the role');
     });
 }
 

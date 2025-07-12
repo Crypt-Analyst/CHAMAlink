@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Demo - See CHAMAlink in Action{% endblock %}
+
+{% block content %}
+<div class="demo-page">
+    <!-- Hero Video Section -->
+    <section class="hero-video-section py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-4">
+                        <h1 class="display-4 text-primary mb-3">See CHAMAlink in Action</h1>
+                        <p class="lead text-muted">Watch how CHAMAlink transforms communities from individual struggle to collective success</p>
+                    </div>
+                    
+                    <!-- Video Player -->
+                    <div class="video-container position-relative rounded shadow-lg overflow-hidden">
+                        <div class="video-wrapper" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+                            <!-- Placeholder for when video is ready -->
+                            <div id="video-placeholder" class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                <div class="text-center">
+                                    <i class="fas fa-play-circle fa-5x text-primary mb-3"></i>
+                                    <h4>Demo Video Coming Soon!</h4>
+                                    <p class="text-muted">We're creating an amazing animation showing the CHAMAlink journey</p>
+                                    <div class="mt-4">
+                                        <a href="/register" class="btn btn-primary btn-lg me-3">
+                                            <i class="fas fa-rocket me-2"></i>Start Free Trial
+                                        </a>
+                                        <a href="/features" class="btn btn-outline-primary btn-lg">
+                                            <i class="fas fa-info-circle me-2"></i>Learn More
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Actual video element (hidden until video is ready) -->
+                            <video id="demo-video" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none;" 
+                                   controls poster="/static/images/video-thumbnail.jpg">
+                                <source src="/static/videos/chamalink-demo.mp4" type="video/mp4">
+                                <p>Your browser doesn't support HTML5 video. <a href="/static/videos/chamalink-demo.mp4">Download the video</a> instead.</p>
+                            </video>
+                        </div>
+                        
+                        <!-- Video Overlay Controls -->
+                        <div class="video-overlay position-absolute bottom-0 start-0 w-100 p-3 bg-gradient" style="background: linear-gradient(transparent, rgba(0,0,0,0.6));">
+                            <div class="d-flex justify-content-between align-items-center text-white">
+                                <div>
+                                    <h6 class="mb-1">The CHAMAlink Journey</h6>
+                                    <small>From individual struggle to community success</small>
+                                </div>
+                                <div class="video-actions">
+                                    <button class="btn btn-sm btn-outline-light me-2" onclick="shareVideo()">
+                                        <i class="fas fa-share-alt"></i> Share
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-light" onclick="toggleFullscreen()">
+                                        <i class="fas fa-expand"></i> Fullscreen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Video Info -->
+                    <div class="row mt-4">
+                        <div class="col-md-8 mx-auto text-center">
+                            <p class="text-muted">
+                                <i class="fas fa-clock me-2"></i>Duration: 90 seconds &nbsp;|&nbsp;
+                                <i class="fas fa-users me-2"></i>Featuring real CHAMAlink success stories &nbsp;|&nbsp;
+                                <i class="fas fa-globe me-2"></i>Available in English & Swahili
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Story Breakdown -->
+    <section class="story-breakdown py-5 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="text-center mb-5">The Story Behind the Video</h2>
+                    
+                    <!-- Story Scenes -->
+                    <div class="story-scenes">
+                        <div class="scene-item d-flex mb-4">
+                            <div class="scene-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-4" style="width: 60px; height: 60px; flex-shrink: 0;">
+                                <strong>1</strong>
+                            </div>
+                            <div>
+                                <h5>The Lonely Walk</h5>
+                                <p class="text-muted">Managing money alone is challenging. Many Kenyans struggle with saving and financial planning without proper tools or community support.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="scene-item d-flex mb-4">
+                            <div class="scene-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-4" style="width: 60px; height: 60px; flex-shrink: 0;">
+                                <strong>2</strong>
+                            </div>
+                            <div>
+                                <h5>Finding Community</h5>
+                                <p class="text-muted">Under the community tree, people discover the power of working together. Chamas provide support, accountability, and shared financial goals.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="scene-item d-flex mb-4">
+                            <div class="scene-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-4" style="width: 60px; height: 60px; flex-shrink: 0;">
+                                <strong>3</strong>
+                            </div>
+                            <div>
+                                <h5>Digital Transformation</h5>
+                                <p class="text-muted">CHAMAlink brings traditional chamas into the digital age with easy-to-use tools for contributions, loans, and financial tracking.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="scene-item d-flex mb-4">
+                            <div class="scene-number bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-4" style="width: 60px; height: 60px; flex-shrink: 0;">
+                                <strong>4</strong>
+                            </div>
+                            <div>
+                                <h5>Success & Growth</h5>
+                                <p class="text-muted">Communities flourish as chamas grow stronger, members achieve their goals, and the cycle of prosperity spreads to others.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="mb-4">Ready to Start Your CHAMAlink Journey?</h2>
+                    <p class="lead text-muted mb-4">Join thousands of Kenyans who have transformed their chamas with our digital platform.</p>
+                    
+                    <div class="cta-buttons">
+                        <a href="/register" class="btn btn-primary btn-lg me-3 mb-3">
+                            <i class="fas fa-rocket me-2"></i>Start Free Trial
+                        </a>
+                        <a href="/pricing" class="btn btn-outline-primary btn-lg mb-3">
+                            <i class="fas fa-tag me-2"></i>View Pricing
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-2"></i>30-day free trial • No credit card required • Cancel anytime
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Sharing -->
+    <section class="social-sharing py-4 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mx-auto text-center">
+                    <h6 class="mb-3">Share this video with your chama members</h6>
+                    <div class="social-buttons">
+                        <a href="#" class="btn btn-outline-primary btn-sm me-2" onclick="shareWhatsApp()">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-sm me-2" onclick="shareFacebook()">
+                            <i class="fab fa-facebook me-2"></i>Facebook
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-sm me-2" onclick="shareTwitter()">
+                            <i class="fab fa-twitter me-2"></i>Twitter
+                        </a>
+                        <a href="#" class="btn btn-outline-primary btn-sm" onclick="copyLink()">
+                            <i class="fas fa-link me-2"></i>Copy Link
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.demo-page {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.hero-video-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.hero-video-section h1,
+.hero-video-section .lead {
+    color: white;
+}
+
+.video-container {
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.video-wrapper {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+}
+
+#video-placeholder {
+    color: white;
+}
+
+.scene-number {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.story-scenes {
+    position: relative;
+}
+
+.story-scenes::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 60px;
+    bottom: 60px;
+    width: 2px;
+    background: linear-gradient(to bottom, #667eea, #764ba2);
+    opacity: 0.3;
+}
+
+.cta-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.social-buttons a {
+    transition: all 0.3s ease;
+}
+
+.social-buttons a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .hero-video-section h1 {
+        font-size: 2rem;
+    }
+    
+    .scene-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .scene-number {
+        margin-bottom: 1rem;
+        margin-right: 0 !important;
+    }
+    
+    .story-scenes::before {
+        display: none;
+    }
+}
+</style>
+
+<script>
+// Video functionality
+function toggleFullscreen() {
+    const video = document.getElementById('demo-video');
+    if (video.requestFullscreen) {
+        video.requestFullscreen();
+    } else if (video.webkitRequestFullscreen) {
+        video.webkitRequestFullscreen();
+    } else if (video.msRequestFullscreen) {
+        video.msRequestFullscreen();
+    }
+}
+
+// Social sharing functions
+function shareWhatsApp() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent('Check out this amazing CHAMAlink demo video! See how digital chamas are transforming communities.');
+    window.open(`https://wa.me/?text=${text} ${url}`, '_blank');
+}
+
+function shareFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+}
+
+function shareTwitter() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent('Amazing CHAMAlink demo showing how digital chamas transform communities! 🚀 #CHAMAlink #DigitalChama #FinancialInclusion');
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('Link copied to clipboard!');
+    });
+}
+
+function shareVideo() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'CHAMAlink Demo Video',
+            text: 'Check out this amazing CHAMAlink demo video!',
+            url: window.location.href
+        });
+    } else {
+        // Fallback for browsers that don't support Web Share API
+        copyLink();
+    }
+}
+
+// Check if video file exists and show/hide accordingly
+document.addEventListener('DOMContentLoaded', function() {
+    const video = document.getElementById('demo-video');
+    const placeholder = document.getElementById('video-placeholder');
+    
+    // For now, keep placeholder visible since video is not ready
+    // When video is ready, uncomment the following lines:
+    /*
+    video.addEventListener('loadeddata', function() {
+        placeholder.style.display = 'none';
+        video.style.display = 'block';
+    });
+    
+    video.addEventListener('error', function() {
+        console.log('Video failed to load, keeping placeholder');
+    });
+    */
+});
+</script>
+{% endblock %}

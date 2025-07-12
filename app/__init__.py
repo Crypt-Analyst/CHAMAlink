@@ -84,6 +84,12 @@ def create_app():
     @app.context_processor
     def inject_now():
         return {'now': datetime.now}
+    
+    # 🔐 Add CSRF token to template context
+    @app.context_processor
+    def inject_csrf_token():
+        from flask_wtf.csrf import generate_csrf
+        return {'csrf_token': generate_csrf}
 
     # 🔗 Register Blueprints
     from app.auth.routes import auth as auth_blueprint
@@ -107,6 +113,11 @@ def create_app():
     from app.routes.admin import admin_bp
     from app.routes.api import api_bp
     from app.routes.enterprise import enterprise_bp
+    from app.routes.payments import payments_bp
+    try:
+        from app.routes.currency import currency_bp
+    except ImportError:
+        currency_bp = None
 
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(main_blueprint)
@@ -129,6 +140,9 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(enterprise_bp, url_prefix='/enterprise')
+    app.register_blueprint(payments_bp)
+    if currency_bp:
+        app.register_blueprint(currency_bp)
 
     # 🌍 Initialize internationalization
     from app.utils.internationalization import get_current_language, get_current_theme, get_current_font, load_translations

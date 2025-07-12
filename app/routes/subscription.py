@@ -521,3 +521,107 @@ def get_pricing():
         pricing_data.append(plan_pricing)
     
     return jsonify(pricing_data)
+
+@subscription_bp.route('/extend-subscription')
+@login_required
+def extend_subscription():
+    """Show subscription extension options"""
+    current_subscription = current_user.current_subscription
+    
+    if not current_subscription:
+        flash('You do not have an active subscription to extend.', 'error')
+        return redirect(url_for('subscription.plans'))
+    
+    from app.models.subscription import SubscriptionPlanPricing
+    
+    # Get pricing options for current plan
+    pricing_options = SubscriptionPlanPricing.query.filter_by(
+        plan_id=current_subscription.plan_id,
+        is_active=True
+    ).order_by(SubscriptionPlanPricing.months).all()
+    
+    return render_template('subscription/extend.html',
+                         current_subscription=current_subscription,
+                         pricing_options=pricing_options)
+
+@subscription_bp.route('/process-extension', methods=['POST'])
+@login_required
+def process_extension():
+    """Process subscription extension payment"""
+    data = request.get_json()
+    
+    pricing_id = data.get('pricing_id')
+    phone_number = data.get('phone_number')
+    payment_method = data.get('payment_method', 'mpesa')
+    
+    current_subscription = current_user.current_subscription
+    if not current_subscription:
+        return jsonify({'success': False, 'message': 'No active subscription found'})
+    
+    from app.models.subscription import SubscriptionPlanPricing
+    
+    pricing = SubscriptionPlanPricing.query.get(pricing_id)
+    if not pricing or pricing.plan_id != current_subscription.plan_id:
+        return jsonify({'success': False, 'message': 'Invalid pricing option'})
+    
+    try:
+        # Create payment record for extension
+        payment = SubscriptionPayment(
+            user_id=current_user.id,
+            pricing_id=pricing.id,
+            amount=pricing.total_price,
+            months_purchased=pricing.months,
+            bonus_months=pricing.bonus_months,
+            payment_status='pending',
+            payment_method=payment_method,
+            subscription_id=current_subscription.id
+        )
+        
+        db.session.add(payment)
+        db.session.flush()
+        
+        if payment_method == 'mpesa':
+            # Initiate M-Pesa STK push for extension
+            from app.utils.mpesa import initiate_subscription_payment
+            
+            description = f"ChamaLink Extension - {pricing.months}M"
+            response = initiate_subscription_payment(
+                phone_number=phone_number,
+                amount=int(pricing.total_price),
+                account_reference=f"EXT-{payment.id}",
+                transaction_desc=description
+            )
+            
+            if response and response.get('success'):
+                payment.mpesa_receipt_number = response.get('checkout_request_id')
+                db.session.commit()
+                
+                return jsonify({
+                    'success': True,
+                    'message': 'M-Pesa prompt sent! Complete payment to extend your subscription.',
+                    'payment_id': payment.id,
+                    'checkout_request_id': response.get('checkout_request_id')
+                })
+            else:
+                payment.payment_status = 'failed'
+                db.session.commit()
+                return jsonify({
+                    'success': False,
+                    'message': response.get('message', 'M-Pesa payment initiation failed')
+                })
+        else:
+            # For other payment methods, mark as pending verification
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'message': 'Extension request submitted. Please complete payment verification.',
+                'payment_id': payment.id
+            })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Extension payment error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Extension processing failed. Please try again.'
+        })

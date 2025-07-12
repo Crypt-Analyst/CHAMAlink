@@ -52,11 +52,18 @@ def register():
             return render_template('register.html', form=form, plan=plan)
 
         try:
+            # Get country information
+            from app.utils.countries import get_country_by_code, get_currency_for_country
+            country_info = get_country_by_code(form.country.data) if form.country.data else None
+            
             # Create new user
             user = User(
                 username=form.username.data,
                 email=form.email.data,
                 phone_number=form.phone_number.data,
+                country_code=form.country.data if form.country.data else None,
+                country_name=country_info['name'] if country_info else None,
+                preferred_currency=get_currency_for_country(form.country.data) if form.country.data else 'KES',
                 is_email_verified=False  # Require email verification
             )
             user.set_password(password)
@@ -243,37 +250,55 @@ def verify_email(token):
 @auth.route('/resend-verification', methods=['POST'])
 def resend_verification():
     """Resend email verification"""
-    email = request.form.get('email')
-    if not email:
-        flash('Please provide an email address.', 'danger')
+    try:
+        email = request.form.get('email')
+        if not email or not email.strip():
+            flash('Please provide a valid email address.', 'danger')
+            return redirect(url_for('auth.login'))
+        
+        email = email.strip().lower()
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash('No account found with that email address.', 'danger')
+            return redirect(url_for('auth.login'))
+        
+        if user.is_email_verified:
+            flash('Email already verified! You can login normally.', 'info')
+            return redirect(url_for('auth.login'))
+        
+        # Check if a recent verification was already sent (rate limiting)
+        recent_verification = EmailVerification.query.filter(
+            EmailVerification.user_id == user.id,
+            EmailVerification.created_at > datetime.utcnow() - timedelta(minutes=5)
+        ).first()
+        
+        if recent_verification:
+            flash('Verification email already sent recently. Please check your inbox or wait 5 minutes before requesting again.', 'warning')
+            return redirect(url_for('auth.login'))
+        
+        # Create new verification token
+        verification_token = secrets.token_urlsafe(32)
+        verification = EmailVerification(
+            user_id=user.id,
+            verification_token=verification_token,
+            email=user.email,
+            expires_at=datetime.utcnow() + timedelta(hours=24)
+        )
+        db.session.add(verification)
+        db.session.commit()
+        
+        # Send verification email
+        verification_url = url_for('auth.verify_email', token=verification_token, _external=True)
+        email_service.send_email_verification(user, verification_token)
+        
+        flash('Verification email sent successfully! Please check your inbox and spam folder.', 'success')
         return redirect(url_for('auth.login'))
-    
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        flash('No account found with that email address.', 'danger')
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error resending verification email: {e}")
+        flash('An error occurred while sending the verification email. Please try again.', 'danger')
         return redirect(url_for('auth.login'))
-    
-    if user.is_email_verified:
-        flash('Email already verified.', 'info')
-        return redirect(url_for('auth.login'))
-    
-    # Create new verification token
-    verification_token = secrets.token_urlsafe(32)
-    verification = EmailVerification(
-        user_id=user.id,
-        verification_token=verification_token,
-        email=user.email,
-        expires_at=datetime.utcnow() + timedelta(hours=24)
-    )
-    db.session.add(verification)
-    db.session.commit()
-    
-    # Send verification email
-    verification_url = url_for('auth.verify_email', token=verification_token, _external=True)
-    email_service.send_email_verification(user, verification_token)
-    
-    flash('Verification email sent! Please check your inbox.', 'success')
-    return redirect(url_for('auth.login'))
 
 @auth.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():

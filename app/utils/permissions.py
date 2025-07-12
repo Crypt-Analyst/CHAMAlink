@@ -11,9 +11,7 @@ def chama_member_required(f):
             abort(400, "Chama ID is required")
         
         # Check if user is a member of this chama
-        from app.models import Chama
-        chama = Chama.query.get_or_404(chama_id)
-        if current_user not in chama.members:
+        if not current_user.is_member_of_chama(chama_id):
             flash('You do not have permission to access this chama.', 'error')
             return redirect(url_for('main.dashboard'))
         
@@ -59,15 +57,12 @@ def get_user_chama_role(user_id, chama_id):
 
 def user_can_access_chama(user_id, chama_id):
     """Check if a user can access a specific chama"""
-    from app.models import Chama
-    chama = Chama.query.get(chama_id)
-    if not chama:
-        return False
-    
-    # Check if user is a member
     from app.models import User
     user = User.query.get(user_id)
-    return user in chama.members if user else False
+    if not user:
+        return False
+    
+    return user.is_member_of_chama(chama_id)
 
 def user_can_admin_chama(user_id, chama_id):
     """Check if a user can administer a specific chama"""

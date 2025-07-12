@@ -117,17 +117,26 @@
 
                 <!-- Actions -->
                 <div class="card shadow mt-3">
-                    <div class="card-body text-center">
-                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-2">
-                            <i class="fas fa-save me-2"></i>Save Minutes
-                        </button>
-                        <a href="{{ url_for('minutes.chama_minutes', chama_id=chama.id) }}" 
-                           class="btn btn-outline-secondary w-100">
-                            <i class="fas fa-times me-2"></i>Cancel
-                        </a>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-secondary" onclick="saveDraft()">
+                                <i class="fas fa-save me-2"></i>Save as Draft
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="shareWithMembers()">
+                                <i class="fas fa-share me-2"></i>Share with Members
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="downloadMinutes()">
+                                <i class="fas fa-download me-2"></i>Download PDF
+                            </button>
+                            <a href="{{ url_for('minutes.chama_minutes', chama_id=chama.id) }}" 
+                               class="btn btn-outline-danger">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </div>
                         <div class="mt-3">
                             <small class="text-muted">
-                                Minutes will be saved as draft and require admin approval before publishing.
+                                <strong>Draft:</strong> Save your work without notifying members<br>
+                                <strong>Share:</strong> Notify all members about the new minutes
                             </small>
                         </div>
                     </div>
@@ -136,4 +145,87 @@
         </div>
     </form>
 </div>
+
+<script>
+function saveDraft() {
+    const formData = collectFormData();
+    formData.action = 'save_draft';
+    
+    submitMinutes(formData, 'Minutes saved as draft successfully!');
+}
+
+function shareWithMembers() {
+    if (confirm('Are you sure you want to share these minutes with all members? They will receive a notification.')) {
+        const formData = collectFormData();
+        formData.action = 'share';
+        
+        submitMinutes(formData, 'Minutes shared with members successfully!');
+    }
+}
+
+function downloadMinutes() {
+    const formData = collectFormData();
+    
+    // Create a temporary form to download
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("minutes.download_temp_minutes", chama_id=chama.id) }}';
+    
+    for (const key in formData) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = formData[key];
+        form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function collectFormData() {
+    const attendees = [];
+    document.querySelectorAll('input[name="attendees"]:checked').forEach(checkbox => {
+        attendees.push(checkbox.value);
+    });
+    
+    return {
+        meeting_date: document.getElementById('meeting_date').value,
+        meeting_title: document.getElementById('meeting_title').value,
+        content: document.getElementById('minutes_content').value,
+        attendees: attendees.join(', '),
+        agenda_items: document.getElementById('agenda_items').value,
+        decisions_made: document.getElementById('decisions_made').value,
+        action_items: document.getElementById('action_items').value
+    };
+}
+
+function submitMinutes(data, successMessage) {
+    fetch('{{ url_for("minutes.save_minutes", chama_id=chama.id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(successMessage);
+            if (data.minutes_id) {
+                window.location.href = `{{ url_for("minutes.chama_minutes", chama_id=chama.id) }}`;
+            }
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving the minutes');
+    });
+}
+</script>
+
 {% endblock %}

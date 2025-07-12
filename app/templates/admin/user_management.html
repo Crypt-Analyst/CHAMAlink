@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block title %}User Management - ChamaLink Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-users-cog me-2"></i>User & Chama Management
+                    </h4>
+                    <small>Super Admin Interface - Manage user memberships across chamas</small>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Actions -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user-plus me-2"></i>Add User to Chama
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="addUserForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Select User</label>
+                                            <select class="form-select" id="selectedUserId" required>
+                                                <option value="">Choose user...</option>
+                                                {% for user in users %}
+                                                <option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Select Chama</label>
+                                            <select class="form-select" id="selectedChamaId" required>
+                                                <option value="">Choose chama...</option>
+                                                {% for chama in chamas %}
+                                                <option value="{{ chama.id }}">{{ chama.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Role</label>
+                                            <select class="form-select" id="selectedRole">
+                                                <option value="member">Member</option>
+                                                <option value="treasurer">Treasurer</option>
+                                                <option value="secretary">Secretary</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-plus me-2"></i>Add User to Chama
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-search me-2"></i>Quick Search
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Search Users</label>
+                                        <input type="text" class="form-control" id="userSearch" placeholder="Type to search users...">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Search Chamas</label>
+                                        <input type="text" class="form-control" id="chamaSearch" placeholder="Type to search chamas...">
+                                    </div>
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <strong>Quick Tip:</strong> To add "Doreen" to "Property Builders", 
+                                            search for the user and chama, then use the add form above.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Users and their Chama Memberships -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="usersTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Chama Memberships</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr data-user-name="{{ user.username.lower() }}" data-email="{{ user.email.lower() }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                {{ user.username[0].upper() }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ user.username }}</strong>
+                                                {% if user.is_super_admin %}
+                                                <span class="badge bg-danger ms-1">Super Admin</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user_chamas[user.id] %}
+                                            {% for chama in user_chamas[user.id] %}
+                                            <span class="badge bg-info me-1 mb-1">
+                                                {{ chama.name }}
+                                                <button type="button" class="btn-close btn-close-white ms-1" 
+                                                        onclick="removeUserFromChama({{ user.id }}, {{ chama.id }}, '{{ user.username }}', '{{ chama.name }}')"
+                                                        style="font-size: 0.6rem;" title="Remove from chama"></button>
+                                            </span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-muted">No chama memberships</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="showUserDetails({{ user.id }}, '{{ user.username }}')">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add user to chama
+document.getElementById('addUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('selectedUserId').value;
+    const chamaId = document.getElementById('selectedChamaId').value;
+    const role = document.getElementById('selectedRole').value;
+    
+    if (!userId || !chamaId) {
+        showNotification('Please select both user and chama', 'error');
+        return;
+    }
+    
+    fetch('/admin/add-user-to-chama', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            user_id: parseInt(userId),
+            chama_id: parseInt(chamaId),
+            role: role
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while adding user to chama', 'error');
+    });
+});
+
+// Remove user from chama
+function removeUserFromChama(userId, chamaId, username, chamaName) {
+    if (!confirm(`Remove ${username} from ${chamaName}?`)) {
+        return;
+    }
+    
+    fetch('/admin/remove-user-from-chama', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            chama_id: chamaId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred while removing user from chama', 'error');
+    });
+}
+
+// Search functionality
+document.getElementById('userSearch').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#usersTable tbody tr');
+    
+    rows.forEach(row => {
+        const userName = row.getAttribute('data-user-name');
+        const userEmail = row.getAttribute('data-email');
+        
+        if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+
+document.getElementById('chamaSearch').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const chamaSelect = document.getElementById('selectedChamaId');
+    const options = chamaSelect.querySelectorAll('option');
+    
+    options.forEach(option => {
+        if (option.value === '') return; // Skip placeholder
+        
+        const chamaName = option.textContent.toLowerCase();
+        if (chamaName.includes(searchTerm)) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+});
+
+function showUserDetails(userId, username) {
+    // Could expand this to show detailed user information
+    alert(`User Details for ${username}\nUser ID: ${userId}\n\nFor more details, check the database or user profile.`);
+}
+</script>
+
+<style>
+.avatar {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.badge .btn-close {
+    --bs-btn-close-bg: none;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+#usersTable tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+</style>
+{% endblock %}

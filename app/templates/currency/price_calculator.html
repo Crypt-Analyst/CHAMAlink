@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}Multi-Currency Price Calculator - CHAMAlink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-calculator me-2"></i>Multi-Currency Price Calculator
+                    </h2>
+                    <p class="text-muted mb-0">Compare subscription pricing across different currencies</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-globe me-1"></i>Base Currency: {{ base_currency }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for code, config in supported_currencies.items() %}
+                            <li>
+                                <a class="dropdown-item" href="?base={{ code }}">
+                                    {{ config.flag }} {{ config.name }} ({{ code }})
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exchange Rates Widget -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>Current Exchange Rates
+                        <span class="badge bg-success ms-2">Live</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="exchange-rates">
+                        <div class="col-12 text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading rates...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Rates updated every 24 hours. Last update: <span id="rates-timestamp">Loading...</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Comparison -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>Subscription Pricing Comparison
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Basic Plan -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 border-primary">
+                                <div class="card-header bg-primary text-white text-center">
+                                    <h5 class="mb-0">Basic Plan</h5>
+                                    <small>Perfect for small groups</small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="pricing-list">
+                                        {% for currency in ['KES', 'USD', 'EUR', 'TZS', 'UGX', 'GBP'] %}
+                                        {% if currency in supported_currencies %}
+                                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                            <span>
+                                                {{ supported_currencies[currency].flag }}
+                                                {{ currency }}
+                                            </span>
+                                            <strong class="text-primary" data-plan="basic" data-currency="{{ currency }}">
+                                                {{ format_currency_amount(supported_currencies[currency]['default_plan_prices']['basic'], currency) }}
+                                            </strong>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>Up to 50 members<br>
+                                            <i class="fas fa-check-circle text-success me-1"></i>Basic features<br>
+                                            <i class="fas fa-check-circle text-success me-1"></i>Email support
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Classic Plan -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 border-success">
+                                <div class="card-header bg-success text-white text-center">
+                                    <h5 class="mb-0">Classic Plan</h5>
+                                    <small>Most popular choice</small>
+                                    <span class="badge bg-warning">Popular</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="pricing-list">
+                                        {% for currency in ['KES', 'USD', 'EUR', 'TZS', 'UGX', 'GBP'] %}
+                                        {% if currency in supported_currencies %}
+                                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                            <span>
+                                                {{ supported_currencies[currency].flag }}
+                                                {{ currency }}
+                                            </span>
+                                            <strong class="text-success" data-plan="classic" data-currency="{{ currency }}">
+                                                {{ format_currency_amount(supported_currencies[currency]['default_plan_prices']['classic'], currency) }}
+                                            </strong>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>Up to 200 members<br>
+                                            <i class="fas fa-check-circle text-success me-1"></i>Advanced features<br>
+                                            <i class="fas fa-check-circle text-success me-1"></i>Priority support
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Plan -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 border-warning">
+                                <div class="card-header bg-warning text-dark text-center">
+                                    <h5 class="mb-0">Advanced Plan</h5>
+                                    <small>For growing organizations</small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="pricing-list">
+                                        {% for currency in ['KES', 'USD', 'EUR', 'TZS', 'UGX', 'GBP'] %}
+                                        {% if currency in supported_currencies %}
+                                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                            <span>
+                                                {{ supported_currencies[currency].flag }}
+                                                {{ currency }}
+                                            </span>
+                                            <strong class="text-warning" data-plan="advanced" data-currency="{{ currency }}">
+                                                {{ format_currency_amount(supported_currencies[currency]['default_plan_prices']['advanced'], currency) }}
+                                            </strong>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>Up to 1000 members<br>
+                                            <i class="fas fa-check-circle text-success me-1"></i>Premium features<br>
+                                            <i class="fas fa-check-circle text-success me-1"></i>24/7 support
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enterprise Plan -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card h-100 border-danger">
+                                <div class="card-header bg-danger text-white text-center">
+                                    <h5 class="mb-0">Enterprise Plan</h5>
+                                    <small>Unlimited scalability</small>
+                                    <span class="badge bg-light text-dark">Per Member</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="pricing-list">
+                                        {% for currency in ['KES', 'USD', 'EUR', 'TZS', 'UGX', 'GBP'] %}
+                                        {% if currency in supported_currencies %}
+                                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                            <span>
+                                                {{ supported_currencies[currency].flag }}
+                                                {{ currency }}
+                                            </span>
+                                            <strong class="text-danger" data-plan="enterprise" data-currency="{{ currency }}">
+                                                {{ format_currency_amount(supported_currencies[currency]['default_plan_prices']['enterprise'], currency) }}/member
+                                            </strong>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-check-circle text-success me-1"></i>Unlimited members<br>
+                                            <i class="fas fa-check-circle text-success me-1"></i>All features<br>
+                                            <i class="fas fa-check-circle text-success me-1"></i>Dedicated support
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Currency Converter Tool -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sync-alt me-2"></i>Currency Converter
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form id="currency-converter">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">From Currency</label>
+                                        <select class="form-select" id="from-currency" name="from_currency">
+                                            {% for code, config in supported_currencies.items() %}
+                                            <option value="{{ code }}" {% if code == base_currency %}selected{% endif %}>
+                                                {{ config.flag }} {{ config.name }} ({{ code }})
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">To Currency</label>
+                                        <select class="form-select" id="to-currency" name="to_currency">
+                                            {% for code, config in supported_currencies.items() %}
+                                            <option value="{{ code }}" {% if code == 'USD' and code != base_currency %}selected{% endif %}>
+                                                {{ config.flag }} {{ config.name }} ({{ code }})
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Amount</label>
+                                    <input type="number" class="form-control" id="convert-amount" placeholder="Enter amount" value="1000" min="0" step="0.01">
+                                </div>
+                                <button type="submit" class="btn btn-info">
+                                    <i class="fas fa-exchange-alt me-1"></i>Convert
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="conversion-result" class="mt-3">
+                                <div class="alert alert-light border">
+                                    <h6 class="mb-2">Conversion Result</h6>
+                                    <div id="result-display" class="text-muted">
+                                        Enter amount and click convert to see result
+                                    </div>
+                                    <div id="rate-display" class="small text-muted mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Methods by Currency -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>Available Payment Methods by Currency
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for code, config in supported_currencies.items() %}
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card border-light">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        {{ config.flag }} {{ config.name }}
+                                        <span class="badge bg-primary">{{ code }}</span>
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="payment-methods">
+                                        {% for method in config.payment_methods %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            {% if method == 'mpesa' %}
+                                            <i class="fas fa-mobile-alt text-success me-2"></i>M-Pesa
+                                            {% elif method == 'stripe' %}
+                                            <i class="fab fa-stripe text-primary me-2"></i>Stripe
+                                            {% elif method == 'paypal' %}
+                                            <i class="fab fa-paypal text-info me-2"></i>PayPal
+                                            {% elif method == 'bank_transfer' %}
+                                            <i class="fas fa-university text-secondary me-2"></i>Bank Transfer
+                                            {% elif method == 'mobile_money' %}
+                                            <i class="fas fa-mobile-alt text-warning me-2"></i>Mobile Money
+                                            {% elif method == 'sepa' %}
+                                            <i class="fas fa-euro-sign text-primary me-2"></i>SEPA
+                                            {% elif method == 'bacs' %}
+                                            <i class="fas fa-pound-sign text-success me-2"></i>BACS
+                                            {% else %}
+                                            <i class="fas fa-credit-card text-muted me-2"></i>{{ method.title() }}
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load exchange rates
+async function loadExchangeRates() {
+    try {
+        const response = await fetch('/currency/api/rates');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayExchangeRates(data.rates, data.updated, data.fallback);
+        } else {
+            throw new Error('Failed to load rates');
+        }
+    } catch (error) {
+        console.error('Error loading exchange rates:', error);
+        document.getElementById('exchange-rates').innerHTML = `
+            <div class="col-12 text-center text-danger">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                Unable to load exchange rates
+            </div>
+        `;
+    }
+}
+
+function displayExchangeRates(rates, timestamp, isFallback = false) {
+    const currencies = ['KES', 'USD', 'EUR', 'TZS', 'UGX', 'GBP'];
+    const ratesContainer = document.getElementById('exchange-rates');
+    
+    let html = '';
+    currencies.forEach(currency => {
+        if (rates[currency]) {
+            const rate = rates[currency];
+            const config = {
+                'KES': { flag: '🇰🇪', symbol: 'KES' },
+                'USD': { flag: '🇺🇸', symbol: '$' },
+                'EUR': { flag: '🇪🇺', symbol: '€' },
+                'TZS': { flag: '🇹🇿', symbol: 'TSh' },
+                'UGX': { flag: '🇺🇬', symbol: 'UGX' },
+                'GBP': { flag: '🇬🇧', symbol: '£' }
+            }[currency];
+            
+            html += `
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
+                    <div class="text-center p-2 border rounded">
+                        <div class="h5 mb-1">${config.flag}</div>
+                        <div class="small text-muted">${currency}</div>
+                        <div class="fw-bold">${rate.toFixed(currency === 'KES' || currency === 'TZS' || currency === 'UGX' ? 0 : 4)}</div>
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    ratesContainer.innerHTML = html;
+    
+    const timestampEl = document.getElementById('rates-timestamp');
+    if (timestampEl) {
+        timestampEl.textContent = timestamp + (isFallback ? ' (Cached)' : '');
+    }
+}
+
+// Currency converter
+document.getElementById('currency-converter').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const fromCurrency = document.getElementById('from-currency').value;
+    const toCurrency = document.getElementById('to-currency').value;
+    const amount = parseFloat(document.getElementById('convert-amount').value);
+    
+    if (!amount || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/currency/convert?from=${fromCurrency}&to=${toCurrency}&amount=${amount}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const resultDisplay = document.getElementById('result-display');
+            const rateDisplay = document.getElementById('rate-display');
+            
+            resultDisplay.innerHTML = `
+                <div class="h4 text-success">
+                    ${formatCurrency(data.converted_amount, toCurrency)}
+                </div>
+            `;
+            
+            rateDisplay.innerHTML = `
+                <strong>Exchange Rate:</strong> 1 ${fromCurrency} = ${data.rate.toFixed(4)} ${toCurrency}
+                <br><small>Updated: ${data.timestamp}</small>
+            `;
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Conversion error:', error);
+        document.getElementById('result-display').innerHTML = `
+            <div class="text-danger">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                Conversion failed: ${error.message}
+            </div>
+        `;
+    }
+});
+
+function formatCurrency(amount, currency) {
+    const formats = {
+        'KES': `KES ${amount.toLocaleString()}`,
+        'USD': `$${amount.toFixed(2)}`,
+        'EUR': `€${amount.toFixed(2)}`,
+        'TZS': `TSh ${amount.toLocaleString()}`,
+        'UGX': `UGX ${amount.toLocaleString()}`,
+        'GBP': `£${amount.toFixed(2)}`
+    };
+    
+    return formats[currency] || `${currency} ${amount.toFixed(2)}`;
+}
+
+// Load rates on page load
+document.addEventListener('DOMContentLoaded', loadExchangeRates);
+</script>
+{% endblock %}

@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
+from flask_wtf.csrf import validate_csrf
 from werkzeug.security import check_password_hash, generate_password_hash
 from app.models import User
 from app import db
@@ -18,6 +19,12 @@ def account_settings():
 def change_password():
     """Change user password"""
     try:
+        # Validate CSRF token
+        try:
+            validate_csrf(request.headers.get('X-CSRFToken'))
+        except Exception:
+            return jsonify({'success': False, 'message': 'CSRF token validation failed'}), 400
+        
         data = request.get_json()
         current_password = data.get('current_password', '').strip()
         new_password = data.get('new_password', '').strip()
@@ -57,6 +64,12 @@ def change_password():
 def update_profile():
     """Update user profile"""
     try:
+        # Validate CSRF token
+        try:
+            validate_csrf(request.headers.get('X-CSRFToken'))
+        except Exception:
+            return jsonify({'success': False, 'message': 'CSRF token validation failed'}), 400
+        
         data = request.get_json()
         username = data.get('username', '').strip()
         email = data.get('email', '').strip()
@@ -120,6 +133,12 @@ def delete_account():
 def confirm_delete_account():
     """Confirm account deletion"""
     try:
+        # Validate CSRF token
+        try:
+            validate_csrf(request.headers.get('X-CSRFToken'))
+        except Exception:
+            return jsonify({'success': False, 'message': 'CSRF token validation failed'}), 400
+        
         data = request.get_json()
         password = data.get('password', '').strip()
         confirmation = data.get('confirmation', '').strip()

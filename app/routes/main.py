@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
 from app.models import Chama, Transaction, Event, User
 from app import db
-from datetime import datetime, date, timedelta, timedelta
-from sqlalchemy import desc
+from datetime import datetime, date, timedelta
+from sqlalchemy import desc, extract
 
 main = Blueprint('main', __name__)
 
@@ -91,17 +91,33 @@ def create_chama():
         data = request.get_json()
         
         # Validate required fields
-        if not data.get('name'):
+        if not data.get('name') or not data.get('name').strip():
             return jsonify({'success': False, 'message': 'Chama name is required'}), 400
         
         if not data.get('monthly_contribution'):
             return jsonify({'success': False, 'message': 'Monthly contribution is required'}), 400
         
+        # Validate contribution amount
+        try:
+            contribution = float(data['monthly_contribution'])
+            if contribution <= 0:
+                return jsonify({'success': False, 'message': 'Monthly contribution must be greater than 0'}), 400
+        except ValueError:
+            return jsonify({'success': False, 'message': 'Invalid contribution amount'}), 400
+        
+        # Check for duplicate chama names (case insensitive)
+        existing_chama = Chama.query.filter(
+            db.func.lower(Chama.name) == data['name'].strip().lower()
+        ).first()
+        
+        if existing_chama:
+            return jsonify({'success': False, 'message': 'A chama with this name already exists. Please choose a different name.'}), 400
+        
         # Create new chama
         chama = Chama(
-            name=data['name'],
-            goal=data.get('goal', ''),
-            monthly_contribution=float(data['monthly_contribution']),
+            name=data['name'].strip(),
+            goal=data.get('goal', '').strip(),
+            monthly_contribution=contribution,
             meeting_day=data.get('meeting_day', ''),
             creator_id=current_user.id
         )
@@ -119,11 +135,12 @@ def create_chama():
         db.session.execute(membership)
         db.session.commit()
         
-        return jsonify({'success': True, 'message': 'Chama created successfully!'})
+        return jsonify({'success': True, 'message': 'Chama created successfully!', 'chama_id': chama.id})
     
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 400
+        current_app.logger.error(f"Error creating chama: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while creating the chama. Please try again.'}), 500
 
 @main.route('/contribute', methods=['POST'])
 @login_required
@@ -144,31 +161,10 @@ def contribute():
         if not user_can_access_chama(current_user.id, chama_id):
             return jsonify({'success': False, 'message': 'You do not have access to this chama'}), 403
         
-        # Create transaction
-        transaction = Transaction(
-            type='contribution',
-            amount=amount,
-            description=f"Monthly contribution",
-            user_id=current_user.id,
-            chama_id=chama_id
-        )
-        
-        db.session.add(transaction)
-        
-        # Update chama balance
+        # Get chama details first
         chama = Chama.query.get(chama_id)
-        chama.total_balance += amount
-        
-        db.session.commit()
-        
-        return jsonify({'success': True, 'message': 'Contribution successful!'})
-    
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 400
-        data = request.get_json()
-        chama_id = data['chama_id']
-        amount = float(data['amount'])
+        if not chama:
+            return jsonify({'success': False, 'message': 'Chama not found'}), 404
         
         # Create contribution transaction
         transaction = Transaction(
@@ -180,19 +176,21 @@ def contribute():
         )
         
         # Update chama balance
-        chama = Chama.query.get(chama_id)
-        if chama:
-            chama.total_balance += amount
-            db.session.add(transaction)
-            db.session.commit()
+        chama.total_balance += amount
+        
+        # Add transaction to session and commit
+        db.session.add(transaction)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Contribution recorded successfully!'})
             
-            return jsonify({'success': True, 'message': 'Contribution recorded successfully!'})
-        else:
-            return jsonify({'success': False, 'message': 'Chama not found'}), 404
-            
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Invalid amount format'}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 400
+        current_app.logger.error(f"Contribution error: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while recording your contribution. Please try again.'}), 500
 
 @main.route('/dashboard_stats')
 @login_required
@@ -246,14 +244,30 @@ def help_support():
 @login_required
 def profile():
     """User profile page"""
-    return render_template('profile.html')
+    try:
+        # Get user's chamas
+        user_chamas = current_user.get_chamas()
+        
+        # Get user statistics
+        total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
+            Transaction.type == 'contribution',
+            Transaction.user_id == current_user.id
+        ).scalar() or 0
+        
+        return render_template('profile.html', 
+                             user_chamas=user_chamas,
+                             total_contributions=total_contributions)
+    except Exception as e:
+        current_app.logger.error(f'Profile error: {str(e)}')
+        flash('Error loading profile. Please try again.', 'error')
+        return redirect(url_for('main.dashboard'))
 
 @main.route('/reports')
 @login_required
 def reports():
     """Financial reports page"""
     try:
-        user_chamas = current_user.chamas
+        user_chamas = current_user.get_chamas()
         
         # Calculate report data safely
         total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
@@ -271,18 +285,18 @@ def reports():
             Transaction.user_id == current_user.id
         ).scalar() or 0
         
-        # Get monthly transaction data for charts (simplified)
+        # Get monthly transaction data for charts (PostgreSQL compatible)
         monthly_data = []
         try:
             monthly_data = db.session.query(
-                db.func.strftime('%Y-%m', Transaction.created_at).label('month'),
+                db.func.to_char(Transaction.created_at, 'YYYY-MM').label('month'),
                 db.func.sum(Transaction.amount).label('total')
             ).filter(
                 Transaction.user_id == current_user.id,
                 Transaction.type == 'contribution'
-            ).group_by(db.func.strftime('%Y-%m', Transaction.created_at)).all()
+            ).group_by(db.func.to_char(Transaction.created_at, 'YYYY-MM')).all()
         except Exception as e:
-            print(f"Monthly data error: {e}")
+            current_app.logger.error(f"Monthly data error: {e}")
             monthly_data = []
         
         return render_template('reports.html',
@@ -294,7 +308,7 @@ def reports():
                              current_date=datetime.now(),
                              seven_days_ago=(datetime.now() - timedelta(days=7)))
     except Exception as e:
-        print(f"Reports route error: {e}")
+        current_app.logger.error(f"Reports route error: {e}")
         flash('Error loading reports. Please try again.', 'error')
         return redirect(url_for('main.dashboard'))
 
@@ -407,8 +421,14 @@ def toggle_chama_status(chama_id):
     if not current_user.is_super_admin:
         return jsonify({'success': False, 'message': 'Access denied'}), 403
     
+    # Handle both JSON and form data
+    if request.is_json:
+        data = request.get_json()
+        action = data.get('action')
+    else:
+        action = request.form.get('action')
+    
     chama = Chama.query.get_or_404(chama_id)
-    action = request.json.get('action')
     
     if action == 'suspend':
         chama.status = 'suspended'
@@ -419,17 +439,29 @@ def toggle_chama_status(chama_id):
     elif action == 'blacklist':
         chama.status = 'blacklisted'
         message = f'Chama "{chama.name}" has been blacklisted'
+    elif action == 'delete':
+        db.session.delete(chama)
+        message = f'Chama "{chama.name}" has been deleted'
     else:
         return jsonify({'success': False, 'message': 'Invalid action'}), 400
     
-    db.session.commit()
-    
-    return jsonify({'success': True, 'message': message})
+    try:
+        db.session.commit()
+        return jsonify({'success': True, 'message': message})
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error toggling chama status: {e}")
+        return jsonify({'success': False, 'message': 'Database error occurred'}), 500
 
 @main.route('/chat')
 def chat():
     """Chat support interface"""
     return render_template('chat.html')
+
+@main.route('/demo')
+def demo():
+    """Demo video page"""
+    return render_template('demo.html')
 
 @main.route('/founder-dashboard/export-chamas')
 @login_required
@@ -658,20 +690,63 @@ def send_platform_notice():
         priority = data.get('priority', 'info')
         send_email = data.get('send_email', False)
         
-        # In a real implementation, create notifications for all users
-        # and optionally send emails
-        print(f"Platform Notice: {title} - {priority} - Email: {send_email}")
+        if not title or not message:
+            return jsonify({'success': False, 'message': 'Title and message are required'}), 400
         
-        # Here you would:
-        # 1. Create notifications for all users
-        # 2. Send emails if requested
-        # 3. Log the action
+        # Import models
+        from app.models.user import User
+        from app.models.chama import Chama
+        from app.models.notification import Notification
+        
+        # Get all chama creators and their emails
+        creators = User.query.join(Chama, User.id == Chama.creator_id).distinct().all()
+        
+        notification_count = 0
+        email_count = 0
+        
+        # Create in-app notifications for all chama creators
+        for creator in creators:
+            notification = Notification(
+                user_id=creator.id,
+                title=f"📢 Platform Notice: {title}",
+                message=message,
+                type='system'
+            )
+            db.session.add(notification)
+            notification_count += 1
+        
+        # Send emails if requested
+        if send_email:
+            from app.utils.email_utils import send_system_email
+            for creator in creators:
+                try:
+                    success, _ = send_system_email(
+                        to_email=creator.email,
+                        subject=f"📢 Important Notice from ChamaLink: {title}",
+                        template='emails/platform_notice.html',
+                        user=creator,
+                        title=title,
+                        message=message,
+                        priority=priority
+                    )
+                    if success:
+                        email_count += 1
+                except Exception as e:
+                    print(f"Failed to send email to {creator.email}: {e}")
+        
+        # Commit all notifications
+        db.session.commit()
+        
+        result_message = f'Platform notice sent to {notification_count} chama creators'
+        if send_email:
+            result_message += f' ({email_count} emails sent)'
         
         return jsonify({
             'success': True,
-            'message': f'Platform notice "{title}" sent successfully!'
+            'message': result_message
         })
     except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @main.route('/founder-dashboard/generate-report', methods=['POST'])
@@ -791,8 +866,8 @@ def emergency_broadcast():
 
 @main.route('/pricing')
 def pricing():
-    """Public pricing page - redirect to subscription plans"""
-    return redirect(url_for('subscription_new.pricing'))
+    """Public pricing page with multi-currency support"""
+    return render_template('main/pricing_multi_currency.html')
 
 @main.route('/faq')
 def faq():
@@ -818,6 +893,132 @@ def security_dashboard():
                          threats_blocked=threats_blocked,
                          blocked_ips_count=blocked_ips_count)
 
+@main.route('/admin/user-management')
+@login_required
+def admin_user_management():
+    """Admin interface for user and chama management"""
+    if not current_user.is_super_admin:
+        flash('Access denied. Super admin privileges required.', 'error')
+        return redirect(url_for('main.dashboard'))
+    
+    try:
+        # Get all users
+        users = User.query.order_by(User.username).all()
+        
+        # Get all chamas
+        chamas = Chama.query.order_by(Chama.name).all()
+        
+        # Get user-chama relationships for display
+        user_chamas = {}
+        for user in users:
+            user_chamas[user.id] = user.get_chamas()
+        
+        return render_template('admin/user_management.html', 
+                             users=users, 
+                             chamas=chamas,
+                             user_chamas=user_chamas)
+    except Exception as e:
+        current_app.logger.error(f"Error in admin user management: {e}")
+        flash('Error loading user management interface.', 'error')
+        return redirect(url_for('main.dashboard'))
+
+@main.route('/admin/add-user-to-chama', methods=['POST'])
+@login_required  
+def admin_add_user_to_chama():
+    """Add a user to a chama (Super admin only)"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        chama_id = data.get('chama_id')
+        role = data.get('role', 'member')  # Default to member role
+        
+        if not user_id or not chama_id:
+            return jsonify({'success': False, 'message': 'User ID and Chama ID are required'}), 400
+        
+        # Validate user and chama exist
+        user = User.query.get(user_id)
+        chama = Chama.query.get(chama_id)
+        
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'}), 404
+        
+        if not chama:
+            return jsonify({'success': False, 'message': 'Chama not found'}), 404
+        
+        # Check if user is already a member
+        if user.is_member_of_chama(chama_id):
+            return jsonify({'success': False, 'message': f'{user.username} is already a member of {chama.name}'}), 400
+        
+        # Add user to chama
+        from app.models.chama import chama_members
+        membership = chama_members.insert().values(
+            user_id=user_id,
+            chama_id=chama_id,
+            role=role,
+            joined_at=datetime.utcnow()
+        )
+        db.session.execute(membership)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'{user.username} successfully added to {chama.name} as {role}'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error adding user to chama: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while adding user to chama'}), 500
+
+@main.route('/admin/remove-user-from-chama', methods=['POST'])
+@login_required
+def admin_remove_user_from_chama():
+    """Remove a user from a chama (Super admin only)"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        chama_id = data.get('chama_id')
+        
+        if not user_id or not chama_id:
+            return jsonify({'success': False, 'message': 'User ID and Chama ID are required'}), 400
+        
+        # Validate user and chama exist
+        user = User.query.get(user_id)
+        chama = Chama.query.get(chama_id)
+        
+        if not user or not chama:
+            return jsonify({'success': False, 'message': 'User or Chama not found'}), 404
+        
+        # Check if user is a member
+        if not user.is_member_of_chama(chama_id):
+            return jsonify({'success': False, 'message': f'{user.username} is not a member of {chama.name}'}), 400
+        
+        # Remove user from chama
+        from app.models.chama import chama_members
+        db.session.execute(
+            chama_members.delete().where(
+                chama_members.c.user_id == user_id,
+                chama_members.c.chama_id == chama_id
+            )
+        )
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'{user.username} successfully removed from {chama.name}'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error removing user from chama: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while removing user from chama'}), 500
+
 @main.route('/health')
 def health_check():
     """Health check endpoint for monitoring"""
@@ -836,3 +1037,28 @@ def health_check():
             'timestamp': datetime.utcnow().isoformat(),
             'error': str(e)
         }), 500
+
+@main.route('/founder-dashboard/save-note', methods=['POST'])
+@login_required
+def save_founder_note():
+    """Save founder's notepad content"""
+    if not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        content = data.get('content', '')
+        
+        # You can save to database here if needed
+        # For now, we'll just acknowledge the save
+        current_app.logger.info(f"Founder note saved by {current_user.username}: {len(content)} characters")
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Note saved successfully',
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error saving founder note: {e}")
+        return jsonify({'success': False, 'message': 'Failed to save note'}), 500

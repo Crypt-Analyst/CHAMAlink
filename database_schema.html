@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHAMAlink Database Schema</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.0/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .schema-diagram {
+            margin: 30px 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+        .feature-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .mermaid {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ CHAMAlink Database Schema</h1>
+        
+        <div class="highlight">
+            <strong>🌍 Multi-Currency Chama Management System</strong><br>
+            Complete database architecture supporting international chama operations with advanced security and payment integration.
+        </div>
+
+        <h2>📊 Schema Statistics</h2>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Core Tables</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">15</div>
+                <div class="stat-label">Relationships</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Multi-Currency Tables</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Supported Currencies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">54</div>
+                <div class="stat-label">African Countries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Security Tables</div>
+            </div>
+        </div>
+
+        <h2>🗂️ Database Schema Diagram</h2>
+        <div class="schema-diagram">
+            <div class="mermaid">
+                erDiagram
+                    USERS {
+                        int id PK
+                        string username UK
+                        string email UK
+                        string phone_number UK
+                        string password_hash
+                        string role
+                        boolean is_super_admin
+                        string first_name
+                        string last_name
+                        date date_of_birth
+                        string country_code
+                        string country_name
+                        string preferred_currency
+                        datetime created_at
+                        boolean is_active
+                    }
+                    
+                    CHAMAS {
+                        int id PK
+                        string name
+                        text description
+                        int creator_id FK
+                        string base_currency
+                        boolean multi_currency_enabled
+                        float contribution_amount
+                        string contribution_frequency
+                        boolean is_active
+                        datetime created_at
+                    }
+                    
+                    CHAMA_MEMBERS {
+                        int id PK
+                        int user_id FK
+                        int chama_id FK
+                        string role
+                        boolean is_active
+                        datetime joined_date
+                    }
+                    
+                    TRANSACTIONS {
+                        int id PK
+                        int chama_id FK
+                        int user_id FK
+                        string transaction_type
+                        float amount
+                        string currency
+                        float exchange_rate
+                        string payment_method
+                        string status
+                        datetime transaction_date
+                    }
+                    
+                    CONTRIBUTIONS {
+                        int id PK
+                        int chama_id FK
+                        int user_id FK
+                        float amount
+                        string currency
+                        string payment_method
+                        string status
+                        datetime contribution_date
+                    }
+                    
+                    LOANS {
+                        int id PK
+                        int chama_id FK
+                        int borrower_id FK
+                        float principal_amount
+                        float interest_rate
+                        string currency
+                        string status
+                        datetime application_date
+                        float amount_paid
+                    }
+                    
+                    LOAN_PAYMENTS {
+                        int id PK
+                        int loan_id FK
+                        int user_id FK
+                        float amount
+                        string currency
+                        string payment_method
+                        datetime payment_date
+                    }
+                    
+                    SUBSCRIPTION_PLANS {
+                        int id PK
+                        string name UK
+                        string display_name
+                        float price_kes
+                        float price_usd
+                        int max_chamas
+                        int max_members_per_chama
+                        boolean is_active
+                    }
+                    
+                    SUBSCRIPTIONS {
+                        int id PK
+                        int user_id FK
+                        int plan_id FK
+                        datetime start_date
+                        datetime end_date
+                        string status
+                        string currency
+                        float amount_paid
+                        boolean is_trial
+                    }
+                    
+                    NOTIFICATIONS {
+                        int id PK
+                        int user_id FK
+                        int chama_id FK
+                        string title
+                        text message
+                        string notification_type
+                        boolean is_read
+                        datetime created_at
+                    }
+                    
+                    MPESA_TRANSACTIONS {
+                        int id PK
+                        int user_id FK
+                        int chama_id FK
+                        string phone_number
+                        float amount
+                        string mpesa_receipt_number
+                        string status
+                        datetime initiated_at
+                    }
+                    
+                    SECURITY_EVENTS {
+                        int id PK
+                        int user_id FK
+                        string event_type
+                        string ip_address
+                        string risk_level
+                        boolean is_suspicious
+                        datetime created_at
+                    }
+                    
+                    %% Relationships
+                    USERS ||--o{ CHAMAS : "creates"
+                    USERS ||--o{ CHAMA_MEMBERS : "joins"
+                    CHAMAS ||--o{ CHAMA_MEMBERS : "has"
+                    CHAMAS ||--o{ TRANSACTIONS : "contains"
+                    CHAMAS ||--o{ CONTRIBUTIONS : "receives"
+                    CHAMAS ||--o{ LOANS : "manages"
+                    USERS ||--o{ TRANSACTIONS : "makes"
+                    USERS ||--o{ CONTRIBUTIONS : "pays"
+                    USERS ||--o{ LOANS : "borrows"
+                    LOANS ||--o{ LOAN_PAYMENTS : "repaid_by"
+                    USERS ||--o{ LOAN_PAYMENTS : "makes"
+                    USERS ||--o{ SUBSCRIPTIONS : "subscribes"
+                    SUBSCRIPTION_PLANS ||--o{ SUBSCRIPTIONS : "defines"
+                    USERS ||--o{ NOTIFICATIONS : "receives"
+                    CHAMAS ||--o{ NOTIFICATIONS : "generates"
+                    USERS ||--o{ MPESA_TRANSACTIONS : "initiates"
+                    CHAMAS ||--o{ MPESA_TRANSACTIONS : "for"
+                    USERS ||--o{ SECURITY_EVENTS : "triggers"
+            </div>
+        </div>
+
+        <h2>🌟 Key Features</h2>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-title">🌍 Multi-Currency Support</div>
+                Support for KES, USD, EUR, TZS, UGX, GBP with real-time exchange rates and automatic conversion for international operations.
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-title">🔒 Advanced Security</div>
+                Comprehensive security monitoring, two-factor authentication, audit logging, and suspicious activity detection.
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-title">💳 Payment Integration</div>
+                Native M-Pesa integration for East Africa, Stripe for international payments, and multiple payment method support.
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-title">📊 Subscription Management</div>
+                Flexible multi-tier plans with trial periods, auto-renewal, multi-currency pricing, and usage tracking.
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-title">🏦 Financial Operations</div>
+                Complete chama financial management including contributions, loans, penalties, and comprehensive transaction tracking.
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-title">🔔 Smart Notifications</div>
+                Real-time notifications system with email, SMS, and in-app delivery for important chama events and updates.
+            </div>
+        </div>
+
+        <h2>🌍 Supported Countries</h2>
+        <div class="highlight">
+            <strong>Primary Markets:</strong> Kenya 🇰🇪, Tanzania 🇹🇿, Uganda 🇺🇬<br>
+            <strong>African Coverage:</strong> 54 African countries with localized currency support<br>
+            <strong>Global Reach:</strong> International support for diaspora communities worldwide
+        </div>
+
+        <h2>💾 Database Design Principles</h2>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-title">🎯 Normalization</div>
+                3NF compliance ensuring data integrity and eliminating redundancy while maintaining performance.
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-title">📈 Scalability</div>
+                Designed to handle millions of users and transactions with efficient indexing and partitioning strategies.
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-title">🔍 Audit Trail</div>
+                Complete audit logging for regulatory compliance and forensic analysis capabilities.
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-title">🌐 International Ready</div>
+                Multi-timezone, multi-currency, and multi-language support built into the core schema.
+            </div>
+        </div>
+
+        <h2>🚀 Technology Stack</h2>
+        <div class="highlight">
+            <strong>Database:</strong> PostgreSQL (Primary) / SQLite (Development)<br>
+            <strong>ORM:</strong> SQLAlchemy with Flask-Migrate for schema management<br>
+            <strong>Framework:</strong> Flask 3.1.1 with comprehensive security extensions<br>
+            <strong>Authentication:</strong> Flask-Login with 2FA and session management<br>
+            <strong>Payments:</strong> M-Pesa API, Stripe integration, multi-gateway support
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; color: #7f8c8d;">
+            <p>📅 Generated on July 12, 2025 | 🏗️ CHAMAlink Database Schema v2.0</p>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#3498db',
+                primaryTextColor: '#2c3e50',
+                primaryBorderColor: '#2980b9',
+                lineColor: '#34495e',
+                secondaryColor: '#ecf0f1',
+                tertiaryColor: '#f8f9fa'
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!-- Currency Selector Component -->
+<div class="currency-selector">
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {% set user_currency = get_user_currency() %}
+            {% set currency_config = get_currency_config(user_currency) %}
+            <i class="fas fa-globe me-1"></i>
+            {{ currency_config.flag }} {{ user_currency }}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><h6 class="dropdown-header">Select Currency</h6></li>
+            {% for code, config in supported_currencies.items() %}
+            <li>
+                <a class="dropdown-item {% if code == user_currency %}active{% endif %}" 
+                   href="{{ url_for('currency.set_currency', currency_code=code) }}">
+                    <span class="me-2">{{ config.flag }}</span>
+                    <strong>{{ code }}</strong>
+                    <br>
+                    <small class="text-muted">{{ config.name }}</small>
+                </a>
+            </li>
+            {% endfor %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item" href="{{ url_for('currency.price_calculator') }}">
+                    <i class="fas fa-calculator me-2"></i>
+                    Price Calculator
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<style>
+.currency-selector .dropdown-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.currency-selector .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.currency-selector .dropdown-item.active {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.currency-selector .dropdown-menu {
+    min-width: 200px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+    .currency-selector .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .currency-selector .dropdown-menu {
+        min-width: 180px;
+    }
+}
+</style>

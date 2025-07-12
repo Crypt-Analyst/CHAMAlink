@@ -1,0 +1,742 @@
+{% extends "base.html" %}
+
+{% block title %}Comprehensive Payment History - {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header with Filters -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-chart-line me-2"></i>Comprehensive Payment History</h2>
+                    <p class="text-muted mb-0">{{ chama.name }} - Complete payment analytics and insights</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('payments.export_comprehensive_history', chama_id=chama.id) }}" 
+                       class="btn btn-success">
+                        <i class="fas fa-download me-2"></i>Export CSV
+                    </a>
+                    <a href="{{ url_for('payments.payment_analytics', chama_id=chama.id) }}" 
+                       class="btn btn-info">
+                        <i class="fas fa-chart-bar me-2"></i>Analytics
+                    </a>
+                    <a href="{{ url_for('chama.detail', chama_id=chama.id) }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
+            </div>
+
+            <!-- Payment Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="fw-bold">KES {{ "{:,.0f}".format(payment_summary.total_contributions) }}</h4>
+                                    <p class="mb-0">Total Contributions</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-arrow-down fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="fw-bold">KES {{ "{:,.0f}".format(payment_summary.total_loan_payments) }}</h4>
+                                    <p class="mb-0">Loan Payments</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-handshake fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="fw-bold">KES {{ "{:,.0f}".format(payment_summary.total_penalties) }}</h4>
+                                    <p class="mb-0">Penalty Payments</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-gavel fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="fw-bold">{{ payment_summary.total_transactions }}</h4>
+                                    <p class="mb-0">Total Transactions</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-list fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Advanced Filters
+                        <button class="btn btn-sm btn-outline-primary ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </h5>
+                </div>
+                <div class="collapse" id="filtersCollapse">
+                    <div class="card-body">
+                        <form id="filterForm" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Date Range</label>
+                                <select class="form-select" id="dateRange">
+                                    <option value="all">All Time</option>
+                                    <option value="7">Last 7 Days</option>
+                                    <option value="30" selected>Last 30 Days</option>
+                                    <option value="90">Last 3 Months</option>
+                                    <option value="180">Last 6 Months</option>
+                                    <option value="365">Last Year</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-3" id="customDateFields" style="display: none;">
+                                <label class="form-label">Custom Date Range</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" id="startDate">
+                                    <input type="date" class="form-control" id="endDate">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <label class="form-label">Payment Type</label>
+                                <select class="form-select" id="paymentType">
+                                    <option value="all">All Types</option>
+                                    <option value="contribution">Contributions</option>
+                                    <option value="loan_repayment">Loan Repayments</option>
+                                    <option value="penalty_payment">Penalty Payments</option>
+                                    <option value="loan_disbursement">Loan Disbursements</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-select" id="paymentMethod">
+                                    <option value="all">All Methods</option>
+                                    <option value="mpesa">M-Pesa</option>
+                                    <option value="bank_transfer">Bank Transfer</option>
+                                    <option value="cash">Cash</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="paymentStatus">
+                                    <option value="all">All Status</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                            
+                            {% if member.role in ['admin', 'treasurer'] %}
+                            <div class="col-md-3">
+                                <label class="form-label">Member</label>
+                                <select class="form-select" id="memberFilter">
+                                    <option value="all">All Members</option>
+                                    {% for chama_member in chama_members %}
+                                    <option value="{{ chama_member.user_id }}">{{ chama_member.user.full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="col-md-3">
+                                <label class="form-label">Amount Range</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="minAmount" placeholder="Min">
+                                    <input type="number" class="form-control" id="maxAmount" placeholder="Max">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="button" class="btn btn-primary me-2" onclick="applyFilters()">
+                                    <i class="fas fa-search me-2"></i>Apply Filters
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
+                                    <i class="fas fa-undo me-2"></i>Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment History Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Payment History
+                            <span class="badge bg-info ms-2" id="recordCount">{{ all_payments|length }} records</span>
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" id="pageSize" style="width: auto;">
+                                <option value="25">25 per page</option>
+                                <option value="50" selected>50 per page</option>
+                                <option value="100">100 per page</option>
+                                <option value="all">Show All</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="paymentsTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>
+                                        <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('date')">
+                                            Date <i class="fas fa-sort"></i>
+                                        </button>
+                                    </th>
+                                    {% if member.role in ['admin', 'treasurer'] %}
+                                    <th>
+                                        <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('member')">
+                                            Member <i class="fas fa-sort"></i>
+                                        </button>
+                                    </th>
+                                    {% endif %}
+                                    <th>
+                                        <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('type')">
+                                            Type <i class="fas fa-sort"></i>
+                                        </button>
+                                    </th>
+                                    <th>
+                                        <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('amount')">
+                                            Amount <i class="fas fa-sort"></i>
+                                        </button>
+                                    </th>
+                                    <th>Method</th>
+                                    <th>
+                                        <button class="btn btn-sm btn-link text-white p-0" onclick="sortTable('status')">
+                                            Status <i class="fas fa-sort"></i>
+                                        </button>
+                                    </th>
+                                    <th>Transaction ID</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody">
+                                {% for payment in all_payments %}
+                                <tr data-payment-type="{{ payment.type }}" 
+                                    data-payment-method="{{ payment.payment_method or 'unknown' }}"
+                                    data-payment-status="{{ payment.status }}"
+                                    data-member-id="{{ payment.user_id }}"
+                                    data-amount="{{ payment.amount }}"
+                                    data-date="{{ payment.created_at.strftime('%Y-%m-%d') }}">
+                                    <td>
+                                        <div>
+                                            <strong>{{ payment.created_at.strftime('%Y-%m-%d') }}</strong><br>
+                                            <small class="text-muted">{{ payment.created_at.strftime('%I:%M %p') }}</small>
+                                        </div>
+                                    </td>
+                                    {% if member.role in ['admin', 'treasurer'] %}
+                                    <td>
+                                        <div>
+                                            <strong>{{ payment.user.full_name if payment.user else 'System' }}</strong><br>
+                                            <small class="text-muted">{{ payment.user.phone_number if payment.user else '' }}</small>
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if payment.type == 'contribution' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-arrow-down me-1"></i>Contribution
+                                        </span>
+                                        {% elif payment.type == 'loan_repayment' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-handshake me-1"></i>Loan Repayment
+                                        </span>
+                                        {% elif payment.type == 'penalty_payment' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-gavel me-1"></i>Penalty
+                                        </span>
+                                        {% elif payment.type == 'loan_disbursement' %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-arrow-up me-1"></i>Loan Out
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">
+                                            <i class="fas fa-exchange-alt me-1"></i>{{ payment.type.replace('_', ' ').title() }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong class="{% if payment.type == 'loan_disbursement' %}text-danger{% else %}text-success{% endif %}">
+                                                {% if payment.type == 'loan_disbursement' %}-{% else %}+{% endif %}KES {{ "{:,.0f}".format(payment.amount) }}
+                                            </strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if payment.payment_method == 'mpesa' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-mobile-alt me-1"></i>M-Pesa
+                                        </span>
+                                        {% elif payment.payment_method == 'bank_transfer' %}
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-university me-1"></i>Bank
+                                        </span>
+                                        {% elif payment.payment_method == 'cash' %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-money-bill me-1"></i>Cash
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">
+                                            <i class="fas fa-question me-1"></i>Unknown
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if payment.status == 'completed' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Completed
+                                        </span>
+                                        {% elif payment.status == 'pending' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Pending
+                                        </span>
+                                        {% elif payment.status == 'failed' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>Failed
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">{{ payment.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if payment.transaction_id %}
+                                        <code class="small">{{ payment.transaction_id }}</code>
+                                        {% elif payment.mpesa_receipt_number %}
+                                        <code class="small">{{ payment.mpesa_receipt_number }}</code>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ payment.description[:50] }}{% if payment.description|length > 50 %}...{% endif %}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            {% if payment.status == 'completed' %}
+                                            <button class="btn btn-sm btn-outline-primary view-details-btn" 
+                                                    data-payment-id="{{ payment.id }}"
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% endif %}
+                                            {% if payment.mpesa_receipt_number and payment.status == 'completed' %}
+                                            <button class="btn btn-sm btn-outline-success generate-receipt-btn"
+                                                    data-payment-id="{{ payment.id }}"
+                                                    title="Generate Receipt">
+                                                <i class="fas fa-receipt"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav id="pagination" class="mt-3">
+                        <ul class="pagination justify-content-center">
+                            <!-- Pagination will be generated by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Details Modal -->
+<div class="modal fade" id="paymentDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="paymentDetailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allPayments = [];
+let filteredPayments = [];
+let currentPage = 1;
+let pageSize = 50;
+let sortField = 'date';
+let sortDirection = 'desc';
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Load payment data
+    loadPaymentData();
+    
+    // Setup event listeners
+    setupEventListeners();
+    
+    // Apply initial filters
+    applyFilters();
+});
+
+function loadPaymentData() {
+    // Extract payment data from table
+    const rows = document.querySelectorAll('#paymentsTableBody tr');
+    allPayments = Array.from(rows).map(row => ({
+        element: row,
+        date: row.dataset.date,
+        type: row.dataset.paymentType,
+        method: row.dataset.paymentMethod,
+        status: row.dataset.paymentStatus,
+        memberId: row.dataset.memberId,
+        amount: parseFloat(row.dataset.amount)
+    }));
+    
+    filteredPayments = [...allPayments];
+}
+
+function setupEventListeners() {
+    // Date range change
+    document.getElementById('dateRange').addEventListener('change', function() {
+        const customFields = document.getElementById('customDateFields');
+        if (this.value === 'custom') {
+            customFields.style.display = 'block';
+        } else {
+            customFields.style.display = 'none';
+        }
+    });
+    
+    // Page size change
+    document.getElementById('pageSize').addEventListener('change', function() {
+        pageSize = this.value === 'all' ? filteredPayments.length : parseInt(this.value);
+        currentPage = 1;
+        displayPayments();
+    });
+    
+    // View details buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.view-details-btn')) {
+            const paymentId = e.target.closest('.view-details-btn').dataset.paymentId;
+            viewPaymentDetails(paymentId);
+        }
+        
+        if (e.target.closest('.generate-receipt-btn')) {
+            const paymentId = e.target.closest('.generate-receipt-btn').dataset.paymentId;
+            generateReceipt(paymentId);
+        }
+    });
+}
+
+function applyFilters() {
+    const dateRange = document.getElementById('dateRange').value;
+    const paymentType = document.getElementById('paymentType').value;
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    const paymentStatus = document.getElementById('paymentStatus').value;
+    const memberFilter = document.getElementById('memberFilter')?.value || 'all';
+    const minAmount = parseFloat(document.getElementById('minAmount').value) || 0;
+    const maxAmount = parseFloat(document.getElementById('maxAmount').value) || Infinity;
+    
+    // Calculate date filter
+    let startDate = null;
+    let endDate = new Date();
+    
+    if (dateRange !== 'all') {
+        if (dateRange === 'custom') {
+            startDate = new Date(document.getElementById('startDate').value);
+            endDate = new Date(document.getElementById('endDate').value);
+        } else {
+            const days = parseInt(dateRange);
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+        }
+    }
+    
+    // Apply filters
+    filteredPayments = allPayments.filter(payment => {
+        // Date filter
+        if (startDate) {
+            const paymentDate = new Date(payment.date);
+            if (paymentDate < startDate || paymentDate > endDate) {
+                return false;
+            }
+        }
+        
+        // Type filter
+        if (paymentType !== 'all' && payment.type !== paymentType) {
+            return false;
+        }
+        
+        // Method filter
+        if (paymentMethod !== 'all' && payment.method !== paymentMethod) {
+            return false;
+        }
+        
+        // Status filter
+        if (paymentStatus !== 'all' && payment.status !== paymentStatus) {
+            return false;
+        }
+        
+        // Member filter
+        if (memberFilter !== 'all' && payment.memberId !== memberFilter) {
+            return false;
+        }
+        
+        // Amount filter
+        if (payment.amount < minAmount || payment.amount > maxAmount) {
+            return false;
+        }
+        
+        return true;
+    });
+    
+    // Sort and display
+    sortPayments();
+    currentPage = 1;
+    displayPayments();
+    updateRecordCount();
+}
+
+function resetFilters() {
+    document.getElementById('filterForm').reset();
+    document.getElementById('dateRange').value = '30';
+    document.getElementById('customDateFields').style.display = 'none';
+    applyFilters();
+}
+
+function sortTable(field) {
+    if (sortField === field) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField = field;
+        sortDirection = 'desc';
+    }
+    
+    sortPayments();
+    displayPayments();
+}
+
+function sortPayments() {
+    filteredPayments.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch (sortField) {
+            case 'date':
+                aVal = new Date(a.date);
+                bVal = new Date(b.date);
+                break;
+            case 'amount':
+                aVal = a.amount;
+                bVal = b.amount;
+                break;
+            case 'type':
+                aVal = a.type;
+                bVal = b.type;
+                break;
+            case 'status':
+                aVal = a.status;
+                bVal = b.status;
+                break;
+            case 'member':
+                aVal = a.element.querySelector('[data-member]')?.textContent || '';
+                bVal = b.element.querySelector('[data-member]')?.textContent || '';
+                break;
+            default:
+                return 0;
+        }
+        
+        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
+
+function displayPayments() {
+    const tbody = document.getElementById('paymentsTableBody');
+    tbody.innerHTML = '';
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = pageSize === filteredPayments.length ? filteredPayments.length : startIndex + pageSize;
+    const pagePayments = filteredPayments.slice(startIndex, endIndex);
+    
+    pagePayments.forEach(payment => {
+        tbody.appendChild(payment.element.cloneNode(true));
+    });
+    
+    updatePagination();
+}
+
+function updatePagination() {
+    const totalPages = Math.ceil(filteredPayments.length / pageSize);
+    const pagination = document.getElementById('pagination').querySelector('.pagination');
+    
+    if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    // Previous button
+    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Previous</a>
+             </li>`;
+    
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                     </li>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+            html += `<li class="page-item disabled">
+                        <span class="page-link">...</span>
+                     </li>`;
+        }
+    }
+    
+    // Next button
+    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Next</a>
+             </li>`;
+    
+    pagination.innerHTML = html;
+}
+
+function changePage(page) {
+    if (page < 1 || page > Math.ceil(filteredPayments.length / pageSize)) return;
+    
+    currentPage = page;
+    displayPayments();
+}
+
+function updateRecordCount() {
+    document.getElementById('recordCount').textContent = `${filteredPayments.length} records`;
+}
+
+function viewPaymentDetails(paymentId) {
+    // Load payment details via AJAX
+    fetch(`/api/payment-details/${paymentId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('paymentDetailsContent').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('paymentDetailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error loading payment details:', error);
+            alert('Error loading payment details');
+        });
+}
+
+function generateReceipt(paymentId) {
+    // Generate receipt for payment
+    fetch('/api/generate-receipt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            payment_id: paymentId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.receipt_id) {
+            window.open(`/receipt/${data.receipt_id}`, '_blank');
+        } else {
+            alert('Error generating receipt: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error generating receipt:', error);
+        alert('Error generating receipt');
+    });
+}
+</script>
+
+<style>
+.table th button {
+    text-decoration: none;
+    border: none;
+    background: none;
+    color: inherit;
+    font-weight: bold;
+}
+
+.table th button:hover {
+    color: #dee2e6;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.pagination .page-link {
+    color: #007bff;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 2px;
+    }
+}
+</style>
+{% endblock %}

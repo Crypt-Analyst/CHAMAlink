@@ -48,6 +48,13 @@ class User(UserMixin, db.Model):
     preferred_language = db.Column(db.String(5), default='en')
     preferred_theme = db.Column(db.String(20), default='light')
     preferred_font = db.Column(db.String(20), default='default')
+    preferred_currency = db.Column(db.String(3), default='KES')  # ISO currency code
+    
+    # Location Information
+    country_code = db.Column(db.String(2))  # ISO country code
+    country_name = db.Column(db.String(100))
+    city = db.Column(db.String(100))
+    timezone = db.Column(db.String(50), default='Africa/Nairobi')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -110,6 +117,27 @@ class User(UserMixin, db.Model):
     # Relationships
     bank_transfers = db.relationship('BankTransferPayment', foreign_keys='BankTransferPayment.user_id', 
                                    back_populates='user', lazy='dynamic')
+    
+    @property
+    def chamas(self):
+        """Property to get all chamas this user is a member of"""
+        return self.get_chamas()
+
+    def get_chamas(self):
+        """Get all chamas this user is a member of"""
+        from app.models.chama import Chama, chama_members
+        return db.session.query(Chama).join(chama_members).filter(
+            chama_members.c.user_id == self.id
+        ).all()
+    
+    def is_member_of_chama(self, chama_id):
+        """Check if user is a member of a specific chama"""
+        from app.models.chama import chama_members
+        membership = db.session.query(chama_members).filter(
+            chama_members.c.user_id == self.id,
+            chama_members.c.chama_id == chama_id
+        ).first()
+        return membership is not None
     
     # Flask-Login required properties
     def get_id(self):
@@ -226,6 +254,11 @@ class User(UserMixin, db.Model):
             chama_members.c.chama_id == chama_id
         ).first()
         return membership.joined_at if membership and hasattr(membership, 'joined_at') else self.created_at
+
+    @property
+    def is_verified(self):
+        """Check if user is verified (email verified)"""
+        return self.is_email_verified
 
     def __repr__(self):
         return f'<User {self.username}>'

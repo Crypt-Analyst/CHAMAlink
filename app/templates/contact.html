@@ -17,6 +17,8 @@
                 <div class="card-body p-5">
                     <h3 class="mb-4">Send us a Message</h3>
                     <form method="POST" action="{{ url_for('main.contact') }}">
+                        {{ csrf_token() }}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">Full Name *</label>
@@ -65,7 +67,7 @@
                         <i class="fas fa-envelope text-primary fs-4 me-3"></i>
                         <div>
                             <h6 class="mb-0">Email</h6>
-                            <p class="text-muted mb-0">support@chamalink.com</p>
+                            <p class="text-muted mb-0">rahasoft.app@gmail.com</p>
                         </div>
                     </div>
                     
@@ -73,7 +75,7 @@
                         <i class="fas fa-phone text-success fs-4 me-3"></i>
                         <div>
                             <h6 class="mb-0">Phone</h6>
-                            <p class="text-muted mb-0">+254 700 000 000</p>
+                            <p class="text-muted mb-0">0724828685</p>
                         </div>
                     </div>
                     
@@ -186,8 +188,8 @@
             For urgent technical issues affecting your chama operations, 
             please contact our emergency support line.
         </p>
-        <a href="tel:+254700000000" class="btn btn-danger btn-lg">
-            <i class="fas fa-phone me-2"></i>Emergency: +254 700 000 000
+        <a href="tel:0724828685" class="btn btn-danger btn-lg">
+            <i class="fas fa-phone me-2"></i>Emergency: 0724828685
         </a>
         <p class="text-muted small mt-3">Available 24/7 for critical issues only</p>
     </div>

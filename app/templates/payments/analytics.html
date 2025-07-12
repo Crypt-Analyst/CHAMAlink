@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Analytics - {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-chart-bar me-2"></i>Payment Analytics</h2>
+                    <p class="text-muted mb-0">{{ chama.name }} - Advanced payment insights and trends</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('payments.comprehensive_history', chama_id=chama.id) }}" 
+                       class="btn btn-info">
+                        <i class="fas fa-history me-2"></i>Payment History
+                    </a>
+                    <a href="{{ url_for('chama.detail', chama_id=chama.id) }}" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
+            </div>
+
+            <!-- Monthly Contribution Trends -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-line-chart me-2"></i>Monthly Contribution Trends
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="monthlyTrendsChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method Distribution & Payment Timing -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-credit-card me-2"></i>Payment Methods
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="paymentMethodsChart" style="height: 250px;"></canvas>
+                            
+                            <!-- Payment Methods Statistics -->
+                            <div class="mt-3">
+                                {% for method in analytics.payment_methods %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        {% if method.method == 'mpesa' %}
+                                        <i class="fas fa-mobile-alt text-success me-2"></i>M-Pesa
+                                        {% elif method.method == 'bank_transfer' %}
+                                        <i class="fas fa-university text-primary me-2"></i>Bank Transfer
+                                        {% elif method.method == 'cash' %}
+                                        <i class="fas fa-money-bill text-secondary me-2"></i>Cash
+                                        {% else %}
+                                        <i class="fas fa-question text-muted me-2"></i>{{ method.method.title() }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-end">
+                                        <strong>{{ method.count }} payments</strong><br>
+                                        <small class="text-muted">KES {{ "{:,.0f}".format(method.total or 0) }}</small>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-clock me-2"></i>Payment Timing
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="paymentTimingChart" style="height: 250px;"></canvas>
+                            
+                            <!-- Peak Hours -->
+                            <div class="mt-3">
+                                <h6>Peak Payment Hours</h6>
+                                {% set sorted_timing = analytics.payment_timing|sort(attribute='count', reverse=true) %}
+                                {% for timing in sorted_timing[:3] %}
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span>{{ "%02d"|format(timing.hour|int) }}:00 - {{ "%02d"|format((timing.hour|int + 1) % 24) }}:00</span>
+                                    <span class="badge bg-primary">{{ timing.count }} payments</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Member Payment Patterns (Admin/Treasurer only) -->
+            {% if member.role in ['admin', 'treasurer'] and analytics.member_patterns %}
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Member Payment Patterns
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Member</th>
+                                            <th>Total Payments</th>
+                                            <th>Total Amount</th>
+                                            <th>Average Payment</th>
+                                            <th>Payment Frequency</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pattern in analytics.member_patterns %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ pattern.full_name }}</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ pattern.payment_count }}</span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">KES {{ "{:,.0f}".format(pattern.total_amount or 0) }}</strong>
+                                            </td>
+                                            <td>
+                                                KES {{ "{:,.0f}".format(pattern.avg_amount or 0) }}
+                                            </td>
+                                            <td>
+                                                {% set frequency = (pattern.payment_count / 12) %}
+                                                {% if frequency >= 1 %}
+                                                <span class="badge bg-success">{{ "%.1f"|format(frequency) }}/month</span>
+                                                {% elif frequency >= 0.25 %}
+                                                <span class="badge bg-warning">{{ "%.1f"|format(frequency) }}/month</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">{{ "%.1f"|format(frequency) }}/month</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Payment Insights -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-trophy fa-3x mb-3"></i>
+                            <h4>{% if analytics.member_patterns %}{{ analytics.member_patterns|max(attribute='payment_count').full_name }}{% else %}N/A{% endif %}</h4>
+                            <p class="mb-0">Most Active Member</p>
+                            {% if analytics.member_patterns %}
+                            <small>{{ analytics.member_patterns|max(attribute='payment_count').payment_count }} payments</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-3x mb-3"></i>
+                            <h4>
+                                {% if analytics.monthly_contributions %}
+                                KES {{ "{:,.0f}".format((analytics.monthly_contributions|sum(attribute='total')) / (analytics.monthly_contributions|length)) }}
+                                {% else %}
+                                KES 0
+                                {% endif %}
+                            </h4>
+                            <p class="mb-0">Average Monthly</p>
+                            <small>Last 12 months</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-check fa-3x mb-3"></i>
+                            <h4>
+                                {% if analytics.payment_timing %}
+                                {{ "%02d"|format(analytics.payment_timing|max(attribute='count').hour|int) }}:00
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </h4>
+                            <p class="mb-0">Peak Payment Hour</p>
+                            {% if analytics.payment_timing %}
+                            <small>{{ analytics.payment_timing|max(attribute='count').count }} payments</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Monthly Trends Chart
+const monthlyData = [
+    {% for contribution in analytics.monthly_contributions %}
+    {
+        month: '{{ contribution.month.strftime("%Y-%m") }}',
+        total: {{ contribution.total or 0 }},
+        count: {{ contribution.count or 0 }}
+    },
+    {% endfor %}
+];
+
+const monthlyCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
+new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+        labels: monthlyData.map(d => d.month),
+        datasets: [{
+            label: 'Total Amount (KES)',
+            data: monthlyData.map(d => d.total),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1,
+            yAxisID: 'y'
+        }, {
+            label: 'Number of Payments',
+            data: monthlyData.map(d => d.count),
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            tension: 0.1,
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        scales: {
+            x: {
+                display: true,
+                title: {
+                    display: true,
+                    text: 'Month'
+                }
+            },
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Amount (KES)'
+                },
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Number of Payments'
+                },
+                grid: {
+                    drawOnChartArea: false,
+                },
+            }
+        }
+    }
+});
+
+// Payment Methods Chart
+const methodsData = [
+    {% for method in analytics.payment_methods %}
+    {
+        method: '{{ method.method.title() }}',
+        count: {{ method.count }},
+        total: {{ method.total or 0 }}
+    },
+    {% endfor %}
+];
+
+const methodsCtx = document.getElementById('paymentMethodsChart').getContext('2d');
+new Chart(methodsCtx, {
+    type: 'doughnut',
+    data: {
+        labels: methodsData.map(d => d.method),
+        datasets: [{
+            data: methodsData.map(d => d.count),
+            backgroundColor: [
+                '#28a745',
+                '#007bff', 
+                '#6c757d',
+                '#ffc107',
+                '#dc3545'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Payment Timing Chart
+const timingData = [
+    {% for timing in analytics.payment_timing %}
+    {
+        hour: {{ timing.hour }},
+        count: {{ timing.count }}
+    },
+    {% endfor %}
+];
+
+// Fill missing hours with 0
+const hourlyData = Array.from({length: 24}, (_, i) => {
+    const existing = timingData.find(d => d.hour === i);
+    return existing ? existing.count : 0;
+});
+
+const timingCtx = document.getElementById('paymentTimingChart').getContext('2d');
+new Chart(timingCtx, {
+    type: 'bar',
+    data: {
+        labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+        datasets: [{
+            label: 'Payments',
+            data: hourlyData,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Number of Payments'
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Hour of Day'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.bg-success, .bg-info, .bg-warning {
+    background: linear-gradient(45deg, var(--bs-success), #20c997) !important;
+}
+
+.bg-info {
+    background: linear-gradient(45deg, var(--bs-info), #17a2b8) !important;
+}
+
+.bg-warning {
+    background: linear-gradient(45deg, var(--bs-warning), #e0a800) !important;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 0 15px;
+    }
+    
+    canvas {
+        height: 200px !important;
+    }
+}
+</style>
+{% endblock %}

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}ChamaLink{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -204,6 +205,45 @@
                 opacity: 1;
             }
         }
+
+        /* Footer Tagline Styles */
+        .footer-tagline {
+            border-radius: 0.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .footer-tagline .h6 {
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .footer-tagline .small {
+            color: #6c757d !important;
+            font-weight: 500;
+        }
+        
+        footer {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
+            border-top: 2px solid #dee2e6 !important;
+        }
+        
+        .social-links a {
+            transition: all 0.3s ease;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+        }
+        
+        .social-links a:hover {
+            color: #0d6efd !important;
+            background: rgba(13, 110, 253, 0.1);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -247,6 +287,9 @@
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.features') }}">
                                 <i class="fas fa-star"></i>Features
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.demo') }}">
+                                <i class="fas fa-play-circle"></i>Demo Video
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('main.about') }}">
                                 <i class="fas fa-info-circle"></i>About Us
@@ -301,6 +344,9 @@
                             <li><a class="dropdown-item text-warning fw-bold" href="{{ url_for('main.founder_dashboard') }}">
                                 <i class="fas fa-crown"></i>Founder Dashboard
                             </a></li>
+                            <li><a class="dropdown-item text-danger fw-bold" href="{{ url_for('main.admin_user_management') }}">
+                                <i class="fas fa-users-cog"></i>User Management
+                            </a></li>
                             {% endif %}
                             
                             <!-- Chama Management -->
@@ -312,7 +358,7 @@
                             <li><a class="dropdown-item" href="{{ url_for('chama.search_chamas') }}">
                                 <i class="fas fa-search"></i>Search & Join Chamas
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="createNewChama()">
+                            <li><a class="dropdown-item" href="{{ url_for('chama.create_chama') }}">
                                 <i class="fas fa-plus-circle"></i>Create New Chama
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('membership.membership_requests') }}">
@@ -383,6 +429,23 @@
 
             <!-- Right Navigation -->
             <ul class="navbar-nav">
+                <!-- Language Switcher (visible to all users) -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" title="Change Language">
+                        <i class="fas fa-language me-1"></i>
+                        <span class="d-none d-md-inline">Language</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><h6 class="dropdown-header">Choose Language</h6></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('en')">
+                            <i class="flag-icon flag-icon-us me-2"></i>English
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changeLanguage('sw')">
+                            <i class="flag-icon flag-icon-ke me-2"></i>Kiswahili
+                        </a></li>
+                    </ul>
+                </li>
+                
                 {% if not current_user.is_authenticated %}
                     <!-- Public User Actions -->
                     <li class="nav-item">
@@ -396,36 +459,11 @@
                         </a>
                     </li>
                 {% else %}
-                    <!-- User Profile Menu -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            <div class="user-avatar">
-                                {% if current_user.is_super_admin %}
-                                    <i class="fas fa-crown text-warning"></i>
-                                {% else %}
-                                    {{ current_user.username[0].upper() }}
-                                {% endif %}
-                            </div>
-                            {% if current_user.is_super_admin %}
-                                <span class="text-warning fw-bold">👑 {{ current_user.username }}</span>
-                            {% else %}
-                                {{ current_user.username }}
-                            {% endif %}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('settings.account_settings') }}">
-                                <i class="fas fa-user-cog"></i>Account Settings
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('notifications.notification_dashboard') }}">
-                                <i class="fas fa-bell"></i>Notifications
-                            </a></li>
-                            <li><div class="dropdown-divider"></div></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
-                                <i class="fas fa-sign-out-alt"></i>Logout
-                            </a></li>
-                        </ul>
+                    <!-- Currency Selector -->
+                    <li class="nav-item me-2">
+                        {% include 'currency/currency_selector.html' %}
                     </li>
-
+                    
                     <!-- User Profile -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
@@ -494,6 +532,21 @@
 <!-- 🔻 ENHANCED FOOTER -->
 <footer class="bg-light text-center mt-auto py-4 border-top">
     <div class="container">
+        <!-- Brand Tagline -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="footer-tagline">
+                    <p class="mb-2 text-primary fw-bold h6">
+                        <i class="fas fa-handshake me-2"></i>
+                        "Empowering African communities through smart chama management"
+                    </p>
+                    <p class="mb-0 text-muted small">
+                        🚀 Building generational wealth, one chama at a time | 🇰🇪 Proudly Kenyan
+                    </p>
+                </div>
+            </div>
+        </div>
+        
         <div class="row">
             <div class="col-md-6 text-md-start">
                 <span class="text-muted">
@@ -911,9 +964,76 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
-// ...existing code...
-</script>
+function changeLanguage(languageCode) {
+    console.log('Changing language to:', languageCode);
+    showNotification('🌍 Changing language...', 'info');
+    
+    // Set language preference in session/localStorage
+    localStorage.setItem('preferredLanguage', languageCode);
+    
+    // Make request to change language
+    fetch('/preferences/language/' + languageCode, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        console.log('Language change response status:', response.status);
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Language change failed with status: ' + response.status);
+        }
+    })
+    .then(data => {
+        console.log('Language change response:', data);
+        if (data.success) {
+            showNotification('✅ Language changed successfully!', 'success');
+            // Reload page to apply changes
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            throw new Error('Server returned error: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error changing language:', error);
+        showNotification('❌ Could not change language: ' + error.message, 'error');
+    });
+}
 
+// Auto-logout for inactive users
+<script>
+let inactivityTimer;
+const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        // Show warning to user
+        if (confirm('You have been inactive for 5 minutes. Would you like to continue your session?')) {
+            resetInactivityTimer(); // Reset timer if user wants to continue
+        } else {
+            // Auto logout
+            window.location.href = '{{ url_for("auth.logout") }}';
+        }
+    }, INACTIVITY_TIMEOUT);
+}
+
+// Reset timer on user activity
+['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
+    document.addEventListener(event, resetInactivityTimer, true);
+});
+
+// Initialize timer when page loads
+if ('{{ current_user.is_authenticated }}' === 'True') {
+    resetInactivityTimer();
+}
+</script>
 <!-- Floating Chat Button -->
 <div class="floating-chat-btn" id="floating-chat-btn">
     <a href="{{ url_for('main.chat') }}" class="btn btn-primary rounded-circle shadow-lg" 

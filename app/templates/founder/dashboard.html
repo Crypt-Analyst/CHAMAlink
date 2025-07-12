@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Founder Dashboard - ChamaLink{% endblock %}
 
+<!-- Add CSRF token -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 {% block content %}
 <div class="founder-dashboard">
     <!-- Welcome Header -->
@@ -140,12 +143,20 @@
                                         <td>{{ chama.member_count }}</td>
                                         <td><span class="badge bg-danger">{{ chama.status.title() }}</span></td>
                                         <td>
-                                            <button class="btn btn-sm btn-success" onclick="toggleChamaStatus({{ chama.id }}, 'activate')">
-                                                <i class="fas fa-check"></i> Restore
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="toggleChamaStatus({{ chama.id }}, 'blacklist')">
-                                                <i class="fas fa-ban"></i> Blacklist
-                                            </button>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-success" onclick="toggleChamaStatus({{ chama.id }}, 'activate')" title="Restore chama">
+                                                    <i class="fas fa-check"></i> Restore
+                                                </button>
+                                                <button class="btn btn-sm btn-warning" onclick="toggleChamaStatus({{ chama.id }}, 'suspend')" title="Suspend chama">
+                                                    <i class="fas fa-pause"></i> Suspend
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" onclick="toggleChamaStatus({{ chama.id }}, 'blacklist')" title="Blacklist chama">
+                                                    <i class="fas fa-ban"></i> Blacklist
+                                                </button>
+                                                <button class="btn btn-sm btn-dark" onclick="toggleChamaStatus({{ chama.id }}, 'delete')" title="Delete chama permanently">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -207,6 +218,182 @@
                     </div>
                 </div>
 
+                <!-- Quick Notepad -->
+                <div class="card founder-card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sticky-note me-2"></i>Quick Notes
+                        </h5>
+                        <div class="card-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="saveNote()">
+                                <i class="fas fa-save me-1"></i>Save
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="clearNote()">
+                                <i class="fas fa-trash me-1"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="notepad-container">
+                            <textarea id="founderNotepad" 
+                                      class="form-control notepad-textarea" 
+                                      rows="8" 
+                                      placeholder="💡 Jot down quick notes, ideas, reminders...
+📋 Action items and todos
+📞 Important contacts
+🎯 Business insights
+💰 Revenue opportunities
+
+Auto-saves every 30 seconds..."></textarea>
+                            <div class="notepad-footer mt-2">
+                                <small class="text-muted">
+                                    <span id="notepadStatus">
+                                        <i class="fas fa-circle text-success"></i> Ready
+                                    </span>
+                                    <span class="float-end">
+                                        <span id="charCount">0</span> characters
+                                    </span>
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Note Templates -->
+                        <div class="mt-3">
+                            <small class="text-muted mb-2 d-block">Quick Templates:</small>
+                            <div class="d-flex flex-wrap gap-1">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="insertTemplate('meeting')">
+                                    📅 Meeting Notes
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="insertTemplate('todo')">
+                                    ✅ Todo List
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="insertTemplate('ideas')">
+                                    💡 Ideas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Chamas List -->
+                <div class="card founder-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-university me-2"></i>All Chamas ({{ all_chamas|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if all_chamas %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Chama Name</th>
+                                        <th>Creator</th>
+                                        <th>Members</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for chama in all_chamas %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ chama.name }}</strong>
+                                            {% if chama.description %}
+                                            <br><small class="text-muted">{{ chama.description[:50] }}...</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if chama.creator %}
+                                            {{ chama.creator.username }}
+                                            {% else %}
+                                            <span class="text-muted">Unknown</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ chama.member_count or 0 }}</span>
+                                        </td>
+                                        <td>
+                                            {% if chama.status == 'active' %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% elif chama.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif chama.status == 'flagged' %}
+                                                <span class="badge bg-danger">Flagged</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ chama.status.title() if chama.status else 'Unknown' }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ chama.created_at.strftime('%b %d, %Y') if chama.created_at else 'Unknown' }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" 
+                                                   class="btn btn-outline-primary" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                
+                                                <!-- Dropdown for more actions -->
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" 
+                                                            data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                                                        <i class="fas fa-cog"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        {% if chama.status == 'pending' %}
+                                                        <li><a class="dropdown-item" href="#" onclick="toggleChamaStatus({{ chama.id }}, 'activate')">
+                                                            <i class="fas fa-check text-success me-2"></i>Approve
+                                                        </a></li>
+                                                        {% endif %}
+                                                        
+                                                        {% if chama.status == 'active' %}
+                                                        <li><a class="dropdown-item" href="#" onclick="toggleChamaStatus({{ chama.id }}, 'suspend')">
+                                                            <i class="fas fa-pause text-warning me-2"></i>Suspend
+                                                        </a></li>
+                                                        {% endif %}
+                                                        
+                                                        {% if chama.status in ['suspended', 'pending'] %}
+                                                        <li><a class="dropdown-item" href="#" onclick="toggleChamaStatus({{ chama.id }}, 'activate')">
+                                                            <i class="fas fa-play text-success me-2"></i>Activate
+                                                        </a></li>
+                                                        {% endif %}
+                                                        
+                                                        {% if chama.status != 'flagged' %}
+                                                        <li><a class="dropdown-item" href="#" onclick="toggleChamaStatus({{ chama.id }}, 'flag')">
+                                                            <i class="fas fa-flag text-warning me-2"></i>Flag
+                                                        </a></li>
+                                                        {% endif %}
+                                                        
+                                                        <li><a class="dropdown-item" href="#" onclick="toggleChamaStatus({{ chama.id }}, 'blacklist')">
+                                                            <i class="fas fa-ban text-danger me-2"></i>Blacklist
+                                                        </a></li>
+                                                        
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item text-danger" href="#" onclick="toggleChamaStatus({{ chama.id }}, 'delete')">
+                                                            <i class="fas fa-trash me-2"></i>Delete Permanently
+                                                        </a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-university fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No chamas found</h5>
+                            <p class="text-muted">No chamas have been created yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <!-- Quick Actions -->
                 <div class="card founder-card">
                     <div class="card-header">
@@ -239,16 +426,32 @@
 <!-- JavaScript for Founder Actions -->
 <script>
 function toggleChamaStatus(chamaId, action) {
-    if (!confirm(`Are you sure you want to ${action} this chama?`)) {
+    const actionMessages = {
+        'activate': 'activate',
+        'suspend': 'suspend', 
+        'blacklist': 'blacklist',
+        'delete': 'delete',
+        'flag': 'flag'
+    };
+    
+    const actionMsg = actionMessages[action] || action;
+    if (!confirm(`Are you sure you want to ${actionMsg} this chama?`)) {
         return;
     }
+
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     fetch(`/founder-dashboard/chama/${chamaId}/toggle-status`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
-        body: JSON.stringify({ action: action })
+        body: JSON.stringify({ 
+            action: action,
+            csrf_token: csrfToken
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -785,6 +988,280 @@ function generateBackup() {
     alert('💾 System backup initiated. You will receive confirmation when complete.');
     bootstrap.Modal.getInstance(document.getElementById('emergencyModal')).hide();
 }
+
+// Notepad functionality
+const notepad = document.getElementById('founderNotepad');
+const charCount = document.getElementById('charCount');
+const notepadStatus = document.getElementById('notepadStatus');
+
+// Load saved note on page load
+window.addEventListener('load', () => {
+    const savedNote = localStorage.getItem('founderNote');
+    if (savedNote) {
+        notepad.value = savedNote;
+        charCount.innerText = savedNote.length;
+    }
+});
+
+// Auto-save note every 30 seconds
+setInterval(() => {
+    if (notepad.value) {
+        localStorage.setItem('founderNote', notepad.value);
+        notepadStatus.innerHTML = '<i class="fas fa-circle text-success"></i> Auto-saved';
+    }
+}, 30000);
+
+// Update character count
+notepad.addEventListener('input', () => {
+    charCount.innerText = notepad.value.length;
+});
+
+function saveNote() {
+    if (notepad.value) {
+        localStorage.setItem('founderNote', notepad.value);
+        alert('📝 Note saved successfully!');
+    } else {
+        alert('Nothing to save!');
+    }
+}
+
+function clearNote() {
+    if (confirm('Clear all notes? This action cannot be undone.')) {
+        notepad.value = '';
+        localStorage.removeItem('founderNote');
+        charCount.innerText = '0';
+        notepadStatus.innerHTML = '<i class="fas fa-circle text-warning"></i> Cleared';
+    }
+}
+
+function insertTemplate(type) {
+    let template = '';
+    
+    switch(type) {
+        case 'meeting':
+            template = `
+                ### Meeting Notes
+                
+                **Date:** 
+                **Time:** 
+                **Attendees:** 
+                
+                **Agenda:** 
+                
+                **Notes:** 
+                
+                **Action Items:** 
+            `;
+            break;
+        case 'todo':
+            template = `
+                ### Todo List
+                
+                - [ ] 
+                - [ ] 
+                - [ ] 
+            `;
+            break;
+        case 'ideas':
+            template = `
+                ### Ideas
+                
+                - 
+// Notepad Functionality
+let autoSaveTimer;
+const AUTOSAVE_DELAY = 30000; // 30 seconds
+
+document.addEventListener('DOMContentLoaded', function() {
+    const notepad = document.getElementById('founderNotepad');
+    const charCount = document.getElementById('charCount');
+    const status = document.getElementById('notepadStatus');
+    
+    if (!notepad) return;
+    
+    // Load saved notes
+    loadNote();
+    
+    // Character counter
+    notepad.addEventListener('input', function() {
+        const count = this.value.length;
+        charCount.textContent = count;
+        
+        // Update status to show unsaved changes
+        updateStatus('unsaved', 'Unsaved changes...');
+        
+        // Reset auto-save timer
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(autoSaveNote, AUTOSAVE_DELAY);
+    });
+    
+    // Initial character count
+    charCount.textContent = notepad.value.length;
+});
+
+function loadNote() {
+    const savedNote = localStorage.getItem('founderNotepadContent');
+    if (savedNote) {
+        document.getElementById('founderNotepad').value = savedNote;
+        document.getElementById('charCount').textContent = savedNote.length;
+    }
+}
+
+function saveNote() {
+    const notepad = document.getElementById('founderNotepad');
+    const content = notepad.value;
+    
+    // Save to localStorage
+    localStorage.setItem('founderNotepadContent', content);
+    localStorage.setItem('founderNotepadLastSaved', new Date().toISOString());
+    
+    updateStatus('saved', 'Saved successfully!');
+    
+    // Optional: Save to server
+    saveNoteToServer(content);
+}
+
+function autoSaveNote() {
+    const notepad = document.getElementById('founderNotepad');
+    const content = notepad.value;
+    
+    if (content.trim()) {
+        localStorage.setItem('founderNotepadContent', content);
+        localStorage.setItem('founderNotepadLastSaved', new Date().toISOString());
+        updateStatus('autosaved', 'Auto-saved');
+    }
+}
+
+function clearNote() {
+    if (confirm('Are you sure you want to clear all notes? This cannot be undone.')) {
+        document.getElementById('founderNotepad').value = '';
+        document.getElementById('charCount').textContent = '0';
+        localStorage.removeItem('founderNotepadContent');
+        updateStatus('cleared', 'Notes cleared');
+    }
+}
+
+function updateStatus(type, message) {
+    const status = document.getElementById('notepadStatus');
+    const icons = {
+        saved: 'fas fa-check text-success',
+        autosaved: 'fas fa-clock text-info',
+        unsaved: 'fas fa-circle text-warning',
+        cleared: 'fas fa-trash text-danger',
+        ready: 'fas fa-circle text-success'
+    };
+    
+    status.innerHTML = `<i class="${icons[type] || icons.ready}"></i> ${message}`;
+    
+    // Reset to ready after 3 seconds
+    if (type !== 'unsaved') {
+        setTimeout(() => {
+            status.innerHTML = '<i class="fas fa-circle text-success"></i> Ready';
+        }, 3000);
+    }
+}
+
+function insertTemplate(type) {
+    const notepad = document.getElementById('founderNotepad');
+    const charCount = document.getElementById('charCount');
+    
+    const templates = {
+        meeting: `
+📅 Meeting Notes - ${new Date().toLocaleDateString()}
+========================
+📋 Agenda:
+- 
+- 
+- 
+
+💬 Key Discussions:
+- 
+- 
+
+✅ Decisions Made:
+- 
+- 
+
+🎯 Action Items:
+- [ ] 
+- [ ] 
+
+📊 Metrics Discussed:
+- 
+- 
+
+`,
+        todo: `
+✅ Todo List - ${new Date().toLocaleDateString()}
+==================
+🔥 High Priority:
+- [ ] 
+- [ ] 
+
+📋 Medium Priority:
+- [ ] 
+- [ ] 
+
+📝 Notes:
+- [ ] 
+- [ ] 
+
+`,
+        ideas: `
+💡 Ideas & Insights - ${new Date().toLocaleDateString()}
+==========================
+🚀 New Features:
+- 
+- 
+
+💰 Revenue Opportunities:
+- 
+- 
+
+🔧 Improvements:
+- 
+- 
+
+📈 Business Strategy:
+- 
+- 
+
+`
+    };
+    
+    const template = templates[type] || '';
+    const currentValue = notepad.value;
+    const newValue = currentValue + (currentValue ? '\n\n' : '') + template;
+    
+    notepad.value = newValue;
+    charCount.textContent = newValue.length;
+    notepad.focus();
+    
+    // Trigger save
+    updateStatus('unsaved', 'Unsaved changes...');
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(autoSaveNote, AUTOSAVE_DELAY);
+}
+
+function saveNoteToServer(content) {
+    // Optional: Send to server endpoint
+    fetch('/founder-dashboard/save-note', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({ content: content })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.warn('Failed to save note to server:', data.message);
+        }
+    })
+    .catch(error => {
+        console.warn('Error saving note to server:', error);
+    });
+}
 </script>
 
 <style>
@@ -946,6 +1423,96 @@ function generateBackup() {
 
 .user-status {
     font-size: 1.2rem;
+}
+
+/* Notepad Styles */
+.notepad-container {
+    position: relative;
+}
+
+.notepad-textarea {
+    resize: vertical;
+    min-height: 200px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+}
+
+.notepad-textarea:focus {
+    background: #fff;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.notepad-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* Template buttons */
+.btn-outline-secondary.btn-sm {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 15px;
+    white-space: nowrap;
+}
+
+.btn-outline-secondary.btn-sm:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+
+/* Status indicators */
+#notepadStatus i.text-success {
+    color: #28a745 !important;
+}
+
+#notepadStatus i.text-warning {
+    color: #ffc107 !important;
+}
+
+#notepadStatus i.text-info {
+    color: #17a2b8 !important;
+}
+
+#notepadStatus i.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notepad-textarea {
+        min-height: 150px;
+        font-size: 0.85rem;
+    }
+    
+    .card-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .btn-outline-secondary.btn-sm {
+        margin-bottom: 0.25rem;
+    }
 }
 </style>
 {% endblock %}

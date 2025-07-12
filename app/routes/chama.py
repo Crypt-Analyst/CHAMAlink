@@ -4,7 +4,7 @@ from app.models import (
     Chama, User, Transaction, Event, chama_members, 
     ChamaMembershipRequest, Notification, ManualPaymentVerification, RegistrationFeePayment
 )
-from app.utils.permissions import chama_member_required, chama_admin_required, user_can_access_chama
+from app.utils.permissions import chama_member_required, chama_admin_required, user_can_access_chama, get_user_chama_role
 from app.utils.mpesa import initiate_stk_push
 from app import db
 from datetime import datetime, date
@@ -23,18 +23,59 @@ def create_chama():
         data = request.get_json() if request.is_json else request.form
         
         # Validate required fields
-        if not data.get('name'):
-            return jsonify({'success': False, 'message': 'Chama name is required'}), 400
+        if not data.get('name') or not data.get('name').strip():
+            error_msg = 'Chama name is required'
+            if request.is_json:
+                return jsonify({'success': False, 'message': error_msg}), 400
+            else:
+                flash(error_msg, 'error')
+                return render_template('chama/create.html')
         
         if not data.get('monthly_contribution'):
-            return jsonify({'success': False, 'message': 'Monthly contribution is required'}), 400
+            error_msg = 'Monthly contribution is required'
+            if request.is_json:
+                return jsonify({'success': False, 'message': error_msg}), 400
+            else:
+                flash(error_msg, 'error')
+                return render_template('chama/create.html')
+        
+        # Validate contribution amount
+        try:
+            contribution = float(data['monthly_contribution'])
+            if contribution <= 0:
+                error_msg = 'Monthly contribution must be greater than 0'
+                if request.is_json:
+                    return jsonify({'success': False, 'message': error_msg}), 400
+                else:
+                    flash(error_msg, 'error')
+                    return render_template('chama/create.html')
+        except ValueError:
+            error_msg = 'Invalid contribution amount'
+            if request.is_json:
+                return jsonify({'success': False, 'message': error_msg}), 400
+            else:
+                flash(error_msg, 'error')
+                return render_template('chama/create.html')
+        
+        # Check for duplicate chama names (case insensitive)
+        existing_chama = Chama.query.filter(
+            db.func.lower(Chama.name) == data['name'].strip().lower()
+        ).first()
+        
+        if existing_chama:
+            error_msg = 'A chama with this name already exists. Please choose a different name.'
+            if request.is_json:
+                return jsonify({'success': False, 'message': error_msg}), 400
+            else:
+                flash(error_msg, 'error')
+                return render_template('chama/create.html')
         
         # Create new chama
         chama = Chama(
-            name=data['name'],
-            description=data.get('description', ''),
-            goal=data.get('goal', ''),
-            monthly_contribution=float(data['monthly_contribution']),
+            name=data['name'].strip(),
+            description=data.get('description', '').strip(),
+            goal=data.get('goal', '').strip(),
+            monthly_contribution=contribution,
             meeting_day=data.get('meeting_day', ''),
             creator_id=current_user.id
         )
@@ -59,60 +100,67 @@ def create_chama():
     
     except Exception as e:
         db.session.rollback()
+        current_app.logger.error(f"Error creating chama: {e}")
+        error_msg = 'An error occurred while creating the chama. Please try again.'
         if request.is_json:
-            return jsonify({'success': False, 'message': str(e)}), 400
+            return jsonify({'success': False, 'message': error_msg}), 500
         else:
-            flash(f'Error creating chama: {str(e)}', 'error')
-            return redirect(url_for('chama.create_chama'))
+            flash(error_msg, 'error')
+            return render_template('chama/create.html')
 
 @chama_bp.route('/<int:chama_id>')
 @login_required
-@chama_member_required
 def chama_detail(chama_id):
     """View detailed information about a specific chama"""
-    # Check subscription status (bypass for super admins)
-    if not current_user.is_super_admin:
-        from app.utils.subscription_utils import check_trial_expiry
-        subscription = current_user.current_subscription
+    try:
+        chama = Chama.query.get_or_404(chama_id)
         
-        if not subscription or not subscription.is_active:
-            flash('Your subscription has expired. Please upgrade to access your chama.', 'danger')
-            return redirect(url_for('subscription.plans'))
+        # Check if user is a member of this chama or is super admin
+        if not current_user.is_super_admin and not current_user.is_member_of_chama(chama_id):
+            flash('You do not have permission to access this chama.', 'error')
+            return redirect(url_for('main.dashboard'))
+        
+        # Get chama statistics
+        total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
+            Transaction.chama_id == chama_id,
+            Transaction.type == 'contribution'
+        ).scalar() or 0
+        
+        total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
+            Transaction.chama_id == chama_id,
+            Transaction.type == 'loan'
+        ).scalar() or 0
+        
+        # Get recent transactions for this chama
+        recent_transactions = Transaction.query.filter(
+            Transaction.chama_id == chama_id
+        ).order_by(desc(Transaction.created_at)).limit(10).all()
+        
+        # Get upcoming events for this chama
+        upcoming_events = Event.query.filter(
+            Event.chama_id == chama_id,
+            Event.event_date >= date.today()
+        ).order_by(Event.event_date).limit(5).all()
+        
+        # Get user's role in this chama
+        user_role = get_user_chama_role(current_user.id, chama_id)
+        
+        return render_template('chama/detail.html',
+                             chama=chama,
+                             total_contributions=total_contributions,
+                             total_loans=total_loans,
+                             recent_transactions=recent_transactions,
+                             upcoming_events=upcoming_events,
+                             user_role=user_role)
+    except Exception as e:
+        current_app.logger.error(f"Error accessing chama details: {e}")
+        flash('Error accessing chama details. Please try again.', 'error')
+        return redirect(url_for('main.dashboard'))
     
-    chama = Chama.query.get_or_404(chama_id)
-    
-    # Get chama statistics
-    total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
-        Transaction.chama_id == chama_id,
-        Transaction.type == 'contribution'
-    ).scalar() or 0
-    
-    total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
-        Transaction.chama_id == chama_id,
-        Transaction.type == 'loan'
-    ).scalar() or 0
-    
-    # Get recent transactions for this chama
-    recent_transactions = Transaction.query.filter(
-        Transaction.chama_id == chama_id
-    ).order_by(desc(Transaction.created_at)).limit(10).all()
-    
-    # Get upcoming events for this chama
-    upcoming_events = Event.query.filter(
-        Event.chama_id == chama_id,
-        Event.event_date >= date.today()
-    ).order_by(Event.event_date).limit(5).all()
-    
-    # Get user's role in this chama
-    user_role = get_user_chama_role(current_user.id, chama_id)
-    
-    return render_template('chama/detail.html',
-                         chama=chama,
-                         total_contributions=total_contributions,
-                         total_loans=total_loans,
-                         recent_transactions=recent_transactions,
-                         upcoming_events=upcoming_events,
-                         user_role=user_role)
+    except Exception as e:
+        current_app.logger.error(f'Error accessing chama details: {str(e)}')
+        flash(f'Error accessing chama details: {str(e)}', 'error')
+        return redirect(url_for('main.dashboard'))
 
 @chama_bp.route('/<int:chama_id>/members')
 @login_required
@@ -147,28 +195,36 @@ def contribute(chama_id):
         if amount <= 0:
             return jsonify({'success': False, 'message': 'Amount must be greater than 0'}), 400
         
-        # Create transaction
+        # Get chama first to verify it exists
+        chama = Chama.query.get(chama_id)
+        if not chama:
+            return jsonify({'success': False, 'message': 'Chama not found'}), 404
+        
+        # Create contribution transaction
         transaction = Transaction(
             type='contribution',
             amount=amount,
-            description=f"Contribution to {Chama.query.get(chama_id).name}",
+            description=f'{data.get("description", f"Contribution to {chama.name}")}',
             user_id=current_user.id,
             chama_id=chama_id
         )
         
-        db.session.add(transaction)
-        
         # Update chama balance
-        chama = Chama.query.get(chama_id)
         chama.total_balance += amount
         
+        # Add transaction and commit
+        db.session.add(transaction)
         db.session.commit()
         
-        return jsonify({'success': True, 'message': 'Contribution successful!'})
+        return jsonify({'success': True, 'message': 'Contribution recorded successfully!'})
     
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Invalid amount format'}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)}), 400
+        current_app.logger.error(f"Contribution error for chama {chama_id}: {e}")
+        return jsonify({'success': False, 'message': 'An error occurred while recording your contribution. Please try again.'}), 500
 
 @chama_bp.route('/<int:chama_id>/invite', methods=['POST'])
 @login_required
@@ -372,21 +428,35 @@ def pay_registration_fee(chama_id):
 @login_required
 def search_chamas():
     """Search for chamas to join"""
-    query = request.args.get('q', '')
-    chamas = []
-    
-    if query:
-        # Search for chamas by name
-        chamas = Chama.query.filter(
-            Chama.name.ilike(f'%{query}%'),
-            Chama.status == 'active'
-        ).all()
+    try:
+        query = request.args.get('q', '').strip()
+        chamas = []
+        
+        if query:
+            # Search for chamas by name (using ilike for case-insensitive search)
+            chamas = Chama.query.filter(
+                Chama.name.ilike(f'%{query}%'),
+                Chama.status == 'active'
+            ).all()
+        else:
+            # Show all active chamas when no search query
+            chamas = Chama.query.filter(Chama.status == 'active').limit(50).all()
         
         # Filter out chamas user is already a member of
-        user_chama_ids = [chama.id for chama in current_user.chamas]
-        chamas = [chama for chama in chamas if chama.id not in user_chama_ids]
-    
-    return render_template('chama/search.html', chamas=chamas, query=query)
+        try:
+            user_chamas = current_user.get_chamas()
+            user_chama_ids = [chama.id for chama in user_chamas]
+            chamas = [chama for chama in chamas if chama.id not in user_chama_ids]
+        except Exception as e:
+            current_app.logger.error(f"Error filtering user chamas: {e}")
+            # If there's an issue with user chamas, just show all chamas
+        
+        return render_template('chama/search.html', chamas=chamas, query=query)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error searching chamas: {e}")
+        flash(f'Search is currently unavailable. Please try again later.', 'error')
+        return render_template('chama/search.html', chamas=[], query='')
 
 @chama_bp.route('/<int:chama_id>/request-join', methods=['POST'])
 @login_required
@@ -757,6 +827,245 @@ def reject_payment_verification(verification_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@chama_bp.route('/<int:chama_id>/appoint-role', methods=['POST'])
+@login_required
+@chama_admin_required
+def appoint_role(chama_id):
+    """Appoint secretary or treasurer role to a member"""
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        new_role = data.get('role')
+        
+        if not user_id or not new_role:
+            return jsonify({'success': False, 'message': 'User ID and role are required'}), 400
+        
+        if new_role not in ['secretary', 'treasurer', 'admin', 'member']:
+            return jsonify({'success': False, 'message': 'Invalid role'}), 400
+        
+        # Check if user is a member of the chama
+        membership = db.session.query(chama_members).filter(
+            chama_members.c.user_id == user_id,
+            chama_members.c.chama_id == chama_id
+        ).first()
+        
+        if not membership:
+            return jsonify({'success': False, 'message': 'User is not a member of this chama'}), 404
+        
+        # Update the role
+        db.session.execute(
+            chama_members.update().where(
+                and_(
+                    chama_members.c.user_id == user_id,
+                    chama_members.c.chama_id == chama_id
+                )
+            ).values(role=new_role)
+        )
+        
+        # Create notification for the appointed user
+        user = User.query.get(user_id)
+        chama = Chama.query.get(chama_id)
+        
+        from app.models.notification import Notification
+        notification = Notification(
+            user_id=user_id,
+            chama_id=chama_id,
+            title=f"🎉 Role Appointment in {chama.name}",
+            message=f"You have been appointed as {new_role.title()} in {chama.name}. You now have access to {new_role}-specific features.",
+            type='system'
+        )
+        db.session.add(notification)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'{user.username} has been appointed as {new_role.title()}'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@chama_bp.route('/<int:chama_id>/download/members')
+@login_required
+@chama_admin_required
+def download_members(chama_id):
+    """Download members list as CSV"""
+    import csv
+    import io
+    from flask import make_response
+    
+    chama = Chama.query.get_or_404(chama_id)
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow(['Name', 'Email', 'Role', 'Joined Date', 'Phone'])
+    
+    # Get members with roles
+    members_data = chama.get_members_with_roles()
+    for member_data in members_data:
+        user = member_data['user']
+        writer.writerow([
+            user.username,
+            user.email,
+            member_data['role'].title(),
+            member_data['joined_at'].strftime('%Y-%m-%d') if member_data['joined_at'] else 'N/A',
+            getattr(user, 'phone', 'N/A')
+        ])
+    
+    output.seek(0)
+    
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Disposition'] = f'attachment; filename={chama.name}_members.csv'
+    
+    return response
+
+@chama_bp.route('/<int:chama_id>/download/transactions')
+@login_required
+@chama_admin_required
+def download_transactions(chama_id):
+    """Download transactions as CSV"""
+    import csv
+    import io
+    from flask import make_response
+    
+    chama = Chama.query.get_or_404(chama_id)
+    
+    # Get all transactions for this chama
+    transactions = Transaction.query.filter_by(chama_id=chama_id).order_by(desc(Transaction.created_at)).all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow(['Date', 'Type', 'Amount', 'Member', 'Description', 'Status'])
+    
+    for transaction in transactions:
+        writer.writerow([
+            transaction.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            transaction.type.title(),
+            transaction.amount,
+            transaction.user.username,
+            transaction.description or 'N/A',
+            transaction.status or 'completed'
+        ])
+    
+    output.seek(0)
+    
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Disposition'] = f'attachment; filename={chama.name}_transactions.csv'
+    
+    return response
+
+@chama_bp.route('/<int:chama_id>/download/financial-report')
+@login_required
+@chama_member_required
+def download_financial_report(chama_id):
+    """Download comprehensive financial report as PDF"""
+    import io
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+    from flask import send_file
+    
+    chama = Chama.query.get_or_404(chama_id)
+    user_role = current_user.get_chama_role(chama_id)
+    
+    # Only admins and treasurers can download full financial reports
+    if user_role not in ['creator', 'admin', 'treasurer']:
+        flash('Access denied. Only admins and treasurers can download financial reports.', 'error')
+        return redirect(url_for('chama.chama_detail', chama_id=chama_id))
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Title
+    title = Paragraph(f"<b>Financial Report - {chama.name}</b>", styles['Title'])
+    elements.append(title)
+    elements.append(Spacer(1, 20))
+    
+    # Summary statistics
+    total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
+        Transaction.chama_id == chama_id,
+        Transaction.type == 'contribution'
+    ).scalar() or 0
+    
+    total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
+        Transaction.chama_id == chama_id,
+        Transaction.type == 'loan'
+    ).scalar() or 0
+    
+    summary_data = [
+        ['Financial Summary', ''],
+        ['Total Balance', f'KES {chama.total_balance:,.2f}'],
+        ['Total Contributions', f'KES {total_contributions:,.2f}'],
+        ['Total Loans', f'KES {total_loans:,.2f}'],
+        ['Monthly Target', f'KES {chama.monthly_contribution:,.2f}'],
+        ['Number of Members', str(chama.member_count)]
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[200, 200])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    
+    elements.append(summary_table)
+    elements.append(Spacer(1, 30))
+    
+    # Recent transactions
+    recent_transactions = Transaction.query.filter(
+        Transaction.chama_id == chama_id
+    ).order_by(desc(Transaction.created_at)).limit(20).all()
+    
+    if recent_transactions:
+        elements.append(Paragraph("<b>Recent Transactions</b>", styles['Heading2']))
+        elements.append(Spacer(1, 10))
+        
+        transaction_data = [['Date', 'Type', 'Amount', 'Member']]
+        for transaction in recent_transactions:
+            transaction_data.append([
+                transaction.created_at.strftime('%Y-%m-%d'),
+                transaction.type.title(),
+                f'KES {transaction.amount:,.2f}',
+                transaction.user.username
+            ])
+        
+        transaction_table = Table(transaction_data, colWidths=[100, 80, 100, 120])
+        transaction_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        elements.append(transaction_table)
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    filename = f"{chama.name}_financial_report_{datetime.now().strftime('%Y%m%d')}.pdf"
+    return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 def get_user_chama_role(user_id, chama_id):
     """Get the role of a user in a specific chama"""

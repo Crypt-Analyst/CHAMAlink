@@ -28,6 +28,10 @@ class Chama(db.Model):
     # Many-to-many relationship with users
     members = db.relationship('User', secondary='chama_members', backref='chamas')
     
+    # Currency settings
+    base_currency = db.Column(db.String(3), default='KES')  # Chama's base currency
+    multi_currency_enabled = db.Column(db.Boolean, default=False)  # Allow multiple currencies
+    
     def __repr__(self):
         return f'<Chama {self.name}>'
     
@@ -184,6 +188,7 @@ class Contribution(db.Model):
     type = db.Column(db.String(50), nullable=False)  # contribution, shares, loan_repayment, etc.
     description = db.Column(db.Text)
     transaction_id = db.Column(db.String(100))  # M-Pesa transaction ID
+    payment_method = db.Column(db.String(20), default='mpesa')  # mpesa, bank_transfer, cash
     status = db.Column(db.String(20), default='pending')  # pending, confirmed, failed
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     confirmed_at = db.Column(db.DateTime)
@@ -191,6 +196,11 @@ class Contribution(db.Model):
     # Relationships
     chama = db.relationship('Chama', backref='contributions')
     user = db.relationship('User', backref='contributions')
+    
+    # Currency fields
+    currency = db.Column(db.String(3), default='KES')  # ISO currency code
+    exchange_rate = db.Column(db.Float, default=1.0)  # Rate at time of transaction
+    original_amount = db.Column(db.Float)  # Amount in original currency
     
     def __repr__(self):
         return f'<Contribution {self.user.username} - {self.amount} to {self.chama.name}>'
@@ -220,6 +230,10 @@ class Loan(db.Model):
     chama = db.relationship('Chama', backref='loans')
     user = db.relationship('User', backref='loans')
     multi_sig_transaction = db.relationship('MultiSignatureTransaction', backref='related_loans')
+    
+    # Currency fields
+    currency = db.Column(db.String(3), default='KES')  # ISO currency code
+    exchange_rate = db.Column(db.Float, default=1.0)  # Rate at time of loan
     
     @property
     def total_amount_due(self):
@@ -282,6 +296,10 @@ class LoanPayment(db.Model):
     # Relationships
     loan = db.relationship('Loan', backref='payments')
     
+    # Currency fields
+    currency = db.Column(db.String(3), default='KES')  # ISO currency code
+    exchange_rate = db.Column(db.Float, default=1.0)  # Rate at time of payment
+    
     def __repr__(self):
         return f'<LoanPayment {self.amount} for loan {self.loan_id}>'
 
@@ -299,6 +317,10 @@ class PenaltyPayment(db.Model):
     # Relationships
     penalty = db.relationship('Penalty', backref='payments')
     
+    # Currency fields
+    currency = db.Column(db.String(3), default='KES')  # ISO currency code
+    exchange_rate = db.Column(db.Float, default=1.0)  # Rate at time of payment
+    
     def __repr__(self):
         return f'<PenaltyPayment {self.amount} for penalty {self.penalty_id}>'
 
@@ -310,6 +332,8 @@ class Transaction(db.Model):
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text)
     status = db.Column(db.String(20), default='completed')  # pending, completed, failed
+    payment_method = db.Column(db.String(20), default='mpesa')  # mpesa, bank_transfer, cash
+    transaction_id = db.Column(db.String(100))  # M-Pesa receipt or bank reference
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Foreign keys
@@ -319,6 +343,11 @@ class Transaction(db.Model):
     # Relationships
     user = db.relationship('User', backref='transactions')
     chama = db.relationship('Chama', backref='transactions')
+    
+    # Currency fields
+    currency = db.Column(db.String(3), default='KES')  # ISO currency code
+    exchange_rate = db.Column(db.Float, default=1.0)  # Rate at time of transaction
+    original_amount = db.Column(db.Float)  # Amount in original currency
     
     def __repr__(self):
         return f'<Transaction {self.type}: {self.amount}>'
@@ -397,6 +426,10 @@ class LoanApplication(db.Model):
     chama = db.relationship('Chama', backref='loan_applications')
     approvals = db.relationship('LoanApproval', backref='loan_application', cascade='all, delete-orphan')
     
+    # Currency fields
+    currency = db.Column(db.String(3), default='KES')  # ISO currency code
+    exchange_rate = db.Column(db.Float, default=1.0)  # Rate at time of application
+    
     @property
     def formatted_amount(self):
         return f"KES {self.amount:,.0f}"
@@ -456,6 +489,10 @@ class Penalty(db.Model):
     # Relationships
     user = db.relationship('User', backref='penalties')
     chama = db.relationship('Chama', backref='penalties')
+    
+    # Currency fields
+    currency = db.Column(db.String(3), default='KES')  # ISO currency code
+    exchange_rate = db.Column(db.Float, default=1.0)  # Rate at time of penalty
     
     @property
     def formatted_amount(self):
@@ -649,7 +686,7 @@ class Receipt(db.Model):
     mpesa_transaction = db.relationship('MpesaTransaction', backref='receipts')
     
     def __repr__(self):
-        return f'<Receipt {self.receipt_number}>'
+        return f'<Receipt {self.receipt_number}'
 
 class RecurringPayment(db.Model):
     __tablename__ = 'recurring_payments'

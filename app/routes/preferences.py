@@ -13,7 +13,7 @@ from app import db
 
 preferences_bp = Blueprint('preferences', __name__, url_prefix='/preferences')
 
-@preferences_bp.route('/language/<language_code>')
+@preferences_bp.route('/language/<language_code>', methods=['GET', 'POST'])
 def change_language(language_code):
     """Change language and redirect back"""
     if set_language(language_code):
@@ -25,7 +25,11 @@ def change_language(language_code):
             except:
                 db.session.rollback()
     
-    # Redirect back to previous page or dashboard
+    # Return JSON response for AJAX requests
+    if request.method == 'POST':
+        return jsonify({'success': True, 'language': language_code})
+    
+    # Redirect back to previous page or dashboard for GET requests
     return redirect(request.referrer or url_for('main.dashboard'))
 
 @preferences_bp.route('/theme/<theme_name>')

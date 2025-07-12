@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - ChamaLink</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f4f4f4; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 20px auto; 
+            background: #fff; 
+            border-radius: 10px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+        }
+        .header { 
+            background: linear-gradient(135deg, #2E7D32, #4CAF50); 
+            color: white; 
+            padding: 30px 20px; 
+            text-align: center; 
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 24px; 
+            font-weight: 300; 
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+        .priority-info { background-color: #2196F3; }
+        .priority-warning { background-color: #FF9800; }
+        .priority-urgent { background-color: #F44336; }
+        .content { 
+            padding: 30px; 
+        }
+        .notice-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+            padding-left: 15px;
+        }
+        .message {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+        .footer { 
+            background: #f8f8f8; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 14px; 
+            color: #666; 
+            border-top: 1px solid #eee; 
+        }
+        .btn {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .social-links {
+            margin-top: 15px;
+        }
+        .social-links a {
+            color: #4CAF50;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        @media (max-width: 600px) {
+            .container { margin: 10px; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📢 ChamaLink Platform Notice</h1>
+            <div class="priority-badge priority-{{ priority }}">
+                {{ priority.upper() }} PRIORITY
+            </div>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ user.first_name or user.username }},</p>
+            
+            <div class="notice-title">{{ title }}</div>
+            
+            <div class="message">{{ message }}</div>
+            
+            <p>This notice has been sent to all chama creators on the ChamaLink platform. 
+               Please take any necessary actions as indicated above.</p>
+            
+            <a href="{{ url_for('main.dashboard', _external=True) }}" class="btn">
+                View Your Dashboard
+            </a>
+            
+            <p><strong>Important:</strong> If you have any questions or concerns about this notice, 
+               please contact our support team immediately.</p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>ChamaLink Platform</strong><br>
+               Building stronger communities through technology</p>
+            
+            <div class="social-links">
+                <a href="{{ url_for('main.contact', _external=True) }}">Contact Support</a> |
+                <a href="{{ url_for('main.dashboard', _external=True) }}">Dashboard</a> |
+                <a href="{{ url_for('main.home', _external=True) }}">Platform Home</a>
+            </div>
+            
+            <p style="font-size: 12px; color: #999; margin-top: 20px;">
+                You received this email because you are a chama creator on ChamaLink.<br>
+                This is an important platform notice from the ChamaLink administration team.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
