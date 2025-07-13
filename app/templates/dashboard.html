@@ -104,7 +104,7 @@
                             <!-- Dynamic Chama Cards -->
                             {% for chama in user_chamas %}
                             <div class="col-md-6">
-                                <div class="chama-card chama-branded-card clickable-chama" data-chama-id="{{ chama.id }}" onclick="viewChamaDetails({{ chama.id }})" style="cursor: pointer;">
+                                <div class="chama-card chama-branded-card clickable-chama" data-chama-id="{{ chama.id }}" style="cursor: pointer;">
                                     <div class="chama-header">
                                         <div class="d-flex align-items-center justify-content-between mb-2">
                                             <div class="d-flex align-items-center">
@@ -476,6 +476,25 @@
 </div>
 
 <script>
+// Add click handler for chama cards navigation (Fix Issue #1)
+document.addEventListener('DOMContentLoaded', function() {
+    // Make chama cards clickable
+    const chamaCards = document.querySelectorAll('.clickable-chama');
+    chamaCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't navigate if clicking on buttons
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                return;
+            }
+            
+            const chamaId = this.getAttribute('data-chama-id');
+            if (chamaId) {
+                window.location.href = `/chama/${chamaId}`;
+            }
+        });
+    });
+});
+
 function createChama() {
     const formData = {
         name: document.getElementById('chamaName').value,
@@ -496,7 +515,7 @@ function createChama() {
         return;
     }
     
-    fetch('/create_chama', {
+    fetch('/chama/create', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

@@ -198,6 +198,51 @@
     color: white;
 }
 
+/* Fix for text wrapping and container overflow */
+.video-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+}
+
+.scene-item {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.scene-item h5,
+.scene-item p {
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+    
+    .scene-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .scene-number {
+        margin-bottom: 1rem;
+        margin-right: 0 !important;
+    }
+}
+
 .video-container {
     background: #000;
     border-radius: 15px;
@@ -250,20 +295,74 @@
 @media (max-width: 768px) {
     .hero-video-section h1 {
         font-size: 2rem;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-video-section .lead {
+        font-size: 1.1rem;
+        line-height: 1.4;
+        margin-bottom: 2rem;
     }
     
     .scene-item {
         flex-direction: column;
         text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .scene-item h5 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .scene-item p {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        padding: 0 1rem;
     }
     
     .scene-number {
         margin-bottom: 1rem;
         margin-right: 0 !important;
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1rem;
     }
     
     .story-scenes::before {
         display: none;
+    }
+    
+    .video-overlay {
+        padding: 1rem !important;
+    }
+    
+    .video-overlay h6 {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .video-overlay small {
+        font-size: 0.75rem;
+    }
+    
+    .cta-buttons .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .social-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .social-buttons .btn {
+        flex: 1;
+        min-width: calc(50% - 0.25rem);
+        margin: 0;
     }
 }
 </style>

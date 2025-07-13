@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Compliance Dashboard - CHAMAlink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 text-primary">
+                <i class="fas fa-shield-alt me-2"></i>
+                Compliance Dashboard
+            </h1>
+            <p class="text-muted">KYC automation, regulatory reporting, and compliance monitoring</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary" onclick="runComplianceCheck()">
+                <i class="fas fa-search me-1"></i> Run Compliance Check
+            </button>
+        </div>
+    </div>
+
+    <!-- Compliance Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">{{ compliance_stats.total_users or 0 }}</h3>
+                        <p class="mb-0">Total Users</p>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">{{ compliance_stats.verified_users or 0 }}</h3>
+                        <p class="mb-0">KYC Verified</p>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-user-check fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">{{ compliance_stats.pending_verification or 0 }}</h3>
+                        <p class="mb-0">Pending Verification</p>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-clock fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">{{ compliance_stats.kyc_completion_rate or 0 }}%</h3>
+                        <p class="mb-0">KYC Completion Rate</p>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-chart-line fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Status Grid -->
+    <div class="row mb-4">
+        {% for key, status in compliance_status.items() %}
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ status.description }}</h6>
+                    </div>
+                    <div>
+                        {% if status.status == 'active' %}
+                        <span class="badge bg-success">Active</span>
+                        {% elif status.status == 'compliant' %}
+                        <span class="badge bg-primary">Compliant</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ status.status.title() }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if key == 'kyc_automation' %}
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" style="width: {{ status.compliance_rate }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ status.compliance_rate }}% completion rate</small>
+                    {% elif key == 'aml_monitoring' %}
+                    <p class="mb-1"><strong>Active Alerts:</strong> {{ status.alerts_count }}</p>
+                    <small class="text-muted">Monitoring for suspicious transactions</small>
+                    {% elif key == 'regulatory_reporting' %}
+                    <p class="mb-1"><strong>Last Report:</strong> {{ status.last_report.strftime('%Y-%m-%d') if status.last_report else 'N/A' }}</p>
+                    <small class="text-muted">Automated regulatory compliance reports</small>
+                    {% elif key == 'data_protection' %}
+                    <p class="mb-1"><strong>Encryption:</strong> {{ status.encryption_status.title() }}</p>
+                    <small class="text-muted">GDPR and local data protection compliance</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-shield me-2"></i>
+                        KYC Management
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Review and manage user KYC verifications</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('compliance.kyc_verification') }}" class="btn btn-primary">
+                            <i class="fas fa-eye me-1"></i> Review KYC
+                        </a>
+                        <button class="btn btn-outline-primary" onclick="downloadKycReport()">
+                            <i class="fas fa-download me-1"></i> Export KYC Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Regulatory Reports
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Generate and manage compliance reports</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('compliance.regulatory_reports') }}" class="btn btn-success">
+                            <i class="fas fa-chart-bar me-1"></i> View Reports
+                        </a>
+                        <button class="btn btn-outline-success" onclick="generateReport('user_registration')">
+                            <i class="fas fa-file-plus me-1"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        AML Monitoring
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Anti-money laundering transaction monitoring</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('compliance.aml_monitoring') }}" class="btn btn-warning">
+                            <i class="fas fa-search me-1"></i> AML Dashboard
+                        </a>
+                        <button class="btn btn-outline-warning" onclick="generateReport('transaction_monitoring')">
+                            <i class="fas fa-list me-1"></i> Transaction Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Check Results Modal -->
+    <div class="modal fade" id="complianceResultModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Compliance Check Results</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="complianceResults">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Running compliance check...</span>
+                        </div>
+                        <p class="mt-2">Running compliance check...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function runComplianceCheck() {
+    const modal = new bootstrap.Modal(document.getElementById('complianceResultModal'));
+    modal.show();
+    
+    fetch('/compliance/api/compliance-check', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({check_type: 'full'})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayComplianceResults(data.results);
+        } else {
+            document.getElementById('complianceResults').innerHTML = 
+                `<div class="alert alert-danger">Error: ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        document.getElementById('complianceResults').innerHTML = 
+            `<div class="alert alert-danger">Error running compliance check: ${error}</div>`;
+    });
+}
+
+function displayComplianceResults(results) {
+    let html = `
+        <div class="alert alert-${results.overall_status === 'compliant' ? 'success' : 'warning'}">
+            <h6><i class="fas fa-chart-line me-2"></i>Compliance Score: ${results.compliance_score}%</h6>
+            <p class="mb-0">Status: ${results.overall_status.replace('_', ' ').toUpperCase()}</p>
+        </div>
+    `;
+    
+    if (results.issues_found.length > 0) {
+        html += '<h6>Issues Found:</h6><ul class="list-group mb-3">';
+        results.issues_found.forEach(issue => {
+            html += `
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1">${issue.description}</h6>
+                        <p class="mb-1">${issue.action_required}</p>
+                        <small class="text-muted">Type: ${issue.type} | Severity: ${issue.severity}</small>
+                    </div>
+                    <span class="badge bg-${issue.severity === 'high' ? 'danger' : 'warning'}">
+                        ${issue.severity.toUpperCase()}
+                    </span>
+                </li>
+            `;
+        });
+        html += '</ul>';
+    }
+    
+    if (results.recommendations.length > 0) {
+        html += '<h6>Recommendations:</h6><ul class="list-group">';
+        results.recommendations.forEach(rec => {
+            html += `
+                <li class="list-group-item">
+                    <strong>${rec.description}</strong><br>
+                    <small class="text-muted">Action: ${rec.action}</small>
+                </li>
+            `;
+        });
+        html += '</ul>';
+    }
+    
+    document.getElementById('complianceResults').innerHTML = html;
+}
+
+function generateReport(reportType) {
+    window.open(`/compliance/reports/generate/${reportType}`, '_blank');
+}
+
+function downloadKycReport() {
+    window.open('/compliance/reports/export/kyc_compliance', '_blank');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{
+  "timestamp": "2025-07-12T16:41:26.264851",
+  "results": [
+    {
+      "test_name": "Database Connectivity",
+      "status": "FAIL",
+      "error": "(psycopg2.errors.UndefinedColumn) column users.mobile_device_id does not exist\nLINE 2: ... AS users_city, users.timezone AS users_timezone, users.mobi...\n                                                             ^\n\n[SQL: SELECT count(*) AS count_1 \nFROM (SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.phone_number AS users_phone_number, users.password_hash AS users_password_hash, users.role AS users_role, users.is_super_admin AS users_is_super_admin, users.first_name AS users_first_name, users.last_name AS users_last_name, users.date_of_birth AS users_date_of_birth, users.national_id AS users_national_id, users.passport_number AS users_passport_number, users.is_email_verified AS users_is_email_verified, users.is_documents_verified AS users_is_documents_verified, users.failed_login_attempts AS users_failed_login_attempts, users.locked_until AS users_locked_until, users.password_reset_token AS users_password_reset_token, users.password_reset_expires AS users_password_reset_expires, users.is_minor AS users_is_minor, users.guardian_name AS users_guardian_name, users.guardian_phone AS users_guardian_phone, users.guardian_id AS users_guardian_id, users.guardian_relationship AS users_guardian_relationship, users.created_at AS users_created_at, users.last_login AS users_last_login, users.is_active AS users_is_active, users.updated_at AS users_updated_at, users.preferred_language AS users_preferred_language, users.preferred_theme AS users_preferred_theme, users.preferred_font AS users_preferred_font, users.preferred_currency AS users_preferred_currency, users.country_code AS users_country_code, users.country_name AS users_country_name, users.city AS users_city, users.timezone AS users_timezone, users.mobile_device_id AS users_mobile_device_id, users.mobile_device_token AS users_mobile_device_token, users.mobile_device_type AS users_mobile_device_type, users.last_mobile_sync AS users_last_mobile_sync \nFROM users) AS anon_1]\n(Background on this error at: https://sqlalche.me/e/20/f405)"
+    },
+    {
+      "test_name": "Authentication System",
+      "status": "PASS"
+    },
+    {
+      "test_name": "User Management",
+      "status": "FAIL",
+      "error": "(psycopg2.errors.UndefinedColumn) column users.mobile_device_id does not exist\nLINE 1: ... AS users_city, users.timezone AS users_timezone, users.mobi...\n                                                             ^\n\n[SQL: SELECT users.id AS users_id, users.username AS users_username, users.email AS users_email, users.phone_number AS users_phone_number, users.password_hash AS users_password_hash, users.role AS users_role, users.is_super_admin AS users_is_super_admin, users.first_name AS users_first_name, users.last_name AS users_last_name, users.date_of_birth AS users_date_of_birth, users.national_id AS users_national_id, users.passport_number AS users_passport_number, users.is_email_verified AS users_is_email_verified, users.is_documents_verified AS users_is_documents_verified, users.failed_login_attempts AS users_failed_login_attempts, users.locked_until AS users_locked_until, users.password_reset_token AS users_password_reset_token, users.password_reset_expires AS users_password_reset_expires, users.is_minor AS users_is_minor, users.guardian_name AS users_guardian_name, users.guardian_phone AS users_guardian_phone, users.guardian_id AS users_guardian_id, users.guardian_relationship AS users_guardian_relationship, users.created_at AS users_created_at, users.last_login AS users_last_login, users.is_active AS users_is_active, users.updated_at AS users_updated_at, users.preferred_language AS users_preferred_language, users.preferred_theme AS users_preferred_theme, users.preferred_font AS users_preferred_font, users.preferred_currency AS users_preferred_currency, users.country_code AS users_country_code, users.country_name AS users_country_name, users.city AS users_city, users.timezone AS users_timezone, users.mobile_device_id AS users_mobile_device_id, users.mobile_device_token AS users_mobile_device_token, users.mobile_device_type AS users_mobile_device_type, users.last_mobile_sync AS users_last_mobile_sync \nFROM users \n LIMIT %(param_1)s]\n[parameters: {'param_1': 1}]\n(Background on this error at: https://sqlalche.me/e/20/f405)"
+    },
+    {
+      "test_name": "Multi-Currency System",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Country System",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Chama Management",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Security Features",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Subscription System",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Payment Integration",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Notification System",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Reporting System",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Mobile API",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Advanced Analytics",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Third-party Integrations",
+      "status": "PASS"
+    },
+    {
+      "test_name": "Compliance System",
+      "status": "PASS"
+    }
+  ]
+}

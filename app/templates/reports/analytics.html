@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - {{ chama.name }} - CHAMAlink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-chart-bar me-2"></i>{{ chama.name }} Analytics
+                    </h2>
+                    <p class="text-muted mb-0">Financial insights and performance metrics</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Chama
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">KES {{ "{:,.0f}".format(analytics.summary.total_contributions) }}</h4>
+                            <small class="opacity-75">Total Contributions</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-piggy-bank fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">KES {{ "{:,.0f}".format(analytics.summary.current_balance) }}</h4>
+                            <small class="opacity-75">Current Balance</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-wallet fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">{{ analytics.summary.member_count }}</h4>
+                            <small class="opacity-75">Total Members</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-0">{{ analytics.summary.new_members_month }}</h4>
+                            <small>New Members (30 days)</small>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-user-plus fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Contribution Trends -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Contribution Trends (Last 6 Months)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="contributionChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Member Activity -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-chart me-2"></i>Top Contributors
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="memberChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Activity Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>Member Activity Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Total Contributed</th>
+                                    <th>Transactions</th>
+                                    <th>Average per Transaction</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in analytics.member_activity %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar bg-primary text-white rounded-circle me-2">
+                                                {{ member.name[0].upper() }}
+                                            </div>
+                                            <span>{{ member.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-success">KES {{ "{:,.0f}".format(member.total) }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ member.transactions }}</span>
+                                    </td>
+                                    <td>KES {{ "{:,.0f}".format(member.total / member.transactions if member.transactions > 0 else 0) }}</td>
+                                    <td>
+                                        {% set performance = (member.total / analytics.summary.total_contributions * 100) if analytics.summary.total_contributions > 0 else 0 %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-success" style="width: {{ performance }}%">
+                                                {{ "%.1f"|format(performance) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not analytics.member_activity %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle me-2"></i>No contribution data available yet
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Contribution Trends Chart
+const contributionCtx = document.getElementById('contributionChart').getContext('2d');
+const contributionChart = new Chart(contributionCtx, {
+    type: 'line',
+    data: {
+        labels: {{ analytics.monthly_contributions|map(attribute='month')|list|tojson }},
+        datasets: [{
+            label: 'Monthly Contributions (KES)',
+            data: {{ analytics.monthly_contributions|map(attribute='total')|list|tojson }},
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return 'KES ' + value.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Member Activity Chart
+const memberCtx = document.getElementById('memberChart').getContext('2d');
+const topMembers = {{ analytics.member_activity[:5]|tojson }};
+
+const memberChart = new Chart(memberCtx, {
+    type: 'doughnut',
+    data: {
+        labels: topMembers.map(m => m.name),
+        datasets: [{
+            data: topMembers.map(m => m.total),
+            backgroundColor: [
+                '#0d6efd',
+                '#198754',
+                '#ffc107',
+                '#dc3545',
+                '#6f42c1'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.label + ': KES ' + context.parsed.toLocaleString();
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+
+<style>
+.avatar {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+</style>
+{% endblock %}

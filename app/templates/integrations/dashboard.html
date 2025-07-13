@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Third-party Integrations - CHAMAlink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 text-primary">
+                <i class="fas fa-plug me-2"></i>
+                Third-party Integrations
+            </h1>
+            <p class="text-muted">Connect CHAMAlink with banking APIs, accounting software, and payment gateways</p>
+        </div>
+    </div>
+
+    <!-- Integration Categories -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="btn-group" role="group" aria-label="Integration categories">
+                <button type="button" class="btn btn-outline-primary active" onclick="filterIntegrations('all')">
+                    All Integrations
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="filterIntegrations('banking')">
+                    Banking
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="filterIntegrations('accounting')">
+                    Accounting
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="filterIntegrations('payment')">
+                    Payment
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="filterIntegrations('communication')">
+                    Communication
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Integrations Grid -->
+    <div class="row" id="integrationsGrid">
+        {% for integration in integrations %}
+        <div class="col-lg-4 col-md-6 mb-4 integration-card" data-type="{{ integration.type }}">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">{{ integration.name }}</h6>
+                    </div>
+                    <div>
+                        {% if integration.status == 'available' %}
+                        <span class="badge bg-success">Available</span>
+                        {% elif integration.status == 'beta' %}
+                        <span class="badge bg-warning">Beta</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ integration.status.title() }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ integration.description }}</p>
+                    
+                    <h6 class="small text-muted mb-2">Features:</h6>
+                    <ul class="list-unstyled">
+                        {% for feature in integration.features %}
+                        <li class="small">
+                            <i class="fas fa-check text-success me-1"></i>
+                            {{ feature }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-footer bg-transparent">
+                    {% if integration.type == 'banking' %}
+                    <button class="btn btn-primary btn-sm w-100" onclick="connectBanking('{{ integration.id }}')">
+                        <i class="fas fa-link me-1"></i> Connect
+                    </button>
+                    {% elif integration.type == 'accounting' %}
+                    <button class="btn btn-success btn-sm w-100" onclick="connectAccounting('{{ integration.id }}')">
+                        <i class="fas fa-calculator me-1"></i> Connect
+                    </button>
+                    {% elif integration.type == 'payment' %}
+                    <button class="btn btn-warning btn-sm w-100" onclick="connectPayment('{{ integration.id }}')">
+                        <i class="fas fa-credit-card me-1"></i> Setup
+                    </button>
+                    {% elif integration.type == 'communication' %}
+                    <button class="btn btn-info btn-sm w-100" onclick="connectCommunication('{{ integration.id }}')">
+                        <i class="fas fa-comments me-1"></i> Enable
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Connected Integrations -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3 class="mb-3">Connected Integrations</h3>
+            <div class="card">
+                <div class="card-body">
+                    <div id="connectedIntegrations">
+                        <p class="text-muted text-center">No integrations connected yet. Connect integrations above to see them here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Banking Connection Modal -->
+<div class="modal fade" id="bankingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Connect Banking API</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bankingForm">
+                    <div class="mb-3">
+                        <label for="apiKey" class="form-label">API Key</label>
+                        <input type="text" class="form-control" id="apiKey" required>
+                        <div class="form-text">Your banking API key from the bank's developer portal</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="secretKey" class="form-label">Secret Key</label>
+                        <input type="password" class="form-control" id="secretKey" required>
+                        <div class="form-text">Keep this secure and never share it</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitBankingConnection()">Connect</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Gateway Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Setup Payment Gateway</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentForm">
+                    <div class="mb-3">
+                        <label for="publicKey" class="form-label">Public Key</label>
+                        <input type="text" class="form-control" id="publicKey" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="secretKeyPayment" class="form-label">Secret Key</label>
+                        <input type="password" class="form-control" id="secretKeyPayment" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="webhookUrl" class="form-label">Webhook URL</label>
+                        <input type="url" class="form-control" id="webhookUrl" placeholder="https://yourdomain.com/webhook">
+                        <div class="form-text">URL to receive payment notifications</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="submitPaymentConnection()">Setup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentBankingProvider = '';
+let currentPaymentProvider = '';
+
+function filterIntegrations(type) {
+    const cards = document.querySelectorAll('.integration-card');
+    const buttons = document.querySelectorAll('.btn-group button');
+    
+    // Update button states
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Filter cards
+    cards.forEach(card => {
+        if (type === 'all' || card.dataset.type === type) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function connectBanking(providerId) {
+    currentBankingProvider = providerId;
+    const modal = new bootstrap.Modal(document.getElementById('bankingModal'));
+    modal.show();
+}
+
+function connectAccounting(providerId) {
+    if (providerId === 'quickbooks') {
+        // Redirect to OAuth flow
+        window.location.href = '/integrations/accounting/quickbooks/oauth';
+    } else if (providerId === 'xero') {
+        alert('Xero integration will be redirected to OAuth flow');
+    }
+}
+
+function connectPayment(providerId) {
+    currentPaymentProvider = providerId;
+    const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    modal.show();
+}
+
+function connectCommunication(providerId) {
+    if (providerId === 'whatsapp_business') {
+        alert('WhatsApp Business API integration requires approval from Meta. Please contact support.');
+    } else if (providerId === 'telegram_bot') {
+        alert('Telegram bot integration is available. Please contact support for setup instructions.');
+    }
+}
+
+function submitBankingConnection() {
+    const apiKey = document.getElementById('apiKey').value;
+    const secretKey = document.getElementById('secretKey').value;
+    
+    if (!apiKey || !secretKey) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    fetch('/integrations/banking/equity/connect', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            api_key: apiKey,
+            secret_key: secretKey
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Banking API connected successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('bankingModal')).hide();
+            updateConnectedIntegrations();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Connection failed: ' + error);
+    });
+}
+
+function submitPaymentConnection() {
+    const publicKey = document.getElementById('publicKey').value;
+    const secretKey = document.getElementById('secretKeyPayment').value;
+    
+    if (!publicKey || !secretKey) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    fetch('/integrations/payment/flutterwave/setup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            public_key: publicKey,
+            secret_key: secretKey
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Payment gateway configured successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+            updateConnectedIntegrations();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Setup failed: ' + error);
+    });
+}
+
+function updateConnectedIntegrations() {
+    // This would fetch actual connected integrations from the server
+    const connectedDiv = document.getElementById('connectedIntegrations');
+    connectedDiv.innerHTML = `
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Equity Bank API</h6>
+                                <small class="text-muted">Connected and active</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-success">Connected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Flutterwave</h6>
+                                <small class="text-muted">Payment gateway configured</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-warning">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

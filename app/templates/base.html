@@ -244,6 +244,155 @@
             background: rgba(13, 110, 253, 0.1);
             transform: translateY(-2px);
         }
+
+        /* Floating Feedback Button Styles */
+        .feedback-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 90px;
+            right: 20px;
+            background-color: #ff6b6b;
+            color: white;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 24px;
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            animation: pulse-feedback 3s infinite;
+        }
+
+        .feedback-float:hover {
+            background-color: #ff5252;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .feedback-tooltip {
+            position: absolute;
+            right: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .feedback-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent transparent #333;
+        }
+
+        .feedback-float:hover .feedback-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Rating Stars Styles */
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .rating-stars .star {
+            font-size: 24px;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .rating-stars .star:hover,
+        .rating-stars .star.active {
+            color: #ffc107;
+        }
+        
+        .rating-stars .star:hover ~ .star {
+            color: #ddd;
+        }
+
+        @keyframes pulse-feedback {
+            0% {
+                box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 16px rgba(255, 107, 107, 0.6), 0 0 0 10px rgba(255, 107, 107, 0.1);
+            }
+            100% {
+                box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .feedback-float {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 80px;
+                right: 15px;
+            }
+            
+            .feedback-tooltip {
+                display: none;
+            }
+        }
+
+        /* Modal Styles */
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+        }
+        
+        .btn-close {
+            filter: brightness(0) invert(1);
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.2rem rgba(103, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6dbf 0%, #6f5491 100%);
+        }
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -352,24 +501,6 @@
                             <!-- Chama Management -->
                             <li><div class="dropdown-divider"></div></li>
                             <li><h6 class="dropdown-header">Chama Management</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}">
-                                <i class="fas fa-users"></i>My Chamas
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('chama.search_chamas') }}">
-                                <i class="fas fa-search"></i>Search & Join Chamas
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('chama.create_chama') }}">
-                                <i class="fas fa-plus-circle"></i>Create New Chama
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('membership.membership_requests') }}">
-                                <i class="fas fa-user-plus"></i>Membership Requests
-                            </a></li>
-
-                            <!-- Financial Services -->
-                            <li><div class="dropdown-divider"></div></li>
-                            <li><h6 class="dropdown-header">Financial Services</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('loans.loan_dashboard') }}">
-                                <i class="fas fa-coins"></i>Loans & Credit
                             </a></li>
                             <li><a class="dropdown-item" href="{{ url_for('penalties.penalty_dashboard') }}">
                                 <i class="fas fa-gavel"></i>Penalties
@@ -566,6 +697,211 @@
         </div>
     </div>
 </footer>
+
+<!-- Floating Chat Button -->
+<div class="floating-chat-btn" id="floating-chat-btn">
+    <a href="{{ url_for('main.chat') }}" class="btn btn-primary rounded-circle shadow-lg" 
+       style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; text-decoration: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000; transition: all 0.3s ease;">
+        <i class="fas fa-comments fa-lg text-white"></i>
+    </a>
+</div>
+
+<style>
+.floating-chat-btn:hover a {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.floating-chat-btn a:hover {
+    text-decoration: none !important;
+}
+
+@media (max-width: 768px) {
+    .floating-chat-btn a {
+        width: 50px;
+        height: 50px;
+        bottom: 15px;
+        right: 15px;
+    }
+}
+</style>
+
+<!-- Floating WhatsApp Support Button -->
+<div class="whatsapp-float" onclick="openWhatsAppSupport()">
+    <i class="fab fa-whatsapp"></i>
+    <span class="whatsapp-tooltip">Need Help? Chat with us!</span>
+</div>
+
+<style>
+.whatsapp-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 20px;
+    right: 20px;
+    background-color: #25d366;
+    color: white;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 24px;
+    box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    animation: pulse-whatsapp 2s infinite;
+}
+
+.whatsapp-float:hover {
+    background-color: #20c55a;
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.6);
+}
+
+.whatsapp-tooltip {
+    position: absolute;
+    right: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.whatsapp-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent #333;
+}
+
+.whatsapp-float:hover .whatsapp-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+@keyframes pulse-whatsapp {
+    0% {
+        box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 16px rgba(37, 211, 102, 0.6), 0 0 0 10px rgba(37, 211, 102, 0.1);
+    }
+    100% {
+        box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    }
+}
+
+@media (max-width: 768px) {
+    .whatsapp-float {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    .whatsapp-tooltip {
+        display: none;
+    }
+}
+</style>
+
+<script>
+function openWhatsAppSupport() {
+    const phoneNumber = '254724828685'; // CHAMAlink support number (corrected)
+    const message = encodeURIComponent('Hi! I need help with CHAMAlink. Could you please assist me?');
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+}
+</script>
+
+<!-- Floating Feedback Button -->
+<div class="feedback-float" onclick="openFeedbackModal()">
+    <i class="fas fa-comment-alt"></i>
+    <span class="feedback-tooltip">Give us feedback!</span>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feedbackModalLabel">
+                    <i class="fas fa-star me-2"></i>Share Your Feedback
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <div class="mb-3">
+                        <label class="form-label">How would you rate your experience?</label>
+                        <div class="rating-stars mb-3">
+                            <i class="fas fa-star star" data-rating="1"></i>
+                            <i class="fas fa-star star" data-rating="2"></i>
+                            <i class="fas fa-star star" data-rating="3"></i>
+                            <i class="fas fa-star star" data-rating="4"></i>
+                            <i class="fas fa-star star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="rating" name="rating" value="0">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="feedbackCategory" class="form-label">Category</label>
+                        <select class="form-select" id="feedbackCategory" name="category" required>
+                            <option value="">Select category...</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="usability">Usability Issue</option>
+                            <option value="performance">Performance</option>
+                            <option value="general">General Feedback</option>
+                            <option value="compliment">Compliment</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="feedbackMessage" class="form-label">Your feedback</label>
+                        <textarea class="form-control" id="feedbackMessage" name="message" rows="4" 
+                                  placeholder="Tell us what you think..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="feedbackEmail" class="form-label">Email (optional)</label>
+                        <input type="email" class="form-control" id="feedbackEmail" name="email" 
+                               placeholder="your@email.com" value="{{ current_user.email if current_user.is_authenticated else '' }}">
+                        <small class="text-muted">We'll only use this to follow up if needed</small>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="allowContact" name="allowContact">
+                        <label class="form-check-label" for="allowContact">
+                            You may contact me about this feedback
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitFeedback()">
+                    <i class="fas fa-paper-plane me-2"></i>Submit Feedback
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -1033,34 +1369,140 @@ function resetInactivityTimer() {
 if ('{{ current_user.is_authenticated }}' === 'True') {
     resetInactivityTimer();
 }
-</script>
-<!-- Floating Chat Button -->
-<div class="floating-chat-btn" id="floating-chat-btn">
-    <a href="{{ url_for('main.chat') }}" class="btn btn-primary rounded-circle shadow-lg" 
-       style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; text-decoration: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000; transition: all 0.3s ease;">
-        <i class="fas fa-comments fa-lg text-white"></i>
-    </a>
-</div>
 
-<style>
-.floating-chat-btn:hover a {
-    transform: scale(1.1);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+// Feedback functionality
+function openFeedbackModal() {
+    const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+    modal.show();
 }
 
-.floating-chat-btn a:hover {
-    text-decoration: none !important;
-}
-
-@media (max-width: 768px) {
-    .floating-chat-btn a {
-        width: 50px;
-        height: 50px;
-        bottom: 15px;
-        right: 15px;
+function submitFeedback() {
+    const form = document.getElementById('feedbackForm');
+    const formData = new FormData(form);
+    
+    // Get form values
+    const rating = formData.get('rating');
+    const message = formData.get('message');
+    const email = formData.get('email');
+    const allowContact = formData.get('allowContact') === 'on';
+    
+    // Validate required fields
+    if (!rating) {
+        alert('Please select a rating');
+        return;
     }
+    
+    if (!message || message.trim().length < 10) {
+        alert('Please provide feedback with at least 10 characters');
+        return;
+    }
+    
+    // Disable submit button
+    const submitBtn = document.querySelector('button[onclick="submitFeedback()"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    
+    // Submit feedback
+    fetch('/feedback/submit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({
+            rating: parseInt(rating),
+            message: message.trim(),
+            email: email || null,
+            allow_contact: allowContact,
+            page_url: window.location.href,
+            user_agent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            const modalBody = document.querySelector('#feedbackModal .modal-body');
+            modalBody.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    <h4 class="mt-3 text-success">Thank You!</h4>
+                    <p class="text-muted">Your feedback has been submitted successfully. We appreciate your input!</p>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            `;
+            
+            // Hide footer
+            document.querySelector('#feedbackModal .modal-footer').style.display = 'none';
+            
+            // Reset form after delay
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('feedbackModal')).hide();
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            }, 2000);
+        } else {
+            throw new Error(data.message || 'Failed to submit feedback');
+        }
+    })
+    .catch(error => {
+        console.error('Feedback submission error:', error);
+        alert('Error submitting feedback: ' + error.message);
+    })
+    .finally(() => {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
 }
-</style>
 
-</body>
-</html>
+// Star rating functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.rating-stars .star');
+    const ratingInput = document.getElementById('rating');
+    
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            const rating = index + 1;
+            ratingInput.value = rating;
+            
+            // Update star display
+            stars.forEach((s, i) => {
+                if (i < rating) {
+                    s.classList.add('active');
+                    s.style.color = '#ffc107';
+                } else {
+                    s.classList.remove('active');
+                    s.style.color = '#dee2e6';
+                }
+            });
+        });
+        
+        star.addEventListener('mouseover', function() {
+            const rating = index + 1;
+            stars.forEach((s, i) => {
+                if (i < rating) {
+                    s.style.color = '#ffc107';
+                } else {
+                    s.style.color = '#dee2e6';
+                }
+            });
+        });
+    });
+    
+    // Reset stars on mouse leave
+    document.querySelector('.rating-stars').addEventListener('mouseleave', function() {
+        const currentRating = parseInt(ratingInput.value) || 0;
+        stars.forEach((s, i) => {
+            if (i < currentRating) {
+                s.style.color = '#ffc107';
+            } else {
+                s.style.color = '#dee2e6';
+            }
+        });
+    });
+});
+</script>

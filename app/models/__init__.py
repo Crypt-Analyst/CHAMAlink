@@ -17,3 +17,4 @@ from .enterprise import (
     EnterpriseSubscriptionPayment,
     PlanType
 )
+from .currency import Currency

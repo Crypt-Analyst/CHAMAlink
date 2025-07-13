@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify, make_response, send_file
+from flask import Blueprint, render_template, request, jsonify, make_response, send_file, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from app import db
 from app.models import Chama, Transaction, LoanApplication, Penalty, MpesaTransaction, User, chama_members
@@ -433,6 +433,95 @@ def generate_chart(chama_id, chart_type):
     plt.close()
     
     return jsonify({'image': image_base64})
+
+@reports_bp.route('/chama/<int:chama_id>/analytics')
+@login_required
+@chama_member_required
+def chama_analytics(chama_id):
+    """Analytics dashboard for specific chama"""
+    try:
+        chama = Chama.query.get_or_404(chama_id)
+        
+        # Get chama statistics
+        from sqlalchemy import func, extract
+        from datetime import datetime, timedelta
+        
+        # Contribution trends (last 6 months)
+        six_months_ago = datetime.now() - timedelta(days=180)
+        monthly_contributions = db.session.query(
+            extract('year', Transaction.created_at).label('year'),
+            extract('month', Transaction.created_at).label('month'),
+            func.sum(Transaction.amount).label('total')
+        ).filter(
+            Transaction.chama_id == chama_id,
+            Transaction.type == 'contribution',
+            Transaction.created_at >= six_months_ago
+        ).group_by(
+            extract('year', Transaction.created_at),
+            extract('month', Transaction.created_at)
+        ).order_by('year', 'month').all()
+        
+        # Member activity analysis
+        member_activity = db.session.query(
+            User.username,
+            func.count(Transaction.id).label('transaction_count'),
+            func.sum(Transaction.amount).label('total_contributed')
+        ).join(Transaction).filter(
+            Transaction.chama_id == chama_id,
+            Transaction.type == 'contribution'
+        ).group_by(User.id, User.username).all()
+        
+        # Recent financial summary
+        total_contributions = db.session.query(func.sum(Transaction.amount)).filter(
+            Transaction.chama_id == chama_id,
+            Transaction.type == 'contribution'
+        ).scalar() or 0
+        
+        total_loans = db.session.query(func.sum(Transaction.amount)).filter(
+            Transaction.chama_id == chama_id,
+            Transaction.type == 'loan'
+        ).scalar() or 0
+        
+        # Growth metrics
+        current_members = len(chama.members)
+        last_month = datetime.now() - timedelta(days=30)
+        new_members = db.session.query(func.count(chama_members.c.user_id)).filter(
+            chama_members.c.chama_id == chama_id,
+            chama_members.c.joined_at >= last_month
+        ).scalar() or 0
+        
+        analytics_data = {
+            'chama': chama,
+            'monthly_contributions': [
+                {
+                    'month': f"{int(contrib.year)}-{int(contrib.month):02d}",
+                    'total': float(contrib.total)
+                } for contrib in monthly_contributions
+            ],
+            'member_activity': [
+                {
+                    'name': activity.username,
+                    'transactions': activity.transaction_count,
+                    'total': float(activity.total_contributed)
+                } for activity in member_activity
+            ],
+            'summary': {
+                'total_contributions': total_contributions,
+                'total_loans': total_loans,
+                'current_balance': chama.total_balance,
+                'member_count': current_members,
+                'new_members_month': new_members
+            }
+        }
+        
+        return render_template('reports/analytics.html', 
+                             analytics=analytics_data,
+                             chama=chama)
+    
+    except Exception as e:
+        current_app.logger.error(f"Analytics error: {e}")
+        flash('Error loading analytics. Please try again later.', 'error')
+        return redirect(url_for('chama.chama_detail', chama_id=chama_id))
 
 def get_user_chama_role(user_id, chama_id):
     """Get the role of a user in a specific chama"""

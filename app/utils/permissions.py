@@ -43,6 +43,22 @@ def chama_admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def admin_required(f):
+    """Decorator to ensure user is a system admin"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Check if user is a system admin
+        if not getattr(current_user, 'is_admin', False):
+            flash('You do not have admin permissions.', 'error')
+            return redirect(url_for('main.dashboard'))
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
 def get_user_chama_role(user_id, chama_id):
     """Get the role of a user in a specific chama"""
     from app.models import chama_members

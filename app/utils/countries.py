@@ -1,6 +1,20 @@
 # Countries data for registration and user profiles
 # Focus on African countries with global options
 
+# Supported currencies for the platform
+SUPPORTED_CURRENCIES = [
+    {'code': 'USD', 'name': 'US Dollar', 'symbol': '$'},
+    {'code': 'KES', 'name': 'Kenyan Shilling', 'symbol': 'KSh'},
+    {'code': 'UGX', 'name': 'Ugandan Shilling', 'symbol': 'USh'},
+    {'code': 'TZS', 'name': 'Tanzanian Shilling', 'symbol': 'TSh'},
+    {'code': 'EUR', 'name': 'Euro', 'symbol': '€'},
+    {'code': 'GBP', 'name': 'British Pound', 'symbol': '£'},
+    {'code': 'ZAR', 'name': 'South African Rand', 'symbol': 'R'},
+    {'code': 'NGN', 'name': 'Nigerian Naira', 'symbol': '₦'},
+    {'code': 'RWF', 'name': 'Rwandan Franc', 'symbol': 'FRw'},
+    {'code': 'ETB', 'name': 'Ethiopian Birr', 'symbol': 'Br'}
+]
+
 AFRICAN_COUNTRIES = [
     {'code': 'DZ', 'name': 'Algeria', 'currency': 'DZD'},
     {'code': 'AO', 'name': 'Angola', 'currency': 'AOA'},
@@ -128,3 +142,7 @@ def get_currency_for_country(country_code):
     """Get default currency for a country"""
     country = get_country_by_code(country_code)
     return country['currency'] if country else 'USD'
+
+def get_country_currency(country_code):
+    """Get default currency for a country (alias for get_currency_for_country)"""
+    return get_currency_for_country(country_code)

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Trial Expired - CHAMAlink{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Trial Expired Notice -->
+            <div class="card border-warning shadow-lg">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-hourglass-end me-2"></i>
+                        Your Free Trial Has Expired
+                    </h3>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-calendar-times text-warning" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h4 class="text-dark mb-3">Time to Upgrade Your CHAMAlink Experience!</h4>
+                    
+                    <p class="lead text-muted mb-4">
+                        Your 30-day free trial ended on 
+                        <strong class="text-danger">
+                            {% if subscription_info and subscription_info.trial_end_date %}
+                                {{ subscription_info.trial_end_date.strftime('%B %d, %Y') }}
+                            {% else %}
+                                recently
+                            {% endif %}
+                        </strong>
+                    </p>
+                    
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>What happens now?
+                        </h6>
+                        <ul class="list-unstyled mb-0 text-start">
+                            <li class="mb-2">🔒 Your chamas are temporarily locked</li>
+                            <li class="mb-2">📊 Data is safely preserved</li>
+                            <li class="mb-2">💰 No transactions can be processed</li>
+                            <li class="mb-0">⚡ Upgrade now to restore full access instantly!</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Upgrade Options -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary">Basic Plan</h6>
+                                    <h4 class="text-primary">KES 200<small>/month</small></h4>
+                                    <ul class="list-unstyled small">
+                                        <li>✅ Up to 5 chamas</li>
+                                        <li>✅ 20 members per chama</li>
+                                        <li>✅ Basic reports</li>
+                                        <li>✅ M-Pesa integration</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-success shadow">
+                                <div class="card-header bg-success text-white text-center">
+                                    <small class="badge bg-warning text-dark">POPULAR</small>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="card-title text-success">Classic Plan</h6>
+                                    <h4 class="text-success">KES 500<small>/month</small></h4>
+                                    <ul class="list-unstyled small">
+                                        <li>✅ Up to 15 chamas</li>
+                                        <li>✅ 50 members per chama</li>
+                                        <li>✅ Advanced analytics</li>
+                                        <li>✅ Loan management</li>
+                                        <li>✅ Priority support</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body">
+                                    <h6 class="card-title text-warning">Advanced Plan</h6>
+                                    <h4 class="text-warning">KES 1000<small>/month</small></h4>
+                                    <ul class="list-unstyled small">
+                                        <li>✅ Unlimited chamas</li>
+                                        <li>✅ Unlimited members</li>
+                                        <li>✅ Investment tracking</li>
+                                        <li>✅ API access</li>
+                                        <li>✅ White-label options</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+                        <a href="{{ url_for('subscription_new.pricing') }}" class="btn btn-success btn-lg px-4">
+                            <i class="fas fa-rocket me-2"></i>Upgrade Now
+                        </a>
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="fas fa-headset me-2"></i>Contact Support
+                        </a>
+                    </div>
+                    
+                    <!-- Special Offers -->
+                    <div class="alert alert-success">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-gift me-2"></i>Limited Time Offers!
+                        </h6>
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <strong>💰 Save 20%</strong><br>
+                                <small>Pay for 6 months, get 1 month free</small>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>🎉 Save 30%</strong><br>
+                                <small>Pay for 12 months, get 2 months free</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Money Back Guarantee -->
+                    <p class="small text-muted">
+                        <i class="fas fa-shield-alt text-success me-1"></i>
+                        <strong>30-day money-back guarantee</strong> - Not satisfied? Get a full refund within 30 days.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>Frequently Asked Questions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    What happens to my data during the trial expiration?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Your data is completely safe! We preserve all your chama information, member details, 
+                                    transaction history, and reports. Once you upgrade, you'll have immediate access to everything.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Can I access my chamas during the trial expiration?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    During trial expiration, chama functions are temporarily locked to ensure fair usage. 
+                                    You can still view basic information but cannot process transactions or access advanced features.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    How quickly can I restore access after payment?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Access is restored immediately after successful payment verification. Our M-Pesa integration 
+                                    typically processes payments within minutes, and you'll receive instant access to all features.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+</style>
+{% endblock %}

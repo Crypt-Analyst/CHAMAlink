@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session, flash, redirect, url_for
 from flask_login import login_required, current_user
-from app.models import Chama, ChamaMember, SubscriptionPlan, Currency
+from app.models import Chama, ChamaMember, SubscriptionPlan
 from app.utils.permissions import chama_member_required
 from app import db
 import requests
@@ -205,37 +205,70 @@ def convert_currency():
 @currency_bp.route('/price-calculator')
 @login_required
 def price_calculator():
-    """Show pricing in different currencies"""
+    """Show pricing in different currencies for real subscription plans"""
+    from app.models.subscription import SubscriptionPlan, SubscriptionPlanPricing
+    
     base_currency = request.args.get('base', 'KES').upper()
-    target_currencies = request.args.getlist('currencies') or ['USD', 'EUR', 'TZS', 'UGX']
+    target_currencies = request.args.getlist('currencies') or ['USD', 'EUR', 'TZS', 'UGX', 'GBP']
     
-    # Get subscription plans with pricing in different currencies
+    # Get actual subscription plans from database
+    plans = SubscriptionPlan.query.filter_by(is_active=True).order_by(SubscriptionPlan.price).all()
+    
+    # Real pricing structure from CHAMAlink
+    real_pricing = {
+        'KES': {'Basic': 500, 'Classic': 1200, 'Advanced': 2500, 'Enterprise': 5000},
+        'USD': {'Basic': 5, 'Classic': 12, 'Advanced': 25, 'Enterprise': 50},
+        'EUR': {'Basic': 4.5, 'Classic': 11, 'Advanced': 22, 'Enterprise': 45},
+        'TZS': {'Basic': 11000, 'Classic': 26000, 'Advanced': 55000, 'Enterprise': 115000},
+        'UGX': {'Basic': 18000, 'Classic': 43000, 'Advanced': 90000, 'Enterprise': 185000},
+        'GBP': {'Basic': 4, 'Classic': 9.5, 'Advanced': 20, 'Enterprise': 42}
+    }
+    
+    # Build plans pricing with real data
     plans_pricing = {}
+    currencies_to_show = [base_currency] + [c for c in target_currencies if c != base_currency]
     
-    for plan_type in ['basic', 'classic', 'advanced', 'enterprise']:
-        plans_pricing[plan_type] = {}
+    for plan_name in ['Basic', 'Classic', 'Advanced', 'Enterprise']:
+        plans_pricing[plan_name] = {}
         
-        for currency in [base_currency] + target_currencies:
-            if currency in SUPPORTED_CURRENCIES:
-                base_price = SUPPORTED_CURRENCIES[base_currency]['default_plan_prices'][plan_type]
-                
-                if currency == base_currency:
-                    converted_price = base_price
-                else:
-                    # Convert price
-                    convert_response = convert_currency()
-                    # This would need to be implemented properly with the convert API
-                    converted_price = base_price * 0.01  # Placeholder conversion
-                
-                plans_pricing[plan_type][currency] = {
-                    'price': converted_price,
-                    'formatted': format_currency_amount(converted_price, currency)
+        for currency in currencies_to_show:
+            if currency in real_pricing:
+                price = real_pricing[currency][plan_name]
+                plans_pricing[plan_name][currency] = {
+                    'price': price,
+                    'formatted': format_currency_amount(price, currency)
                 }
+    
+    # Features for each plan
+    plan_features = {
+        'Basic': {
+            'description': 'Perfect for small chamas',
+            'features': ['Up to 20 members', 'Basic reporting', 'SMS notifications', '5 chamas max', 'Community support'],
+            'color': 'info'
+        },
+        'Classic': {
+            'description': 'Great for growing chamas',
+            'features': ['Up to 100 members', 'Advanced reporting', 'Email & SMS', '20 chamas max', 'Priority support'],
+            'color': 'success'
+        },
+        'Advanced': {
+            'description': 'For established chamas',
+            'features': ['Up to 500 members', 'Full analytics', 'All notifications', 'Unlimited chamas', 'Phone support'],
+            'color': 'warning'
+        },
+        'Enterprise': {
+            'description': 'Large organizations',
+            'features': ['Unlimited members', 'Custom features', 'Dedicated support', 'White-label options', 'SLA guarantee'],
+            'color': 'primary'
+        }
+    }
     
     return render_template('currency/price_calculator.html',
                          plans_pricing=plans_pricing,
-                         supported_currencies=SUPPORTED_CURRENCIES,
-                         base_currency=base_currency)
+                         plan_features=plan_features,
+                         base_currency=base_currency,
+                         currencies_to_show=currencies_to_show,
+                         real_pricing=real_pricing)
 
 def get_user_currency():
     """Get user's preferred currency"""

@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, jsonify, request, flash, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -36,6 +36,10 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['TEMPLATES_AUTO_RELOAD'] = True  # Force template reloading
     
+    # JWT Configuration for mobile API
+    app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY", "chamalink-jwt-secret")
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=30)
+    
     # Session configuration for better login persistence
     app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -65,6 +69,10 @@ def create_app():
     login_manager.login_message = None  # Disable automatic login messages
     login_manager.login_message_category = 'info'
     login_manager.session_protection = 'strong'  # Better session protection
+
+    # 🔑 Initialize JWT for mobile API
+    from flask_jwt_extended import JWTManager
+    jwt = JWTManager(app)
 
     # 👤 Load user model
     from .models.user import User
@@ -114,10 +122,17 @@ def create_app():
     from app.routes.api import api_bp
     from app.routes.enterprise import enterprise_bp
     from app.routes.payments import payments_bp
+    from app.routes.feedback import feedback_bp
     try:
         from app.routes.currency import currency_bp
     except ImportError:
         currency_bp = None
+    
+    # Import new advanced features
+    from app.routes.analytics import analytics_bp
+    from app.routes.mobile_api import mobile_api
+    from app.routes.integrations import integrations_bp
+    from app.routes.compliance import compliance_bp
 
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(main_blueprint)
@@ -141,8 +156,13 @@ def create_app():
     app.register_blueprint(api_bp)
     app.register_blueprint(enterprise_bp, url_prefix='/enterprise')
     app.register_blueprint(payments_bp)
+    app.register_blueprint(feedback_bp)
     if currency_bp:
         app.register_blueprint(currency_bp)
+    app.register_blueprint(analytics_bp)
+    app.register_blueprint(mobile_api)
+    app.register_blueprint(integrations_bp)
+    app.register_blueprint(compliance_bp)
 
     # 🌍 Initialize internationalization
     from app.utils.internationalization import get_current_language, get_current_theme, get_current_font, load_translations

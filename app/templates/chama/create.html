@@ -41,18 +41,34 @@
                                    placeholder="What is the main goal of this chama?">
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="meetingDay" class="form-label">Meeting Day</label>
-                            <select class="form-select" id="meetingDay" name="meeting_day">
-                                <option value="">Select meeting day</option>
-                                <option value="Monday">Monday</option>
-                                <option value="Tuesday">Tuesday</option>
-                                <option value="Wednesday">Wednesday</option>
-                                <option value="Thursday">Thursday</option>
-                                <option value="Friday">Friday</option>
-                                <option value="Saturday">Saturday</option>
-                                <option value="Sunday">Sunday</option>
-                            </select>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nextMeetingDate" class="form-label">Next Meeting Date</label>
+                                <input type="date" class="form-control" id="nextMeetingDate" name="next_meeting_date" 
+                                       min="{{ (moment().format('YYYY-MM-DD')) }}" 
+                                       title="Select the date for your next chama meeting">
+                                <small class="form-text text-muted">Choose when your chama will meet next</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="meetingFrequency" class="form-label">Meeting Frequency</label>
+                                <select class="form-select" id="meetingFrequency" name="meeting_frequency">
+                                    <option value="">Select frequency</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="bi-weekly">Bi-weekly (Every 2 weeks)</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="bi-monthly">Bi-monthly (Every 2 months)</option>
+                                    <option value="quarterly">Quarterly</option>
+                                    <option value="custom">Custom Schedule</option>
+                                </select>
+                                <small class="form-text text-muted">How often will your chama meet?</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3" id="customDateInput" style="display: none;">
+                            <label for="customMeetingDates" class="form-label">Custom Meeting Schedule</label>
+                            <textarea class="form-control" id="customMeetingDates" name="custom_dates" 
+                                      rows="3" placeholder="Enter specific dates in DD/MM/YYYY format, one per line&#10;Example:&#10;15/08/2025&#10;20/09/2025&#10;25/10/2025"></textarea>
+                            <small class="form-text text-muted">Enter specific meeting dates in DD/MM/YYYY format, one per line</small>
                         </div>
                         
                         <div class="d-flex justify-content-between">
@@ -71,6 +87,22 @@
 </div>
 
 <script>
+// Handle meeting frequency selection
+document.getElementById('meetingFrequency').addEventListener('change', function() {
+    const customInput = document.getElementById('customDateInput');
+    if (this.value === 'custom') {
+        customInput.style.display = 'block';
+    } else {
+        customInput.style.display = 'none';
+    }
+});
+
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('nextMeetingDate').setAttribute('min', today);
+});
+
 document.getElementById('createChamaForm').addEventListener('submit', function(e) {
     e.preventDefault();
     

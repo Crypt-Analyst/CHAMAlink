@@ -661,7 +661,7 @@ I've alerted our support team that you need assistance. An agent will respond to
 
 • **Email**: Within 2 hours during business hours
 • **Phone**: Call +254 700 000 000 for immediate help
-• **WhatsApp**: Message us at +254 700 000 000
+• **WhatsApp**: Message us at +254 724 828 685
 
 **What to expect:**
 • A human agent will review our conversation
@@ -1007,37 +1007,124 @@ Is there anything specific you'd like me to let the agent know about?`,
         return transition;
     }
 
-    // Generate follow-up questions
-    generateFollowUpQuestions(topic) {
-        const followUps = {
+    // Enhanced LeeBot memory and suggestions
+    rememberUserPreference(key, value) {
+        if (!this.context.userPreferences) {
+            this.context.userPreferences = {};
+        }
+        this.context.userPreferences[key] = value;
+        // Store in localStorage for persistence
+        localStorage.setItem('leebot_preferences', JSON.stringify(this.context.userPreferences));
+    }
+
+    loadUserPreferences() {
+        const stored = localStorage.getItem('leebot_preferences');
+        if (stored) {
+            this.context.userPreferences = JSON.parse(stored);
+        }
+    }
+
+    generateSmartSuggestions(currentTopic) {
+        const suggestions = {
             'chama_creation': [
-                'Would you like me to walk you through the setup process step by step?',
-                'Do you have questions about choosing the right subscription plan?',
-                'Are you wondering about how many members you should start with?'
+                'How do I invite my first members?',
+                'What information do I need to set up M-Pesa?',
+                'Can you show me the pricing plans?'
             ],
             'subscription_plans': [
-                'Would you like me to help you choose the best plan for your group size?',
-                'Are you interested in learning about our free trial?',
-                'Do you have questions about upgrading or downgrading plans later?'
+                'How do I start my free trial?',
+                'Can I upgrade my plan later?',
+                'What payment methods do you accept?'
+            ],
+            'mpesa_integration': [
+                'How long does M-Pesa setup take?',
+                'Is my money secure with ChamaLink?',
+                'Can members contribute from different banks?'
             ],
             'member_management': [
-                'Would you like tips on how to onboard new members effectively?',
-                'Are you curious about setting up member roles and permissions?',
-                'Do you need help with handling difficult or inactive members?'
+                'How do I set member contribution limits?',
+                'Can I track individual member progress?',
+                'What happens if a member leaves?'
             ]
         };
 
-        return followUps[topic] || [
-            'Is there anything specific about this you\'d like me to explain further?',
-            'What other questions do you have about this topic?',
-            'Would you like me to show you how this works in practice?'
+        return suggestions[currentTopic] || [
+            'Tell me about ChamaLink features',
+            'How secure is the platform?',
+            'Can you help me get started?'
         ];
     }
 
-    // Enhanced generate response that uses human-like intelligence
-    generateResponse(intent, userMessage) {
-        // Use enhanced response generation for more human-like interactions
-        return this.generateEnhancedResponse(intent, userMessage);
+    // Context-aware follow-up questions
+    generateFollowUpQuestions(topic) {
+        const followUps = {
+            'chama_creation': 'Would you like me to walk you through creating your first chama step by step?',
+            'subscription_plans': 'Would you like to start with our free trial to test the features?',
+            'mpesa_integration': 'Should I explain the M-Pesa setup process in detail?',
+            'member_management': 'Do you want tips on how to keep your members engaged?',
+            'reports_analytics': 'Would you like to see what insights you can get from our analytics?'
+        };
+
+        return followUps[topic] || 'Is there anything specific about ChamaLink you\'d like to know more about?';
+    }
+
+    // Smart response with suggestions
+    generateResponseWithSuggestions(response, topic) {
+        const suggestions = this.generateSmartSuggestions(topic);
+        const followUp = this.generateFollowUpQuestions(topic);
+        
+        let enhancedResponse = response;
+        
+        // Add follow-up question
+        enhancedResponse += `\n\n💭 ${followUp}`;
+        
+        // Add quick suggestions
+        enhancedResponse += '\n\n🚀 **Quick suggestions:**';
+        suggestions.forEach((suggestion, index) => {
+            enhancedResponse += `\n${index + 1}. ${suggestion}`;
+        });
+        
+        return enhancedResponse;
+    },
+
+    // Initialize enhanced features
+    initializeEnhancements() {
+        this.loadUserPreferences();
+        
+        // Track user interaction patterns
+        this.context.sessionStartTime = new Date();
+        this.context.messageCount = 0;
+        this.context.topicsDiscussed = [];
+        
+        // Add welcome suggestions if first visit
+        if (!this.context.userPreferences.hasVisited) {
+            this.rememberUserPreference('hasVisited', true);
+            this.rememberUserPreference('firstVisit', new Date().toISOString());
+        }
+    },
+
+    // Enhanced response with user context
+    getContextualResponse(intent, message) {
+        this.context.messageCount++;
+        
+        // Track topics discussed
+        if (intent.topic && !this.context.topicsDiscussed.includes(intent.topic)) {
+            this.context.topicsDiscussed.push(intent.topic);
+        }
+        
+        let response = this.generateResponse(intent, message);
+        
+        // Add suggestions for better experience
+        if (this.context.messageCount <= 3) {
+            response = this.generateResponseWithSuggestions(response, intent.topic);
+        }
+        
+        // Add personalization based on conversation flow
+        if (this.context.messageCount > 5) {
+            response += '\n\n🤝 *I notice you\'re really exploring ChamaLink! Would you like me to connect you with our team for a personalized demo?*';
+        }
+        
+        return response;
     }
 
     // Handle agent escalation
@@ -1108,7 +1195,7 @@ Here are some things I'm really good at explaining:
 
             if (response.ok) {
                 const data = await response.json();
-                return "🤝 **Agent Notified!**\n\nI've sent your conversation to our support team. You should hear back within 2 hours during business hours.\n\nFor immediate assistance:\n📞 **Call**: +254 700 000 000\n💬 **WhatsApp**: +254 700 000 000";
+                return "🤝 **Agent Notified!**\n\nI've sent your conversation to our support team. You should hear back within 2 hours during business hours.\n\nFor immediate assistance:\n📞 **Call**: +254 724 828 685\n💬 **WhatsApp**: +254 724 828 685";
             } else {
                 console.error('Agent help request failed:', response.status, response.statusText);
                 return "I'm having trouble connecting to our support team right now. Please contact us directly at support@chamalink.co.ke or call +254 700 000 000.";
@@ -1165,12 +1252,21 @@ async function sendMessage() {
             return;
         }
 
-        // Process with LeeBot
+        // Process with LeeBot - Enhanced for Zuri-like responsiveness
         setTimeout(() => {
             console.log('🤖 Processing message with LeeBot');
             const intent = leeBot.analyzeIntent(message);
             console.log('🎯 Intent detected:', intent);
-            const response = leeBot.generateResponse(intent, message);
+            
+            // Enhanced response generation for instant feedback
+            let response;
+            if (intent.confidence > 0.3) {
+                response = leeBot.generateEnhancedResponse(intent, message);
+            } else {
+                // Quick fallback for unknown queries
+                response = leeBot.generateIntelligentFallback(message, leeBot.analyzeMood(message), leeBot.analyzeAdvancedIntent(message));
+            }
+            
             console.log('💬 Generated response length:', response.length);
             
             // Store bot response in conversation history
@@ -1182,7 +1278,14 @@ async function sendMessage() {
             
             hideTypingIndicator();
             addMessage(response, 'bot');
-        }, 1000);
+            
+            // Add instant follow-up suggestions
+            if (intent.data && intent.data.followUp) {
+                setTimeout(() => {
+                    showQuickReplies(intent.data.followUp);
+                }, 500);
+            }
+        }, 200); // Reduced from 1000ms to 200ms for Zuri-like responsiveness
     } catch (error) {
         console.error('❌ Error sending message:', error);
         hideTypingIndicator();
@@ -1270,6 +1373,42 @@ function hideTypingIndicator() {
     }
 }
 
+// Show quick reply suggestions (Zuri-like feature)
+function showQuickReplies(followUpTopics) {
+    // Remove existing quick replies
+    const existingReplies = document.querySelector('.quick-replies-container');
+    if (existingReplies) {
+        existingReplies.remove();
+    }
+    
+    if (!followUpTopics || followUpTopics.length === 0) return;
+    
+    const quickRepliesContainer = document.createElement('div');
+    quickRepliesContainer.className = 'quick-replies-container mb-3';
+    
+    const repliesDiv = document.createElement('div');
+    repliesDiv.className = 'd-flex flex-wrap gap-2 justify-content-center';
+    
+    followUpTopics.slice(0, 3).forEach(topic => {
+        const button = document.createElement('button');
+        button.className = 'btn btn-outline-primary btn-sm quick-reply-btn';
+        button.textContent = topic;
+        button.style.cssText = 'border-radius: 20px; font-size: 0.8rem; padding: 0.25rem 0.75rem;';
+        
+        button.addEventListener('click', function() {
+            messageInput.value = topic;
+            sendMessage();
+            quickRepliesContainer.remove();
+        });
+        
+        repliesDiv.appendChild(button);
+    });
+    
+    quickRepliesContainer.appendChild(repliesDiv);
+    chatMessages.appendChild(quickRepliesContainer);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 // Event listeners
 sendButton.addEventListener('click', function(e) {
     console.log('🖱️ Send button clicked');
@@ -1334,46 +1473,25 @@ document.querySelectorAll('.quick-topic').forEach(button => {
     });
 });
 
-// Minimize chat functionality
-document.getElementById('minimize-chat').addEventListener('click', function() {
-    const chatContainer = document.getElementById('chat-container');
-    const icon = this.querySelector('i');
-    
-    if (chatContainer.style.display === 'none') {
-        chatContainer.style.display = 'block';
-        icon.className = 'fas fa-minus';
-    } else {
-        chatContainer.style.display = 'none';
-        icon.className = 'fas fa-plus';
-    }
-});
+    // Make startLeeBot available globally
+    window.startLeeBot = startLeeBot;
 
-// Function to start LeeBot interaction
-function startLeeBot() {
-    // Focus on the message input
-    document.getElementById('message-input').focus();
-    
-    // Add a welcome message if chat is empty
-    const chatMessages = document.getElementById('chat-messages');
-    const messageCount = chatMessages.children.length;
-    
-    if (messageCount <= 1) { // Only the initial welcome message
-        addMessage("Hello! I'm ready to help you with CHAMAlink. What would you like to know?", 'bot');
+    // Minimize chat functionality
+    const minimizeButton = document.getElementById('minimize-chat');
+    if (minimizeButton) {
+        minimizeButton.addEventListener('click', function() {
+            const chatContainer = document.getElementById('chat-container');
+            const icon = this.querySelector('i');
+            
+            if (chatContainer.style.display === 'none') {
+                chatContainer.style.display = 'block';
+                icon.className = 'fas fa-minus';
+            } else {
+                chatContainer.style.display = 'none';
+                icon.className = 'fas fa-plus';
+            }
+        });
     }
-    
-    // Show a tooltip or highlight the input
-    const messageInput = document.getElementById('message-input');
-    messageInput.placeholder = "Type your question here... e.g., 'How do I create a chama?'";
-    messageInput.style.borderColor = '#0d6efd';
-    messageInput.style.boxShadow = '0 0 0 0.2rem rgba(13, 110, 253, 0.25)';
-    
-    // Reset styling after a few seconds
-    setTimeout(() => {
-        messageInput.placeholder = "Type your message here...";
-        messageInput.style.borderColor = '';
-        messageInput.style.boxShadow = '';
-    }, 3000);
-}
 
 }); // End of DOMContentLoaded
 </script>

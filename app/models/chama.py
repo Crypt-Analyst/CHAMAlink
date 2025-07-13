@@ -25,6 +25,9 @@ class Chama(db.Model):
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     creator = db.relationship('User', backref='created_chamas')
     
+    # Currency relationship
+    default_currency_id = db.Column(db.Integer, db.ForeignKey('currencies.id'), nullable=True)
+    
     # Many-to-many relationship with users
     members = db.relationship('User', secondary='chama_members', backref='chamas')
     
@@ -339,6 +342,7 @@ class Transaction(db.Model):
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     chama_id = db.Column(db.Integer, db.ForeignKey('chamas.id'), nullable=False)
+    currency_id = db.Column(db.Integer, db.ForeignKey('currencies.id'), nullable=True)
     
     # Relationships
     user = db.relationship('User', backref='transactions')

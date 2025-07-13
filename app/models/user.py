@@ -55,6 +55,12 @@ class User(UserMixin, db.Model):
     country_name = db.Column(db.String(100))
     city = db.Column(db.String(100))
     timezone = db.Column(db.String(50), default='Africa/Nairobi')
+    
+    # Mobile App Integration (commented out until migration is complete)
+    # mobile_device_id = db.Column(db.String(255))
+    # mobile_device_token = db.Column(db.String(512))  # For push notifications
+    # mobile_device_type = db.Column(db.String(20))  # 'ios' or 'android'
+    # last_mobile_sync = db.Column(db.DateTime)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

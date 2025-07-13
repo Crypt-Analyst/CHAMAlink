@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Analytics Dashboard - CHAMAlink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 text-primary">
+                <i class="fas fa-chart-line me-2"></i>
+                Advanced Analytics Dashboard
+            </h1>
+            <p class="text-muted">Business intelligence and predictive analytics for CHAMAlink platform</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group">
+                <button class="btn btn-outline-primary" onclick="refreshDashboard()">
+                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                </button>
+                <button class="btn btn-outline-success" onclick="exportData('json')">
+                    <i class="fas fa-download me-1"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if analytics.error %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Error loading analytics: {{ analytics.error }}
+    </div>
+    {% else %}
+
+    <!-- Platform Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">{{ analytics.platform_stats.total_users }}</h3>
+                        <p class="mb-0">Total Users</p>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">{{ analytics.platform_stats.total_chamas }}</h3>
+                        <p class="mb-0">Total Chamas</p>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-hand-holding-heart fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">{{ analytics.platform_stats.active_chamas }}</h3>
+                        <p class="mb-0">Active Chamas</p>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-chart-line fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h3 class="mb-0">KES {{ "{:,.0f}".format(analytics.platform_stats.subscription_revenue) }}</h3>
+                        <p class="mb-0">Revenue</p>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-money-bill-wave fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Growth Charts Row -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-area text-primary me-2"></i>
+                        Growth Trends (Last 12 Months)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="growthChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-globe text-success me-2"></i>
+                        Geographic Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Country</th>
+                                    <th>Users</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for geo in analytics.geographic_data[:5] %}
+                                <tr>
+                                    <td>{{ geo.country }}</td>
+                                    <td><span class="badge bg-primary">{{ geo.users }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Engagement & Predictions Row -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users-cog text-info me-2"></i>
+                        User Engagement
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h4 class="text-primary">{{ analytics.user_engagement.active_7d }}</h4>
+                            <p class="text-muted">Active (7 days)</p>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-success">{{ analytics.user_engagement.active_30d }}</h4>
+                            <p class="text-muted">Active (30 days)</p>
+                        </div>
+                        <div class="col-4">
+                            <h4 class="text-warning">{{ analytics.user_engagement.engagement_rate }}%</h4>
+                            <p class="text-muted">Engagement Rate</p>
+                        </div>
+                    </div>
+                    <div class="progress mt-3">
+                        <div class="progress-bar bg-primary" style="width: {{ analytics.user_engagement.engagement_rate }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-crystal-ball text-warning me-2"></i>
+                        Predictive Analytics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-chart-line me-2"></i>Next Month Predictions:</h6>
+                        <ul class="mb-0">
+                            <li><strong>New Users:</strong> {{ analytics.predictions.next_month_users }}</li>
+                            <li><strong>New Chamas:</strong> {{ analytics.predictions.next_month_chamas }}</li>
+                        </ul>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Based on historical growth patterns and current trends
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Analytics -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-credit-card text-success me-2"></i>
+                        Subscription Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="subscriptionChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tachometer-alt text-danger me-2"></i>
+                        Real-time Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="realTimeMetrics">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading real-time data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Chamas -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-trophy text-warning me-2"></i>
+                        Top Performing Chamas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Chama Name</th>
+                                    <th>Members</th>
+                                    <th>Status</th>
+                                    <th>Age (Days)</th>
+                                    <th>Performance Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chama in analytics.chama_performance[:10] %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ chama.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ chama.member_count }}</span>
+                                    </td>
+                                    <td>
+                                        {% if chama.status == 'active' %}
+                                        <span class="badge bg-success">{{ chama.status.title() }}</span>
+                                        {% elif chama.status == 'pending' %}
+                                        <span class="badge bg-warning">{{ chama.status.title() }}</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ chama.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ chama.age_days }}</td>
+                                    <td>
+                                        {% set score = (chama.member_count * 10 + (100 - chama.age_days if chama.age_days < 100 else 0)) %}
+                                        <div class="progress" style="width: 100px;">
+                                            <div class="progress-bar bg-success" style="width: {{ (score / 200 * 100) if score < 200 else 100 }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ score }}/200</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Growth Chart
+const growthCtx = document.getElementById('growthChart').getContext('2d');
+const growthChart = new Chart(growthCtx, {
+    type: 'line',
+    data: {
+        labels: {{ analytics.growth_data | map(attribute='month') | list | tojson }},
+        datasets: [{
+            label: 'Users',
+            data: {{ analytics.growth_data | map(attribute='users') | list | tojson }},
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+            tension: 0.1
+        }, {
+            label: 'Chamas',
+            data: {{ analytics.growth_data | map(attribute='chamas') | list | tojson }},
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Subscription Chart
+const subscriptionCtx = document.getElementById('subscriptionChart').getContext('2d');
+const subscriptionChart = new Chart(subscriptionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ analytics.subscription_breakdown | map(attribute='name') | list | tojson }},
+        datasets: [{
+            data: {{ analytics.subscription_breakdown | map(attribute='count') | list | tojson }},
+            backgroundColor: [
+                '#FF6384',
+                '#36A2EB',
+                '#FFCE56',
+                '#4BC0C0',
+                '#9966FF'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+// Real-time metrics
+function loadRealTimeMetrics() {
+    fetch('/analytics/api/real-time-stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const metricsHtml = `
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h5 class="text-primary">${data.data.recent_activity.new_users_24h}</h5>
+                            <small class="text-muted">New Users (24h)</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h5 class="text-success">${data.data.recent_activity.new_chamas_24h}</h5>
+                            <small class="text-muted">New Chamas (24h)</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-warning">${data.data.recent_activity.active_users_24h}</h5>
+                            <small class="text-muted">Active Users (24h)</small>
+                        </div>
+                        <div class="col-6">
+                            <h5 class="text-info">${data.data.system_health.system_uptime}</h5>
+                            <small class="text-muted">System Uptime</small>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block text-center mt-2">
+                        Last updated: ${new Date(data.data.system_health.last_updated).toLocaleTimeString()}
+                    </small>
+                `;
+                document.getElementById('realTimeMetrics').innerHTML = metricsHtml;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading real-time metrics:', error);
+            document.getElementById('realTimeMetrics').innerHTML = 
+                '<div class="alert alert-warning">Failed to load real-time data</div>';
+        });
+}
+
+// Functions
+function refreshDashboard() {
+    location.reload();
+}
+
+function exportData(format) {
+    window.open('/analytics/export/' + format, '_blank');
+}
+
+// Load real-time metrics on page load and refresh every 30 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    loadRealTimeMetrics();
+    setInterval(loadRealTimeMetrics, 30000);
+});
+</script>
+{% endblock %}
