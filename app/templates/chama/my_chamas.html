@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}My Chamas - CHAMAlink{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-users text-primary me-2"></i>My Chamas
+                    </h1>
+                    <p class="text-muted mb-0">Manage all your chama memberships</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('chama.create_chama') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create New Chama
+                    </a>
+                </div>
+            </div>
+
+            {% if chama_details %}
+                <!-- Chamas Grid -->
+                <div class="row">
+                    {% for detail in chama_details %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm hover-card">
+                            <div class="card-header bg-gradient-primary text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-users me-2"></i>{{ detail.chama.name }}
+                                    </h5>
+                                    {% if detail.role == 'admin' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-crown me-1"></i>Admin
+                                        </span>
+                                    {% elif detail.role == 'treasurer' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-calculator me-1"></i>Treasurer
+                                        </span>
+                                    {% elif detail.role == 'secretary' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-pen me-1"></i>Secretary
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-user me-1"></i>Member
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                {% if detail.chama.description %}
+                                <p class="card-text text-muted">{{ detail.chama.description[:100] }}{% if detail.chama.description|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                                
+                                <div class="row text-center mt-3">
+                                    <div class="col-4">
+                                        <div class="stat-item">
+                                            <h6 class="text-primary mb-0">{{ detail.member_count }}</h6>
+                                            <small class="text-muted">Members</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-item">
+                                            <h6 class="text-success mb-0">{{ "KES {:,.0f}".format(detail.total_contributions) }}</h6>
+                                            <small class="text-muted">Total Pool</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="stat-item">
+                                            <h6 class="text-warning mb-0">{{ "KES {:,.0f}".format(detail.chama.monthly_contribution) }}</h6>
+                                            <small class="text-muted">Monthly</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {% if detail.joined_date %}
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Joined {{ detail.joined_date.strftime('%B %Y') }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="card-footer bg-light">
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('chama.chama_detail', chama_id=detail.chama.id) }}" 
+                                       class="btn btn-primary btn-sm flex-fill">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                    {% if detail.role in ['admin', 'treasurer'] %}
+                                    <a href="{{ url_for('chama.chama_detail', chama_id=detail.chama.id) }}#manage" 
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-cog"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Summary Statistics -->
+                <div class="row mt-4">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h4 class="mb-0">{{ chama_details|length }}</h4>
+                                        <p class="mb-0">Total Chamas</p>
+                                    </div>
+                                    <div class="ms-3">
+                                        <i class="fas fa-users fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h4 class="mb-0">{{ chama_details|selectattr('role', 'equalto', 'admin')|list|length }}</h4>
+                                        <p class="mb-0">Admin Roles</p>
+                                    </div>
+                                    <div class="ms-3">
+                                        <i class="fas fa-crown fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h4 class="mb-0">KES {{ "{:,.0f}".format(chama_details|sum(attribute='total_contributions')) }}</h4>
+                                        <p class="mb-0">Total Contributions</p>
+                                    </div>
+                                    <div class="ms-3">
+                                        <i class="fas fa-money-bill-wave fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h4 class="mb-0">KES {{ "{:,.0f}".format(chama_details|sum(attribute='chama.monthly_contribution')) }}</h4>
+                                        <p class="mb-0">Monthly Commitments</p>
+                                    </div>
+                                    <div class="ms-3">
+                                        <i class="fas fa-calendar-alt fa-2x opacity-75"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            {% else %}
+                <!-- Empty State -->
+                <div class="row justify-content-center">
+                    <div class="col-md-6 text-center">
+                        <div class="card border-0">
+                            <div class="card-body py-5">
+                                <i class="fas fa-users fa-4x text-muted mb-4"></i>
+                                <h4 class="text-muted mb-3">No Chamas Yet</h4>
+                                <p class="text-muted mb-4">
+                                    You haven't joined any chamas yet. Create your first chama or join an existing one to get started!
+                                </p>
+                                <div class="d-flex gap-3 justify-content-center">
+                                    <a href="{{ url_for('chama.create_chama') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Create New Chama
+                                    </a>
+                                    <a href="{{ url_for('chama.search') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-search me-2"></i>Find Chamas
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15)!important;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.stat-item {
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    background: rgba(0,0,0,0.02);
+}
+
+.card-footer {
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.opacity-75 {
+    opacity: 0.75;
+}
+</style>
+{% endblock %}

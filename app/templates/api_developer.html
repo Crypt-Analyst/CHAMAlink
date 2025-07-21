@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% set page_title = "API Developer Portal" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4">🔗 API Developer Portal</h1>
+                <p class="lead text-muted">Build powerful integrations with CHAMAlink's comprehensive API platform</p>
+                <div class="badge bg-warning text-dark fs-6 mb-3">Developer Preview</div>
+            </div>
+
+            <!-- API Overview -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">🚀 Getting Started</h3>
+                    <p class="card-text">
+                        CHAMAlink API enables developers to integrate chama management capabilities into their applications.
+                        Access member data, transaction records, meeting schedules, and more through our RESTful API.
+                    </p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5>✨ API Features</h5>
+                            <ul class="list-unstyled">
+                                <li>✅ Member management</li>
+                                <li>✅ Transaction processing</li>
+                                <li>✅ Meeting scheduling</li>
+                                <li>✅ Financial reporting</li>
+                                <li>✅ Real-time notifications</li>
+                                <li>✅ Secure authentication</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>🛠️ Available SDKs</h5>
+                            <ul class="list-unstyled">
+                                <li>🐍 Python SDK</li>
+                                <li>⚡ Node.js SDK</li>
+                                <li>☕ Java SDK</li>
+                                <li>🔷 .NET SDK</li>
+                                <li>📱 Mobile SDKs (iOS/Android)</li>
+                                <li>🌐 REST API Documentation</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Endpoints Preview -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">📋 API Endpoints</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Endpoint</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/v1/chamas</code></td>
+                                    <td>List all chamas for authenticated user</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-info">POST</span></td>
+                                    <td><code>/api/v1/chamas</code></td>
+                                    <td>Create a new chama</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/v1/chamas/{id}/members</code></td>
+                                    <td>Get chama members</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/v1/transactions</code></td>
+                                    <td>List transactions with filters</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-info">POST</span></td>
+                                    <td><code>/api/v1/transactions</code></td>
+                                    <td>Record a new transaction</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">GET</span></td>
+                                    <td><code>/api/v1/reports/financial</code></td>
+                                    <td>Generate financial reports</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Example -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">💻 Quick Start Example</h3>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active">
+                            <pre class="bg-dark text-light p-3 rounded"><code># Python Example
+import requests
+
+# Authentication
+headers = {
+    'Authorization': 'Bearer YOUR_API_TOKEN',
+    'Content-Type': 'application/json'
+}
+
+# Get all chamas
+response = requests.get(
+    'https://api.chamalink.com/v1/chamas',
+    headers=headers
+)
+
+chamas = response.json()
+print(f"Found {len(chamas)} chamas")
+
+# Create a new transaction
+transaction_data = {
+    'chama_id': 'chama_123',
+    'amount': 5000,
+    'type': 'contribution',
+    'description': 'Monthly contribution',
+    'member_id': 'member_456'
+}
+
+response = requests.post(
+    'https://api.chamalink.com/v1/transactions',
+    headers=headers,
+    json=transaction_data
+)
+
+print(f"Transaction created: {response.json()}")</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Developer Resources -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">📚 Documentation</h5>
+                            <p class="card-text">Comprehensive API documentation with examples and use cases.</p>
+                            <a href="#" class="btn btn-primary" onclick="showComingSoonModal('API Documentation')">
+                                View Docs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">🔑 Get API Keys</h5>
+                            <p class="card-text">Register for developer access and get your API credentials.</p>
+                            <a href="#" class="btn btn-success" onclick="showComingSoonModal('API Key Registration')">
+                                Get API Key
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">👥 Developer Community</h3>
+                    <p class="card-text">
+                        Join our growing community of developers building innovative solutions with CHAMAlink API.
+                    </p>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                <h5>Community Forum</h5>
+                                <p class="small text-muted">Connect with other developers</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fab fa-github fa-2x text-primary mb-2"></i>
+                                <h5>GitHub Repository</h5>
+                                <p class="small text-muted">Open source SDKs and examples</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-comments fa-2x text-primary mb-2"></i>
+                                <h5>Developer Chat</h5>
+                                <p class="small text-muted">Real-time support and discussion</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="text-center mt-5">
+                <h3>Ready to Build?</h3>
+                <p class="text-muted">Join the developer preview program and start building today!</p>
+                <button class="btn btn-lg btn-primary me-3" onclick="showFeatureInterest('api', 'Get API Access')">
+                    🚀 Join Developer Preview
+                </button>
+                <a href="/contact?inquiry=developer" class="btn btn-lg btn-outline-primary">
+                    💬 Contact Developer Support
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showComingSoonModal(feature) {
+    const modal = `
+        <div class="modal fade" id="comingSoonModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">🚧 Coming Soon</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>${feature}</strong> is currently in development as part of our Developer Preview program.</p>
+                        <p>Join the preview program to get early access when it's ready!</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="showFeatureInterest('api', 'Get API Access')">
+                            Join Preview Program
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modal);
+    const bsModal = new bootstrap.Modal(document.getElementById('comingSoonModal'));
+    bsModal.show();
+    
+    // Clean up modal after it's hidden
+    document.getElementById('comingSoonModal').addEventListener('hidden.bs.modal', function () {
+        this.remove();
+    });
+}
+</script>
+{% endblock %}

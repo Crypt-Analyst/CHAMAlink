@@ -12,6 +12,51 @@ from sqlalchemy import desc, and_, or_, func
 
 chama_bp = Blueprint('chama', __name__, url_prefix='/chama')
 
+@chama_bp.route('/my-chamas')
+@login_required
+def my_chamas():
+    """List all chamas the current user is a member of"""
+    try:
+        # Get all chamas where the user is a member
+        user_chamas = db.session.query(Chama).join(
+            chama_members, Chama.id == chama_members.c.chama_id
+        ).filter(
+            chama_members.c.user_id == current_user.id
+        ).all()
+        
+        # Get membership details for each chama
+        chama_details = []
+        for chama in user_chamas:
+            # Get user's role in this chama
+            membership = db.session.query(chama_members).filter_by(
+                user_id=current_user.id,
+                chama_id=chama.id
+            ).first()
+            
+            # Get basic stats
+            member_count = db.session.query(chama_members).filter_by(chama_id=chama.id).count()
+            
+            # Get total contributions for this chama
+            total_contributions = db.session.query(func.sum(Transaction.amount)).filter(
+                Transaction.chama_id == chama.id,
+                Transaction.transaction_type == 'contribution'
+            ).scalar() or 0
+            
+            chama_details.append({
+                'chama': chama,
+                'role': membership.role if membership else 'member',
+                'member_count': member_count,
+                'total_contributions': total_contributions,
+                'joined_date': membership.joined_at if membership else None
+            })
+        
+        return render_template('chama/my_chamas.html', chama_details=chama_details)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading user chamas: {e}")
+        flash('Error loading your chamas. Please try again.', 'error')
+        return redirect(url_for('main.dashboard'))
+
 @chama_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_chama():
@@ -275,7 +320,7 @@ def invite_member(chama_id):
         
         # Check if user is already a member
         chama = Chama.query.get(chama_id)
-        if user in chama.members:
+        if any(member.id == user.id for member in chama.members):
             return jsonify({'success': False, 'message': 'User is already a member'}), 400
         
         # Add user to chama
@@ -310,7 +355,7 @@ def remove_member(chama_id):
             return jsonify({'success': False, 'message': 'User not found'}), 404
         
         chama = Chama.query.get(chama_id)
-        if user not in chama.members:
+        if not any(member.id == user.id for member in chama.members):
             return jsonify({'success': False, 'message': 'User is not a member'}), 400
         
         # Cannot remove the creator
@@ -466,7 +511,7 @@ def request_join_chama(chama_id):
         chama = Chama.query.get_or_404(chama_id)
         
         # Check if user is already a member
-        if current_user in chama.members:
+        if any(member.id == current_user.id for member in chama.members):
             return jsonify({'success': False, 'message': 'You are already a member of this chama'}), 400
         
         # Check if there's already a pending request

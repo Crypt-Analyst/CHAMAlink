@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+{% set page_title = "Upgrade Subscription" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-4">📊 Upgrade Your Plan</h1>
+                <p class="lead text-muted">Access advanced analytics and premium features for your chama</p>
+            </div>
+
+            <!-- Current Plan -->
+            <div class="card mb-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📋 Your Current Plan</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">🆓 Basic Plan</h6>
+                            <p class="text-muted">Perfect for getting started</p>
+                            <ul class="list-unstyled">
+                                <li>✅ Up to 20 members</li>
+                                <li>✅ Basic transaction tracking</li>
+                                <li>✅ Meeting scheduling</li>
+                                <li>✅ Member management</li>
+                                <li>✅ Basic reports</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center">
+                            <div class="text-center w-100">
+                                <h2 class="text-success">FREE</h2>
+                                <p class="text-muted">Current plan</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Plans -->
+            <div class="row mb-5">
+                <!-- Classic Plan -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-primary">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h5 class="mb-0">🌟 Classic Plan</h5>
+                            <p class="mb-0">Most Popular</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <h2 class="text-primary">KES 2,500</h2>
+                                <p class="text-muted">per month</p>
+                            </div>
+                            
+                            <h6 class="fw-bold mb-3">📈 Analytics Features:</h6>
+                            <ul class="list-unstyled mb-4">
+                                <li>✅ Advanced financial dashboards</li>
+                                <li>✅ Member contribution analytics</li>
+                                <li>✅ Cash flow forecasting</li>
+                                <li>✅ Goal tracking & progress</li>
+                                <li>✅ Monthly trend analysis</li>
+                                <li>✅ Export reports (PDF/Excel)</li>
+                                <li>✅ Email report scheduling</li>
+                            </ul>
+                            
+                            <h6 class="fw-bold mb-3">🎯 Additional Features:</h6>
+                            <ul class="list-unstyled mb-4">
+                                <li>✅ Up to 100 members</li>
+                                <li>✅ Priority support</li>
+                                <li>✅ Custom categories</li>
+                                <li>✅ Bulk operations</li>
+                                <li>✅ Mobile app access</li>
+                            </ul>
+                            
+                            <div class="text-center">
+                                <button class="btn btn-primary w-100" onclick="selectPlan('classic')">
+                                    🚀 Upgrade to Classic
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Plan -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-warning">
+                        <div class="card-header bg-warning text-dark text-center">
+                            <h5 class="mb-0">💎 Advanced Plan</h5>
+                            <p class="mb-0">Best Value</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <h2 class="text-warning">KES 5,000</h2>
+                                <p class="text-muted">per month</p>
+                            </div>
+                            
+                            <h6 class="fw-bold mb-3">📊 Everything in Classic, plus:</h6>
+                            <ul class="list-unstyled mb-4">
+                                <li>✅ Real-time analytics dashboards</li>
+                                <li>✅ Risk assessment tools</li>
+                                <li>✅ Investment tracking</li>
+                                <li>✅ Predictive analytics</li>
+                                <li>✅ Custom report builder</li>
+                                <li>✅ API access</li>
+                                <li>✅ Advanced integrations</li>
+                            </ul>
+                            
+                            <h6 class="fw-bold mb-3">🏆 Premium Features:</h6>
+                            <ul class="list-unstyled mb-4">
+                                <li>✅ Unlimited members</li>
+                                <li>✅ Dedicated account manager</li>
+                                <li>✅ Custom branding</li>
+                                <li>✅ Training & onboarding</li>
+                                <li>✅ 24/7 support</li>
+                            </ul>
+                            
+                            <div class="text-center">
+                                <button class="btn btn-warning w-100" onclick="selectPlan('advanced')">
+                                    💎 Upgrade to Advanced
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enterprise Plan -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-dark">
+                        <div class="card-header bg-dark text-white text-center">
+                            <h5 class="mb-0">🏢 Enterprise Plan</h5>
+                            <p class="mb-0">For Large Organizations</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <h2 class="text-dark">Custom</h2>
+                                <p class="text-muted">Contact us</p>
+                            </div>
+                            
+                            <h6 class="fw-bold mb-3">🏢 Everything in Advanced, plus:</h6>
+                            <ul class="list-unstyled mb-4">
+                                <li>✅ Multi-chama management</li>
+                                <li>✅ White-label solution</li>
+                                <li>✅ Custom development</li>
+                                <li>✅ On-premise deployment</li>
+                                <li>✅ Bank integrations</li>
+                                <li>✅ Compliance reporting</li>
+                                <li>✅ Advanced security</li>
+                            </ul>
+                            
+                            <h6 class="fw-bold mb-3">🤝 Enterprise Support:</h6>
+                            <ul class="list-unstyled mb-4">
+                                <li>✅ Dedicated infrastructure</li>
+                                <li>✅ SLA guarantees</li>
+                                <li>✅ Custom integrations</li>
+                                <li>✅ Training programs</li>
+                                <li>✅ Implementation support</li>
+                            </ul>
+                            
+                            <div class="text-center">
+                                <button class="btn btn-dark w-100" onclick="contactSales()">
+                                    🤝 Contact Sales
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Benefits Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="text-center mb-4">🎯 Why Upgrade?</h3>
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                            <h5>Better Insights</h5>
+                            <p class="text-muted">Make data-driven decisions with advanced analytics</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="fas fa-users fa-3x text-success mb-3"></i>
+                            <h5>Scale Your Chama</h5>
+                            <p class="text-muted">Support more members and complex operations</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                            <h5>Enhanced Security</h5>
+                            <p class="text-muted">Advanced security features and compliance</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <i class="fas fa-headset fa-3x text-info mb-3"></i>
+                            <h5>Priority Support</h5>
+                            <p class="text-muted">Get faster support and dedicated assistance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="text-center mb-4">❓ Frequently Asked Questions</h3>
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Can I cancel my subscription anytime?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, you can cancel your subscription at any time. You'll continue to have access to premium features until the end of your billing period.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    What payment methods do you accept?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    We accept M-Pesa, bank transfers, and major credit cards. All payments are processed securely.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Is there a free trial for premium plans?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! We offer a 14-day free trial for all premium plans. No credit card required to start your trial.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Support -->
+            <div class="text-center mt-5">
+                <p class="text-muted">Have questions about upgrading?</p>
+                <a href="/contact?inquiry=subscription" class="btn btn-outline-primary">
+                    💬 Contact Support
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upgrade Modal -->
+<div class="modal fade" id="upgradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🚀 Upgrade Subscription</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="upgradeContent">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectPlan(planType) {
+    const plans = {
+        'classic': {
+            name: 'Classic Plan',
+            price: 'KES 2,500/month',
+            description: 'Perfect for growing chamas with advanced analytics needs'
+        },
+        'advanced': {
+            name: 'Advanced Plan',
+            price: 'KES 5,000/month',
+            description: 'Comprehensive solution with all premium features'
+        }
+    };
+
+    const plan = plans[planType];
+    if (!plan) return;
+
+    const modalContent = `
+        <div class="text-center mb-4">
+            <h4>You've selected the <strong>${plan.name}</strong></h4>
+            <p class="text-muted">${plan.description}</p>
+            <h3 class="text-primary">${plan.price}</h3>
+        </div>
+        
+        <div class="alert alert-info">
+            <i class="fas fa-gift"></i> <strong>14-day free trial included!</strong> 
+            You won't be charged until your trial period ends.
+        </div>
+        
+        <form id="upgradeForm" onsubmit="processUpgrade(event, '${planType}')">
+            <div class="mb-3">
+                <label class="form-label">Payment Method</label>
+                <select class="form-select" name="payment_method" required>
+                    <option value="">Select payment method</option>
+                    <option value="mpesa">📱 M-Pesa</option>
+                    <option value="bank">🏦 Bank Transfer</option>
+                    <option value="card">💳 Credit/Debit Card</option>
+                </select>
+            </div>
+            
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="terms" required>
+                <label class="form-check-label" for="terms">
+                    I agree to the <a href="/terms" target="_blank">Terms of Service</a> and 
+                    <a href="/privacy" target="_blank">Privacy Policy</a>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100">
+                🚀 Start Free Trial & Upgrade
+            </button>
+        </form>
+    `;
+
+    document.getElementById('upgradeContent').innerHTML = modalContent;
+    const modal = new bootstrap.Modal(document.getElementById('upgradeModal'));
+    modal.show();
+}
+
+function contactSales() {
+    window.location.href = '/contact?inquiry=enterprise';
+}
+
+function processUpgrade(event, planType) {
+    event.preventDefault();
+    
+    // In a real implementation, this would process the payment
+    // For now, just show a success message
+    
+    const modalContent = `
+        <div class="text-center">
+            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+            <h4>Upgrade Successful!</h4>
+            <p>Your 14-day free trial has started. You now have access to all premium features.</p>
+            <button class="btn btn-primary" onclick="window.location.reload()">
+                Continue to Dashboard
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('upgradeContent').innerHTML = modalContent;
+}
+</script>
+{% endblock %}

@@ -652,6 +652,16 @@ def feature_interest():
             'message': 'Something went wrong. Please try again.'
         }), 400
 
+@main.route('/api/developer')
+def api_developer():
+    """API Developer portal page"""
+    return render_template('api_developer.html')
+
+@main.route('/subscription/upgrade')
+def subscription_upgrade():
+    """Subscription upgrade page"""
+    return render_template('subscription_upgrade.html')
+
 @main.route('/founder-dashboard/new-feature', methods=['POST'])
 @login_required
 def add_new_feature():
