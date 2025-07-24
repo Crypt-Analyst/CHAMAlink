@@ -1,3 +1,6 @@
+# Import db first
+from app import db
+
 from .user import User
 from .chama import (
     Chama, Transaction, Event, chama_members, ChamaMember, Contribution, Loan, LoanPayment,
