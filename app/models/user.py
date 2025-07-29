@@ -50,6 +50,9 @@ class User(UserMixin, db.Model):
     preferred_font = db.Column(db.String(20), default='default')
     preferred_currency = db.Column(db.String(3), default='KES')  # ISO currency code
     
+    # Founder Protection
+    is_founder = db.Column(db.Boolean, default=False)  # Founder user cannot be deleted
+    
     # Location Information
     country_code = db.Column(db.String(2))  # ISO country code
     country_name = db.Column(db.String(100))
@@ -119,6 +122,24 @@ class User(UserMixin, db.Model):
     @property
     def is_account_locked(self):
         return self.locked_until and datetime.utcnow() < self.locked_until
+    
+    def is_system_founder(self):
+        """Check if this user is the system founder"""
+        return self.is_founder or (self.email == 'founder@chamalink.com' and self.is_super_admin)
+    
+    def can_be_deleted(self):
+        """Check if this user can be deleted"""
+        if self.is_system_founder():
+            return False, "Founder account cannot be deleted"
+        if self.is_super_admin and User.query.filter_by(is_super_admin=True).count() <= 1:
+            return False, "Cannot delete the last super admin"
+        return True, ""
+    
+    @staticmethod
+    def prevent_founder_deletion(mapper, connection, target):
+        """SQLAlchemy event to prevent founder deletion"""
+        if hasattr(target, 'is_system_founder') and target.is_system_founder():
+            raise ValueError("Cannot delete the founder account")
     
     # Relationships
     bank_transfers = db.relationship('BankTransferPayment', foreign_keys='BankTransferPayment.user_id', 
@@ -251,6 +272,15 @@ class User(UserMixin, db.Model):
         self.password_reset_token = None
         self.password_reset_expires = None
         db.session.commit()
+
+# SQLAlchemy event listeners for founder protection
+from sqlalchemy import event
+
+@event.listens_for(User, 'before_delete')
+def prevent_founder_deletion(mapper, connection, target):
+    """Prevent deletion of founder account"""
+    if target.is_system_founder():
+        raise ValueError("Cannot delete the founder account - this user is protected")
     
     def member_since(self, chama_id):
         """Get the date when user joined a specific chama"""

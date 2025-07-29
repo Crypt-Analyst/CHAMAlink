@@ -245,49 +245,62 @@
             transform: translateY(-2px);
         }
 
-        /* Floating Feedback Button Styles */
+        /* Enterprise Floating Feedback Button Styles */
         .feedback-float {
             position: fixed;
             width: 60px;
             height: 60px;
             bottom: 90px;
             right: 20px;
-            background-color: #ff6b6b;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-radius: 50px;
             text-align: center;
-            font-size: 24px;
-            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+            font-size: 20px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
             cursor: pointer;
-            z-index: 999;
+            z-index: 1001;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            animation: pulse-feedback 3s infinite;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            animation: pulse-feedback 4s infinite;
         }
 
         .feedback-float:hover {
-            background-color: #ff5252;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .feedback-float:active {
+            transform: scale(1.05);
+            transition: transform 0.1s ease;
         }
 
         .feedback-tooltip {
             position: absolute;
-            right: 70px;
+            right: 75px;
             top: 50%;
             transform: translateY(-50%);
-            background: #333;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
             color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border-radius: 12px;
             font-size: 14px;
             white-space: nowrap;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 500;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1002;
         }
 
         .feedback-tooltip::after {
@@ -295,8 +308,8 @@
             position: absolute;
             top: 50%;
             left: 100%;
-            margin-top: -5px;
-            border-width: 5px;
+            margin-top: -6px;
+            border-width: 6px;
             border-style: solid;
             border-color: transparent transparent transparent #333;
         }
@@ -304,6 +317,7 @@
         .feedback-float:hover .feedback-tooltip {
             opacity: 1;
             visibility: visible;
+            transform: translateY(-50%) translateX(-5px);
         }
 
         /* Rating Stars Styles */
@@ -452,21 +466,24 @@
                                 <i class="fas fa-robot"></i>LeeBot Chat Assistant
                             </a></li>
                             <li><div class="dropdown-divider"></div></li>
-                            <li><h6 class="dropdown-header">Roadmap Features</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('mobile-app')">
-                                <i class="fas fa-mobile-alt"></i>Mobile App (Coming Soon)
+                            <li><h6 class="dropdown-header">Advanced Features</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('integrations.mobile') }}">
+                                <i class="fas fa-mobile-alt"></i>Mobile App
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('analytics')">
+                            <li><a class="dropdown-item" href="{{ url_for('analytics.dashboard') }}">
                                 <i class="fas fa-chart-bar"></i>Advanced Analytics
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('investment')">
+                            <li><a class="dropdown-item" href="{{ url_for('investment.dashboard') }}">
                                 <i class="fas fa-chart-line"></i>Investment Tracking
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('banking')">
-                                <i class="fas fa-university"></i>Bank Integrations
+                            <li><a class="dropdown-item" href="{{ url_for('integrations.dashboard') }}">
+                                <i class="fas fa-university"></i>API Marketplace
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('api')">
-                                <i class="fas fa-code"></i>API Marketplace
+                            <li><a class="dropdown-item" href="{{ url_for('preferences.preferences_page') }}">
+                                <i class="fas fa-language"></i>Multi-language Support
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('investment.advisory') }}">
+                                <i class="fas fa-user-tie"></i>Investment Advisory
                             </a></li>
                         </ul>
                     </li>
@@ -523,28 +540,28 @@
                             <!-- Advanced Features -->
                             <li><div class="dropdown-divider"></div></li>
                             <li><h6 class="dropdown-header">Advanced Features</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('mobile-app')">
+                            <li><a class="dropdown-item" href="{{ url_for('test.test_mobile') }}">
                                 <i class="fas fa-mobile-alt"></i>Mobile App
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('analytics')">
+                            <li><a class="dropdown-item" href="{{ url_for('analytics.dashboard') }}">
                                 <i class="fas fa-chart-bar"></i>Advanced Analytics
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('investment')">
+                            <li><a class="dropdown-item" href="{{ url_for('investment.dashboard') }}">
                                 <i class="fas fa-chart-line"></i>Investment Tracking
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('banking')">
+                            <li><a class="dropdown-item" href="{{ url_for('integrations.dashboard') }}">
                                 <i class="fas fa-university"></i>Bank & SACCO Integration
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('api')">
+                            <li><a class="dropdown-item" href="{{ url_for('test.test_all') }}">
                                 <i class="fas fa-code"></i>API Marketplace
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('compliance')">
+                            <li><a class="dropdown-item" href="{{ url_for('compliance.dashboard') }}">
                                 <i class="fas fa-shield-alt"></i>Automated Compliance
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('multilang')">
+                            <li><a class="dropdown-item" href="{{ url_for('preferences.preferences_page') }}">
                                 <i class="fas fa-language"></i>Multi-language Support
                             </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showFeatureModal('advisory')">
+                            <li><a class="dropdown-item" href="{{ url_for('investment.advisory') }}">
                                 <i class="fas fa-user-tie"></i>Investment Advisory
                             </a></li>
 
@@ -703,10 +720,12 @@
     </div>
 </footer>
 
-<!-- Floating Chat Button -->
+<!-- Enterprise Floating Chat Button -->
 <div class="floating-chat-btn" id="floating-chat-btn">
     <a href="{{ url_for('main.chat') }}" class="btn btn-primary rounded-circle shadow-lg" 
-       style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; text-decoration: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000; transition: all 0.3s ease;">
+       style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; text-decoration: none; position: fixed; bottom: 20px; right: 20px; z-index: 1000; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;"
+       title="Chat with Support"
+       aria-label="Chat with Support">
         <i class="fas fa-comments fa-lg text-white"></i>
     </a>
 </div>
@@ -834,10 +853,16 @@ function openWhatsAppSupport() {
 }
 </script>
 
-<!-- Floating Feedback Button -->
-<div class="feedback-float" onclick="openFeedbackModal()">
-    <i class="fas fa-comment-alt"></i>
-    <span class="feedback-tooltip">Give us feedback!</span>
+<!-- Enterprise Floating Feedback Button -->
+<div class="feedback-float" 
+     onclick="openFeedbackModal()" 
+     role="button" 
+     tabindex="0"
+     aria-label="Give us feedback"
+     title="Share your feedback with us"
+     onkeydown="if(event.key==='Enter'||event.key===' ') openFeedbackModal()">
+    <i class="fas fa-comment-alt" aria-hidden="true"></i>
+    <span class="feedback-tooltip">💬 Share your feedback!</span>
 </div>
 
 <!-- Feedback Modal -->
@@ -1375,10 +1400,41 @@ if ('{{ current_user.is_authenticated }}' === 'True') {
     resetInactivityTimer();
 }
 
-// Feedback functionality
+// Enterprise-level Feedback functionality
 function openFeedbackModal() {
-    const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
-    modal.show();
+    try {
+        // Analytics tracking
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'feedback_modal_opened', {
+                'event_category': 'engagement',
+                'event_label': 'feedback_button_click'
+            });
+        }
+        
+        // Show modal with Bootstrap 5
+        const modalElement = document.getElementById('feedbackModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            modal.show();
+            
+            // Focus on first form element
+            setTimeout(() => {
+                const firstInput = modalElement.querySelector('select, input, textarea');
+                if (firstInput) firstInput.focus();
+            }, 300);
+        } else {
+            console.error('Feedback modal not found');
+            // Fallback: direct navigation to feedback page
+            window.location.href = '/feedback';
+        }
+    } catch (error) {
+        console.error('Error opening feedback modal:', error);
+        // Fallback for any errors
+        alert('We\'d love your feedback! Please contact us at support@chamalink.com');
+    }
 }
 
 function submitFeedback() {

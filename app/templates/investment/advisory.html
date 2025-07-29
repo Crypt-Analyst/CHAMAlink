@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Investment Advisory - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">💼 Investment Advisory</h1>
+                    <p class="text-muted">Professional investment guidance for your chama</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-calendar me-2"></i>Book Consultation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advisory Services -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">Our Advisory Services</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for service in services %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="icon-sm bg-primary-soft text-primary rounded-circle me-3 mt-1">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ service.title() }}</h6>
+                                    <p class="text-muted small mb-0">Get expert guidance on {{ service.lower() }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">Quick Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Available Advisors</span>
+                            <span class="fw-bold">5</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Average Experience</span>
+                            <span class="fw-bold">8+ years</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Success Rate</span>
+                            <span class="fw-bold text-success">95%</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Client Satisfaction</span>
+                            <span class="fw-bold text-primary">4.8/5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advisory Process -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">How Our Advisory Process Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-4">
+                            <div class="position-relative">
+                                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <span class="h5 mb-0">1</span>
+                                </div>
+                                <div class="mt-3">
+                                    <h6>Initial Assessment</h6>
+                                    <p class="text-muted small">We analyze your chama's financial goals and risk profile</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-4">
+                            <div class="position-relative">
+                                <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <span class="h5 mb-0">2</span>
+                                </div>
+                                <div class="mt-3">
+                                    <h6>Strategy Development</h6>
+                                    <p class="text-muted small">Custom investment strategy based on your needs</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-4">
+                            <div class="position-relative">
+                                <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <span class="h5 mb-0">3</span>
+                                </div>
+                                <div class="mt-3">
+                                    <h6>Implementation</h6>
+                                    <p class="text-muted small">Guided execution of your investment plan</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-4">
+                            <div class="position-relative">
+                                <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                    <span class="h5 mb-0">4</span>
+                                </div>
+                                <div class="mt-3">
+                                    <h6>Monitoring</h6>
+                                    <p class="text-muted small">Ongoing performance tracking and adjustments</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advisory Packages -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white text-center border-bottom">
+                    <h5 class="mb-0">Basic Advisory</h5>
+                    <div class="mt-2">
+                        <span class="h4 text-primary">KES 5,000</span>
+                        <span class="text-muted">/month</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Monthly consultation</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Portfolio review</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Investment recommendations</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Email support</li>
+                    </ul>
+                    <button class="btn btn-outline-primary w-100 mt-3">Choose Plan</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 border-primary">
+                <div class="card-header bg-primary text-white text-center border-bottom">
+                    <h5 class="mb-0 text-white">Premium Advisory</h5>
+                    <div class="mt-2">
+                        <span class="h4">KES 12,000</span>
+                        <span>/month</span>
+                    </div>
+                    <span class="badge bg-warning text-dark">Most Popular</span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Bi-weekly consultations</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Detailed portfolio analysis</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Market research reports</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Risk management strategies</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Phone & email support</li>
+                    </ul>
+                    <button class="btn btn-primary w-100 mt-3">Choose Plan</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white text-center border-bottom">
+                    <h5 class="mb-0">Elite Advisory</h5>
+                    <div class="mt-2">
+                        <span class="h4 text-primary">KES 25,000</span>
+                        <span class="text-muted">/month</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Weekly consultations</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Personalized investment plans</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Real-time market updates</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Tax optimization strategies</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>24/7 dedicated support</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Quarterly in-person meetings</li>
+                    </ul>
+                    <button class="btn btn-outline-primary w-100 mt-3">Choose Plan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-sm {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+</style>
+{% endblock %}

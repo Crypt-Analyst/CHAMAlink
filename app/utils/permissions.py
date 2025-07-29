@@ -51,8 +51,11 @@ def admin_required(f):
             flash('Please log in to access this page.', 'error')
             return redirect(url_for('auth.login'))
         
-        # Check if user is a system admin
-        if not getattr(current_user, 'is_admin', False):
+        # Check if user is a system admin or super admin
+        if not (getattr(current_user, 'is_super_admin', False) or 
+                getattr(current_user, 'is_admin', False) or 
+                current_user.role == 'admin' or 
+                current_user.role == 'super_admin'):
             flash('You do not have admin permissions.', 'error')
             return redirect(url_for('main.dashboard'))
         

@@ -182,18 +182,29 @@ def login():
                 return redirect(next_page)
             return redirect(url_for('main.dashboard'))
         else:
-            # Failed login
-            if user:
-                user.increment_failed_login()
-                if user.failed_login_attempts >= 3:
-                    # Send account locked email
-                    email_service.send_account_locked_notification(user)
+            # Failed login - provide specific error messages for development
+            if current_app.config.get('FLASK_ENV') == 'development':
+                if not user:
+                    flash('Email address not found. Please check your email or register first.', 'danger')
+                else:
+                    # User exists but password is wrong
+                    user.increment_failed_login()
+                    if user.failed_login_attempts >= 3:
+                        # Send account locked email
+                        email_service.send_account_locked_notification(user)
+                    flash('Incorrect password. Please try again.', 'danger')
+            else:
+                # Production - use generic message for security
+                if user:
+                    user.increment_failed_login()
+                    if user.failed_login_attempts >= 3:
+                        # Send account locked email
+                        email_service.send_account_locked_notification(user)
+                flash('Invalid email or password.', 'danger')
             
             login_attempt.success = False
             db.session.add(login_attempt)
             db.session.commit()
-            
-            flash('Invalid email or password.', 'danger')
     
     return render_template('login.html', form=form)
 

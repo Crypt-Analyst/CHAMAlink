@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Investment Tracking - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">📊 Investment Tracking</h1>
+                    <p class="text-muted">Monitor and manage your chama's investment portfolio</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add Investment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Portfolio Value</h6>
+                            <h3 class="mb-0">KES 0</h3>
+                        </div>
+                        <div class="icon-shape bg-primary text-white rounded-circle">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Return</h6>
+                            <h3 class="mb-0 text-success">+0%</h3>
+                        </div>
+                        <div class="icon-shape bg-success text-white rounded-circle">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-2">Active Investments</h6>
+                            <h3 class="mb-0">0</h3>
+                        </div>
+                        <div class="icon-shape bg-info text-white rounded-circle">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted mb-2">Risk Score</h6>
+                            <h3 class="mb-0 text-warning">Low</h3>
+                        </div>
+                        <div class="icon-shape bg-warning text-white rounded-circle">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Features -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">Investment Portfolio</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No investments yet</h6>
+                        <p class="text-muted mb-4">Start building your investment portfolio</p>
+                        <button class="btn btn-primary">Add Your First Investment</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">Available Features</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for feature in features %}
+                        <div class="list-group-item border-0 px-0">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-sm bg-primary-soft text-primary rounded-circle me-3">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <span>{{ feature }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Categories -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">Investment Categories</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                                <h6>Stocks & Shares</h6>
+                                <p class="text-muted small mb-0">Equity investments</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-university fa-2x text-success mb-2"></i>
+                                <h6>Government Bonds</h6>
+                                <p class="text-muted small mb-0">Treasury securities</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-home fa-2x text-info mb-2"></i>
+                                <h6>Real Estate</h6>
+                                <p class="text-muted small mb-0">Property investments</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                                <h6>Mutual Funds</h6>
+                                <p class="text-muted small mb-0">Diversified funds</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-shape {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-sm {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+</style>
+{% endblock %}

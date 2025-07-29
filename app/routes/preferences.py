@@ -138,6 +138,7 @@ def get_preferences_api():
 
 @preferences_bp.route('/')
 @preferences_bp.route('')
+@preferences_bp.route('/language')
 @login_required
 def preferences_page():
     """Preferences management page"""

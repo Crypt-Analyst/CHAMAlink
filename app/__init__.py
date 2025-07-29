@@ -93,6 +93,23 @@ def create_app():
     def inject_now():
         return {'now': datetime.now}
     
+    # 🕐 Add moment-like functionality for templates
+    @app.context_processor
+    def inject_moment():
+        class MomentWrapper:
+            def format(self, format_string='YYYY-MM-DD'):
+                """Format current date according to moment.js format strings"""
+                today = datetime.now()
+                # Convert moment.js format to Python strftime format
+                python_format = format_string.replace('YYYY', '%Y').replace('MM', '%m').replace('DD', '%d')
+                return today.strftime(python_format)
+            
+            def utcnow(self):
+                """Return current UTC datetime"""
+                return datetime.utcnow()
+        
+        return {'moment': MomentWrapper}
+    
     # 🔐 Add CSRF token to template context
     @app.context_processor
     def inject_csrf_token():
@@ -133,6 +150,8 @@ def create_app():
     from app.routes.mobile_api import mobile_api
     from app.routes.integrations import integrations_bp
     from app.routes.compliance import compliance_bp
+    from app.routes.test_features import test_bp
+    from app.routes.investment import investment_bp
 
     app.register_blueprint(auth_blueprint, url_prefix='/auth')
     app.register_blueprint(main_blueprint)
@@ -163,6 +182,8 @@ def create_app():
     app.register_blueprint(mobile_api)
     app.register_blueprint(integrations_bp)
     app.register_blueprint(compliance_bp)
+    app.register_blueprint(test_bp)
+    app.register_blueprint(investment_bp)
 
     # 🌍 Initialize internationalization
     from app.utils.internationalization import get_current_language, get_current_theme, get_current_font, load_translations

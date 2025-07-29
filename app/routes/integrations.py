@@ -462,3 +462,9 @@ def test_webhook():
             'success': False,
             'error': str(e)
         }), 500
+
+@integrations_bp.route('/mobile')
+@login_required
+def mobile():
+    """Mobile app integration page"""
+    return render_template('integrations/mobile.html')

@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+
+{% block title %}Mobile App - ChamaLink{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">📱 ChamaLink Mobile App</h1>
+                    <p class="text-muted">Manage your chama on the go with our mobile application</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#downloadModal">
+                        <i class="fas fa-download me-2"></i>Download App
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Preview -->
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5 text-center">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='400' viewBox='0 0 200 400'%3E%3Crect width='200' height='400' fill='%23f8f9fa' stroke='%23dee2e6' stroke-width='2' rx='20'/%3E%3Crect x='20' y='40' width='160' height='30' fill='%230d6efd' rx='4'/%3E%3Ctext x='100' y='60' text-anchor='middle' fill='white' font-size='12'%3EChamaLink%3C/text%3E%3Crect x='20' y='90' width='160' height='60' fill='%23e9ecef' rx='4'/%3E%3Ctext x='100' y='115' text-anchor='middle' fill='%23495057' font-size='10'%3EDashboard%3C/text%3E%3Ctext x='100' y='130' text-anchor='middle' fill='%236c757d' font-size='8'%3EKsh 125,000%3C/text%3E%3Crect x='20' y='170' width='76' height='40' fill='%23198754' rx='4'/%3E%3Ctext x='58' y='195' text-anchor='middle' fill='white' font-size='8'%3EContribute%3C/text%3E%3Crect x='104' y='170' width='76' height='40' fill='%23dc3545' rx='4'/%3E%3Ctext x='142' y='195' text-anchor='middle' fill='white' font-size='8'%3EWithdraw%3C/text%3E%3Crect x='20' y='230' width='160' height='100' fill='%23f8f9fa' stroke='%23dee2e6' rx='4'/%3E%3Ctext x='100' y='250' text-anchor='middle' fill='%23495057' font-size='9'%3ERecent Transactions%3C/text%3E%3C/svg%3E" alt="Mobile App Preview" class="img-fluid mb-4" style="max-width: 200px;">
+                        </div>
+                        <div class="col-md-6 text-start">
+                            <h3 class="mb-3">Access Your Chama Anywhere</h3>
+                            <p class="text-muted mb-4">The ChamaLink mobile app brings all the power of our platform to your smartphone. Manage contributions, track expenses, and stay connected with your group members from anywhere.</p>
+                            <div class="features-list">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Real-time notifications</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Offline mode support</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Biometric authentication</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Quick payment integration</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">📥 Download Now</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%230d6efd' rx='16'/%3E%3Ctext x='40' y='50' text-anchor='middle' fill='white' font-size='40'%3E📱%3C/text%3E%3C/svg%3E" alt="ChamaLink App Icon" class="mb-3">
+                        <h6>ChamaLink Mobile</h6>
+                        <p class="text-muted small">Version 2.1.0</p>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-dark" onclick="downloadApp('android')">
+                            <i class="fab fa-google-play me-2"></i>Google Play
+                        </a>
+                        <a href="#" class="btn btn-outline-dark" onclick="downloadApp('ios')">
+                            <i class="fab fa-app-store-ios me-2"></i>App Store
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary" onclick="downloadApp('apk')">
+                            <i class="fas fa-download me-2"></i>Download APK
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Secure & encrypted
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="mb-4">Mobile App Features</h3>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="icon-lg bg-primary-soft text-primary rounded-circle mx-auto mb-3">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h5>Lightning Fast</h5>
+                    <p class="text-muted">Optimized for speed with instant loading and smooth navigation</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="icon-lg bg-success-soft text-success rounded-circle mx-auto mb-3">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+                    <h5>Offline Support</h5>
+                    <p class="text-muted">Continue working even without internet connection</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="icon-lg bg-warning-soft text-warning rounded-circle mx-auto mb-3">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h5>Smart Notifications</h5>
+                    <p class="text-muted">Get notified about contributions, meetings, and important updates</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="icon-lg bg-info-soft text-info rounded-circle mx-auto mb-3">
+                        <i class="fas fa-fingerprint"></i>
+                    </div>
+                    <h5>Biometric Login</h5>
+                    <p class="text-muted">Secure login with fingerprint or face recognition</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="icon-lg bg-danger-soft text-danger rounded-circle mx-auto mb-3">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h5>M-Pesa Integration</h5>
+                    <p class="text-muted">Direct integration with mobile money for seamless payments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <div class="icon-lg bg-purple-soft text-purple rounded-circle mx-auto mb-3">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h5>Real-time Analytics</h5>
+                    <p class="text-muted">Track your chama's performance with live charts and insights</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Section -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center p-5">
+                    <h4 class="mb-3">Quick Download</h4>
+                    <p class="text-muted mb-4">Scan the QR code with your phone to download the app instantly</p>
+                    
+                    <!-- QR Code placeholder -->
+                    <div class="qr-code-container mb-4">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='white' stroke='%23000' stroke-width='2'/%3E%3Cg fill='%23000'%3E%3Crect x='10' y='10' width='30' height='30'/%3E%3Crect x='110' y='10' width='30' height='30'/%3E%3Crect x='10' y='110' width='30' height='30'/%3E%3Crect x='50' y='20' width='10' height='10'/%3E%3Crect x='70' y='20' width='10' height='10'/%3E%3Crect x='90' y='20' width='10' height='10'/%3E%3Crect x='20' y='50' width='10' height='10'/%3E%3Crect x='40' y='50' width='10' height='10'/%3E%3Crect x='60' y='50' width='10' height='10'/%3E%3Crect x='80' y='50' width='10' height='10'/%3E%3Crect x='100' y='50' width='10' height='10'/%3E%3Crect x='120' y='50' width='10' height='10'/%3E%3Crect x='50' y='70' width='10' height='10'/%3E%3Crect x='70' y='70' width='10' height='10'/%3E%3Crect x='90' y='70' width='10' height='10'/%3E%3Crect x='20' y='90' width='10' height='10'/%3E%3Crect x='40' y='90' width='10' height='10'/%3E%3Crect x='60' y='90' width='10' height='10'/%3E%3Crect x='80' y='90' width='10' height='10'/%3E%3Crect x='100' y='90' width='10' height='10'/%3E%3Crect x='120' y='90' width='10' height='10'/%3E%3Crect x='50' y='120' width='10' height='10'/%3E%3Crect x='70' y='120' width='10' height='10'/%3E%3Crect x='90' y='120' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E" alt="QR Code" class="img-fluid">
+                    </div>
+                    
+                    <small class="text-muted">
+                        Compatible with Android 7.0+ and iOS 12.0+
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">📱 App Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="mb-3">
+                                <h3 class="text-primary mb-1">4.8</h3>
+                                <small class="text-muted">App Rating</small>
+                                <div class="mt-1">
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                    <i class="fas fa-star text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="mb-3">
+                                <h3 class="text-success mb-1">15K+</h3>
+                                <small class="text-muted">Downloads</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="mb-3">
+                                <h3 class="text-info mb-1">2.5MB</h3>
+                                <small class="text-muted">App Size</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="recent-updates">
+                        <h6 class="mb-3">Recent Updates</h6>
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="badge bg-primary rounded-pill me-3 mt-1">2.1.0</div>
+                            <div>
+                                <h6 class="mb-1">Enhanced Security</h6>
+                                <p class="text-muted small mb-0">Added biometric authentication and improved encryption</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="badge bg-success rounded-pill me-3 mt-1">2.0.5</div>
+                            <div>
+                                <h6 class="mb-1">Performance Boost</h6>
+                                <p class="text-muted small mb-0">Faster loading times and improved stability</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-start">
+                            <div class="badge bg-info rounded-pill me-3 mt-1">2.0.0</div>
+                            <div>
+                                <h6 class="mb-1">New Features</h6>
+                                <p class="text-muted small mb-0">Added offline mode and dark theme support</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Download Modal -->
+<div class="modal fade" id="downloadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">📱 Download ChamaLink Mobile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%230d6efd' rx='16'/%3E%3Ctext x='40' y='50' text-anchor='middle' fill='white' font-size='40'%3E📱%3C/text%3E%3C/svg%3E" alt="App Icon" class="mb-3">
+                    <h5>Choose your platform</h5>
+                    <p class="text-muted">Select your device type to download the appropriate version</p>
+                </div>
+                
+                <div class="d-grid gap-3">
+                    <button class="btn btn-dark btn-lg" onclick="downloadApp('android')">
+                        <i class="fab fa-google-play me-3"></i>
+                        <div class="text-start">
+                            <div class="fw-bold">Google Play Store</div>
+                            <small>For Android devices</small>
+                        </div>
+                    </button>
+                    
+                    <button class="btn btn-outline-dark btn-lg" onclick="downloadApp('ios')">
+                        <i class="fab fa-app-store-ios me-3"></i>
+                        <div class="text-start">
+                            <div class="fw-bold">Apple App Store</div>
+                            <small>For iPhone & iPad</small>
+                        </div>
+                    </button>
+                    
+                    <button class="btn btn-outline-secondary btn-lg" onclick="downloadApp('apk')">
+                        <i class="fas fa-download me-3"></i>
+                        <div class="text-start">
+                            <div class="fw-bold">Direct Download</div>
+                            <small>APK file for Android</small>
+                        </div>
+                    </button>
+                </div>
+                
+                <div class="mt-4">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        All downloads are secure and verified
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-lg {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.1);
+}
+
+.bg-warning-soft {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.1);
+}
+
+.bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.bg-purple-soft {
+    background-color: rgba(102, 16, 242, 0.1);
+}
+
+.text-purple {
+    color: #6610f2;
+}
+
+.qr-code-container {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: inline-block;
+}
+</style>
+
+<script>
+function downloadApp(platform) {
+    console.log('Downloading app for platform:', platform);
+    
+    const downloadUrls = {
+        'android': 'https://play.google.com/store/apps/details?id=com.chamalink.app',
+        'ios': 'https://apps.apple.com/app/chamalink/id1234567890',
+        'apk': '/static/downloads/chamalink-mobile.apk'
+    };
+    
+    const platformNames = {
+        'android': 'Google Play Store',
+        'ios': 'Apple App Store',
+        'apk': 'Direct APK Download'
+    };
+    
+    // Show loading state
+    const buttons = document.querySelectorAll('button, a');
+    buttons.forEach(btn => {
+        if (btn.onclick && btn.onclick.toString().includes(platform)) {
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Preparing download...';
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }, 2000);
+        }
+    });
+    
+    // Track download event
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'app_download', {
+            'platform': platform,
+            'method': platformNames[platform]
+        });
+    }
+    
+    // Show download notification
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alert.innerHTML = `
+        <i class="fas fa-download me-2"></i>
+        Starting download for ${platformNames[platform]}...
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    // Remove alert after 5 seconds
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.parentNode.removeChild(alert);
+        }
+    }, 5000);
+    
+    // For demo purposes, show coming soon message
+    setTimeout(() => {
+        const comingSoonAlert = document.createElement('div');
+        comingSoonAlert.className = 'alert alert-info alert-dismissible fade show position-fixed';
+        comingSoonAlert.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 300px;';
+        comingSoonAlert.innerHTML = `
+            <i class="fas fa-info-circle me-2"></i>
+            Mobile app coming soon! We're currently in beta testing.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(comingSoonAlert);
+        
+        setTimeout(() => {
+            if (comingSoonAlert.parentNode) {
+                comingSoonAlert.parentNode.removeChild(comingSoonAlert);
+            }
+        }, 8000);
+    }, 1000);
+}
+
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

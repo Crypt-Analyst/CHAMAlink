@@ -417,3 +417,158 @@ def get_mobile_app_config():
             'success': False,
             'error': str(e)
         }), 500
+
+@mobile_api.route('/transactions', methods=['GET'])
+@jwt_required()
+def get_transactions():
+    """Get user's transactions for mobile app"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({
+                'success': False,
+                'error': 'User not found'
+            }), 404
+        
+        # Get transactions from user's chamas
+        transactions = []
+        for membership in user.chama_memberships:
+            chama = membership.chama
+            # This would typically fetch from a Transaction model
+            # For now, return mock data structure
+            transactions.extend([
+                {
+                    'id': f'txn_{chama.id}_001',
+                    'chama_id': chama.id,
+                    'chama_name': chama.name,
+                    'type': 'contribution',
+                    'amount': 5000,
+                    'currency': 'KSH',
+                    'date': '2025-07-29T10:00:00Z',
+                    'status': 'completed',
+                    'description': 'Monthly contribution'
+                },
+                {
+                    'id': f'txn_{chama.id}_002',
+                    'chama_id': chama.id,
+                    'chama_name': chama.name,
+                    'type': 'withdrawal',
+                    'amount': 2000,
+                    'currency': 'KSH',
+                    'date': '2025-07-25T14:30:00Z',
+                    'status': 'pending',
+                    'description': 'Emergency withdrawal request'
+                }
+            ])
+        
+        # Sort by date (newest first)
+        transactions.sort(key=lambda x: x['date'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'transactions': transactions,
+                'total_count': len(transactions),
+                'summary': {
+                    'total_contributions': sum(t['amount'] for t in transactions if t['type'] == 'contribution'),
+                    'total_withdrawals': sum(t['amount'] for t in transactions if t['type'] == 'withdrawal'),
+                    'pending_count': sum(1 for t in transactions if t['status'] == 'pending')
+                }
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@mobile_api.route('/transactions/<int:chama_id>', methods=['GET'])
+@jwt_required()
+def get_chama_transactions(chama_id):
+    """Get transactions for a specific chama"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({
+                'success': False,
+                'error': 'User not found'
+            }), 404
+        
+        # Check if user is member of this chama
+        membership = ChamaMember.query.filter_by(
+            user_id=user_id,
+            chama_id=chama_id
+        ).first()
+        
+        if not membership:
+            return jsonify({
+                'success': False,
+                'error': 'Access denied'
+            }), 403
+        
+        chama = Chama.query.get(chama_id)
+        if not chama:
+            return jsonify({
+                'success': False,
+                'error': 'Chama not found'
+            }), 404
+        
+        # Get pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        transaction_type = request.args.get('type')  # 'contribution', 'withdrawal', etc.
+        
+        # Mock transactions for this chama
+        all_transactions = [
+            {
+                'id': f'txn_{chama_id}_{i:03d}',
+                'chama_id': chama_id,
+                'chama_name': chama.name,
+                'type': 'contribution' if i % 3 != 0 else 'withdrawal',
+                'amount': 5000 if i % 3 != 0 else 2000,
+                'currency': 'KSH',
+                'date': f'2025-07-{29-i:02d}T{10+i%12:02d}:00:00Z',
+                'status': 'completed' if i % 4 != 0 else 'pending',
+                'description': f'Transaction #{i:03d}',
+                'member_name': user.username,
+                'reference': f'REF{chama_id}{i:06d}'
+            } for i in range(1, 101)  # 100 mock transactions
+        ]
+        
+        # Filter by type if specified
+        if transaction_type:
+            all_transactions = [t for t in all_transactions if t['type'] == transaction_type]
+        
+        # Pagination
+        start = (page - 1) * per_page
+        end = start + per_page
+        transactions = all_transactions[start:end]
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'transactions': transactions,
+                'pagination': {
+                    'page': page,
+                    'per_page': per_page,
+                    'total': len(all_transactions),
+                    'pages': (len(all_transactions) + per_page - 1) // per_page
+                },
+                'summary': {
+                    'total_contributions': sum(t['amount'] for t in all_transactions if t['type'] == 'contribution'),
+                    'total_withdrawals': sum(t['amount'] for t in all_transactions if t['type'] == 'withdrawal'),
+                    'balance': sum(t['amount'] if t['type'] == 'contribution' else -t['amount'] for t in all_transactions if t['status'] == 'completed')
+                }
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
