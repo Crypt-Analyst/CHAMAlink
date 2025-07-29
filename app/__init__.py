@@ -1,6 +1,28 @@
 import os
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request, flash, redirect, url_for
+from flask import Flask, render_templa    # 📦 Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+    mail.init_app(app)
+    csrf.init_app(app)
+    login_manager.login_view = 'auth.login'
+    
+    # 🚀 Initialize performance optimizations
+    if PERFORMANCE_AVAILABLE == True:
+        try:
+            performance_optimizer = PerformanceOptimizer(app)
+            app.performance = performance_optimizer
+            print("✅ Advanced performance optimizations initialized")
+        except Exception as e:
+            print(f"⚠️  Performance optimization failed: {e}")
+    elif PERFORMANCE_AVAILABLE == 'simple':
+        try:
+            performance_optimizer = SimplePerformanceOptimizer(app)
+            app.performance = performance_optimizer
+            print("✅ Simple performance optimizations initialized")
+        except Exception as e:
+            print(f"⚠️  Simple performance optimization failed: {e}")fy, request, flash, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -26,6 +48,40 @@ migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
 csrf = CSRFProtect()
+
+# 🚀 Performance optimization imports
+try:
+    from flask_caching import Cache
+    from app.utils.performance import PerformanceOptimizer
+    PERFORMANCE_AVAILABLE = True
+    print("✅ Performance optimization modules loaded")
+except ImportError:
+    from app.utils.simple_performance import SimplePerformanceOptimizer
+    PERFORMANCE_AVAILABLE = 'simple'
+    print("✅ Simple performance optimization loaded")
+    os.environ["SQLALCHEMY_DATABASE_URI"] = database_url
+    print("✅ Database URL loaded successfully")
+else:
+    print("❌ No database URL found!")
+    print("Available env vars:", [k for k in os.environ.keys() if 'DATABASE' in k.upper() or 'SQLALCHEMY' in k.upper()])
+
+# 🧠 Initialize core Flask extensions
+db = SQLAlchemy()
+migrate = Migrate()
+login_manager = LoginManager()
+mail = Mail()
+csrf = CSRFProtect()
+
+# 🚀 Performance optimization imports
+try:
+    from flask_caching import Cache
+    from app.utils.performance import PerformanceOptimizer
+    PERFORMANCE_AVAILABLE = True
+    print("✅ Performance optimization modules loaded")
+except ImportError:
+    from app.utils.simple_performance import SimplePerformanceOptimizer
+    PERFORMANCE_AVAILABLE = 'simple'
+    print("✅ Simple performance optimization loaded")
 
 def create_app():
     app = Flask(__name__)
@@ -63,7 +119,16 @@ def create_app():
     csrf.init_app(app)
     login_manager.login_view = 'auth.login'
     
-    # 🚨 Initialize error handlers for debugging
+    # � Initialize performance optimizations
+    if PERFORMANCE_AVAILABLE:
+        try:
+            performance_optimizer = PerformanceOptimizer(app)
+            app.performance = performance_optimizer
+            print("✅ Performance optimizations initialized")
+        except Exception as e:
+            print(f"⚠️  Performance optimization failed: {e}")
+    
+    # �🚨 Initialize error handlers for debugging
     from app.utils.error_handlers import init_error_handlers
     init_error_handlers(app)
     login_manager.login_message = None  # Disable automatic login messages
