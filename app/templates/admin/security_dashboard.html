@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Security Dashboard - CHAMAlink{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Security Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4><i class="fas fa-shield-alt"></i> 🛡️ Security Monitoring Dashboard</h4>
+                    <p class="mb-0">Real-time monitoring of security threats and brute force protection</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-ban fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ stats.blocked_ips }}</h3>
+                    <p class="mb-0">Blocked IPs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-envelope-open-text fa-2x text-danger mb-2"></i>
+                    <h3 class="text-danger">{{ stats.blocked_emails }}</h3>
+                    <p class="mb-0">Blocked Emails</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ stats.recent_attempts }}</h3>
+                    <p class="mb-0">Recent Attempts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-search fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">{{ stats.suspicious_patterns }}</h3>
+                    <p class="mb-0">Suspicious Patterns</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tools"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ url_for('security_admin.blocked_ips') }}" class="btn btn-warning btn-block">
+                                <i class="fas fa-ban"></i> Manage Blocked IPs
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ url_for('security_admin.blocked_emails') }}" class="btn btn-danger btn-block">
+                                <i class="fas fa-envelope"></i> Manage Blocked Emails
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ url_for('security_admin.security_events') }}" class="btn btn-info btn-block">
+                                <i class="fas fa-list"></i> View Security Events
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{{ url_for('security_admin.security_config') }}" class="btn btn-secondary btn-block">
+                                <i class="fas fa-cog"></i> Security Configuration
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Login Attempts -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history"></i> Recent Login Attempts (Last 24 Hours)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Email</th>
+                                    <th>IP Address</th>
+                                    <th>Status</th>
+                                    <th>User Agent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attempt in recent_attempts %}
+                                <tr class="{% if attempt.success %}table-success{% else %}table-danger{% endif %}">
+                                    <td>{{ attempt.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>{{ attempt.email }}</td>
+                                    <td>
+                                        <code>{{ attempt.ip_address }}</code>
+                                        {% if attempt.ip_address in stats.blocked_ips %}
+                                        <span class="badge badge-danger ml-1">BLOCKED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if attempt.success %}
+                                        <span class="badge badge-success">SUCCESS</span>
+                                        {% else %}
+                                        <span class="badge badge-danger">FAILED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ attempt.user_agent[:50] }}{% if attempt.user_agent|length > 50 %}...{% endif %}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspicious Activity Analysis -->
+    <div class="row">
+        <!-- Suspicious IPs -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Most Suspicious IPs</h5>
+                </div>
+                <div class="card-body">
+                    {% if suspicious_ips %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>Failed Attempts</th>
+                                    <th>Unique Emails</th>
+                                    <th>Latest Attempt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ip, data in suspicious_ips %}
+                                <tr>
+                                    <td><code>{{ ip }}</code></td>
+                                    <td><span class="badge badge-danger">{{ data.count }}</span></td>
+                                    <td><span class="badge badge-warning">{{ data.emails|length }}</span></td>
+                                    <td><small>{{ data.latest.strftime('%H:%M:%S') }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No suspicious IP activity detected.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Suspicious Emails -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-envelope-open-text"></i> Most Targeted Emails</h5>
+                </div>
+                <div class="card-body">
+                    {% if suspicious_emails %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Failed Attempts</th>
+                                    <th>Unique IPs</th>
+                                    <th>Latest Attempt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for email, data in suspicious_emails %}
+                                <tr>
+                                    <td>{{ email }}</td>
+                                    <td><span class="badge badge-danger">{{ data.count }}</span></td>
+                                    <td><span class="badge badge-warning">{{ data.ips|length }}</span></td>
+                                    <td><small>{{ data.latest.strftime('%H:%M:%S') }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No targeted email attacks detected.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Updates -->
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> 
+        <strong>Real-time Monitoring:</strong> This dashboard updates automatically. 
+        Security alerts are sent to administrators when threats are detected.
+        Last updated: <span id="last-updated">{{ moment().format('YYYY-MM-DD HH:mm:ss') }}</span>
+    </div>
+</div>
+
+<script>
+// Auto-refresh security stats every 30 seconds
+setInterval(function() {
+    fetch('{{ url_for("security_admin.api_stats") }}')
+        .then(response => response.json())
+        .then(data => {
+            // Update stats display
+            document.querySelector('.card-body h3.text-warning').textContent = data.blocked_ips;
+            document.querySelector('.card-body h3.text-danger').textContent = data.blocked_emails;
+            document.querySelector('.card-body h3.text-info').textContent = data.recent_attempts || 0;
+            document.getElementById('last-updated').textContent = new Date().toLocaleString();
+        })
+        .catch(error => console.error('Error fetching security stats:', error));
+}, 30000);
+</script>
+{% endblock %}

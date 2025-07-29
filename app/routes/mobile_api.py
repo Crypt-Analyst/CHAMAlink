@@ -1,7 +1,17 @@
 """
 Mobile App Integration API
 ========================
-REST API endpoints for mobile app integration
+REST API endpoints for mobile app integration with standardized responses
+
+Standard Response Format:
+{
+    "success": true/false,
+    "status": "success"/"error", 
+    "status_code": 200,
+    "message": "Success message",
+    "timestamp": "2025-07-29T17:22:00Z",
+    "data": { ... }
+}
 """
 
 from flask import Blueprint, request, jsonify
@@ -9,69 +19,85 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from flask_login import current_user
 from app.models import User, Chama, ChamaMember
 from app import db
+from app.utils.api_response import APIResponse, APIValidator, handle_api_exceptions, StatusCode
 from werkzeug.security import check_password_hash
 from datetime import timedelta
 import json
 
 mobile_api = Blueprint('mobile_api', __name__, url_prefix='/api/mobile')
 
+@mobile_api.route('/health', methods=['GET'])
+def api_health():
+    """API health check with standardized response"""
+    return APIResponse.success(
+        data={
+            'status': 'healthy',
+            'version': '1.0.0',
+            'api_name': 'CHAMAlink Mobile API',
+            'features': [
+                'authentication',
+                'user_management', 
+                'chama_management',
+                'transactions',
+                'analytics'
+            ]
+        },
+        message="API is healthy and operational"
+    )
+
 @mobile_api.route('/auth/login', methods=['POST'])
+@handle_api_exceptions
 def mobile_login():
-    """Mobile app login endpoint"""
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        device_id = data.get('device_id')
+    """Mobile app login endpoint with standardized responses"""
+    data = request.get_json()
+    
+    # Validate required fields
+    errors = APIValidator.validate_required_fields(data, ['email', 'password'])
+    if errors:
+        return APIResponse.validation_error(errors)
+    
+    email = data.get('email')
+    password = data.get('password')
+    device_id = data.get('device_id')
+    
+    # Validate email format
+    if not APIValidator.validate_email(email):
+        return APIResponse.validation_error(['Invalid email format'])
+    
+    user = User.query.filter_by(email=email).first()
+    
+    if user and check_password_hash(user.password_hash, password):
+        # Create JWT token for mobile
+        access_token = create_access_token(
+            identity=user.id,
+            expires_delta=timedelta(days=30)
+        )
         
-        if not email or not password:
-            return jsonify({
-                'success': False,
-                'error': 'Email and password required'
-            }), 400
+        # Update device info if provided
+        if device_id:
+            user.mobile_device_id = device_id
+            db.session.commit()
         
-        user = User.query.filter_by(email=email).first()
-        
-        if user and check_password_hash(user.password_hash, password):
-            # Create JWT token for mobile
-            access_token = create_access_token(
-                identity=user.id,
-                expires_delta=timedelta(days=30)
-            )
-            
-            # Update device info if provided
-            if device_id:
-                user.mobile_device_id = device_id
-                db.session.commit()
-            
-            return jsonify({
-                'success': True,
-                'data': {
-                    'user': {
-                        'id': user.id,
-                        'username': user.username,
-                        'email': user.email,
-                        'first_name': user.first_name,
-                        'last_name': user.last_name,
-                        'phone_number': user.phone_number,
-                        'country_code': user.country_code,
-                        'preferred_currency': user.preferred_currency
-                    },
-                    'access_token': access_token,
-                    'token_type': 'Bearer'
-                }
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Invalid credentials'
-            }), 401
-            
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return APIResponse.success(
+            data={
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'phone_number': user.phone_number,
+                    'country_code': user.country_code,
+                    'preferred_currency': user.preferred_currency
+                },
+                'access_token': access_token,
+                'token_type': 'Bearer',
+                'expires_in': 30 * 24 * 60 * 60  # 30 days in seconds
+            },
+            message="Login successful"
+        )
+    else:
+        return APIResponse.unauthorized("Invalid credentials")
 
 @mobile_api.route('/user/profile', methods=['GET'])
 @jwt_required()

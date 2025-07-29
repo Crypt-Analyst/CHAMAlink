@@ -249,6 +249,10 @@ def create_app():
     app.register_blueprint(compliance_bp)
     app.register_blueprint(test_bp)
     app.register_blueprint(investment_bp)
+    
+    # 🛡️ Security Administration
+    from app.routes.security_admin import security_admin
+    app.register_blueprint(security_admin)
 
     # 🌍 Initialize internationalization
     from app.utils.internationalization import get_current_language, get_current_theme, get_current_font, load_translations

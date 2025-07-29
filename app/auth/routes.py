@@ -8,7 +8,9 @@ from .forms import RegistrationForm, LoginForm, ForgotPasswordForm, ResetPasswor
 from datetime import datetime, timedelta
 import secrets
 import re
+import time
 from app.utils.security_monitor import security_check, security_monitor
+from app.utils.brute_force_protection import advanced_brute_force_protection
 
 auth = Blueprint('auth', __name__)
 
@@ -120,6 +122,34 @@ def login():
         ip_address = request.remote_addr
         user_agent = request.headers.get('User-Agent', '')
         
+        # 🛡️ ADVANCED BRUTE FORCE PROTECTION
+        is_allowed, delay_seconds, reason = advanced_brute_force_protection.check_brute_force_attempt(
+            ip_address, email, user_agent
+        )
+        
+        if not is_allowed:
+            if reason == "IP_BLOCKED":
+                flash(f'Your IP address has been temporarily blocked due to suspicious activity. Please try again later.', 'danger')
+            elif reason == "EMAIL_BLOCKED":
+                flash(f'This email has been temporarily blocked due to multiple failed attempts. Please try again later.', 'danger')
+            elif reason == "SUSPICIOUS_PATTERN":
+                flash(f'Suspicious activity detected. Please try again later.', 'danger')
+            else:
+                flash(f'Too many attempts. Please wait {int(delay_seconds)} seconds before trying again.', 'warning')
+            
+            # Log the blocked attempt
+            security_monitor.log_security_event(
+                'LOGIN_BLOCKED',
+                'WARNING',
+                f"Login blocked for {email} from IP {ip_address}. Reason: {reason}"
+            )
+            
+            return render_template('login.html', form=form), 429
+        
+        # Apply progressive delay if needed
+        if delay_seconds > 0:
+            time.sleep(delay_seconds)
+        
         # Log the login attempt with enhanced security monitoring
         security_monitor.log_security_event(
             'LOGIN_ATTEMPT',
@@ -146,6 +176,12 @@ def login():
                 login_attempt.success = False
                 db.session.add(login_attempt)
                 db.session.commit()
+                
+                # Record failed attempt
+                advanced_brute_force_protection.record_failed_attempt(
+                    ip_address, email, user_agent, {'reason': 'account_locked'}
+                )
+                return render_template('login.html', form=form)
                 return render_template('login.html', form=form)
             
             # Check if email is verified
@@ -171,6 +207,9 @@ def login():
             user.reset_failed_login()  # Reset failed attempts
             login_user(user, remember=form.remember_me.data if hasattr(form, 'remember_me') else False)
             
+            # 🛡️ Record successful attempt (reduces penalties)
+            advanced_brute_force_protection.record_successful_attempt(ip_address, email)
+            
             db.session.add(login_attempt)
             db.session.commit()
             
@@ -182,6 +221,14 @@ def login():
                 return redirect(next_page)
             return redirect(url_for('main.dashboard'))
         else:
+            # 🛡️ FAILED LOGIN - Enhanced Security Response
+            
+            # Record failed attempt in advanced protection
+            advanced_brute_force_protection.record_failed_attempt(
+                ip_address, email, user_agent, 
+                {'reason': 'invalid_credentials', 'user_exists': user is not None}
+            )
+            
             # Failed login - provide specific error messages for development
             if current_app.config.get('FLASK_ENV') == 'development':
                 if not user:
