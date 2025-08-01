@@ -128,6 +128,8 @@ def create_app():
         ('app.routes.api', 'api_bp', '/api'),
         ('app.routes.mobile_api', 'mobile_api_bp', '/mobile_api'),
         ('app.routes.feedback', 'feedback_bp', '/feedback'),
+        ('app.routes.enterprise', 'enterprise_bp', '/enterprise'),
+        ('app.routes.health', 'health_bp', '/health'),
     ]
 
     for module_path, blueprint_name, url_prefix in blueprint_imports:
