@@ -488,63 +488,6 @@
                                 <i class="fas fa-user-tie"></i>Investment Advisory
                             </a></li>
                             <li><div class="dropdown-divider"></div></li>
-                            <li><h6 class="dropdown-header">AI & Automation</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('ai_recommendations.ai_dashboard') }}">
-                                <i class="fas fa-robot"></i>AI Recommendations
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('chat.chat_home') }}">
-                                <i class="fas fa-comments"></i>In-App Chat
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('reconciliation.reconciliation_dashboard') }}">
-                                <i class="fas fa-balance-scale"></i>Reconciliation
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('fraud_detection.fraud_dashboard') }}">
-                                <i class="fas fa-shield-alt"></i>Fraud Detection
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('identity.identity_dashboard') }}">
-                                <i class="fas fa-id-card"></i>Digital Identity & e-Signature
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('webhooks.test_webhook') }}">
-                                <i class="fas fa-plug"></i>Open API & Webhooks
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('gamification.gamification_dashboard') }}">
-                                <i class="fas fa-trophy"></i>Gamification
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('tax.tax_dashboard') }}">
-                                <i class="fas fa-file-invoice-dollar"></i>Tax & Compliance
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('pwa.pwa_home') }}">
-                                <i class="fas fa-mobile"></i>Mobile App (PWA)
-                            </a></li>
-                            <li><div class="dropdown-divider"></div></li>
-                            <li><h6 class="dropdown-header">AI & Automation</h6></li>
-                            <li><a class="dropdown-item" href="{{ url_for('ai_recommendations.ai_dashboard') }}">
-                                <i class="fas fa-robot"></i>AI Recommendations
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('chat.chat_home') }}">
-                                <i class="fas fa-comments"></i>In-App Chat
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('reconciliation.reconciliation_dashboard') }}">
-                                <i class="fas fa-balance-scale"></i>Reconciliation
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('fraud_detection.fraud_dashboard') }}">
-                                <i class="fas fa-shield-alt"></i>Fraud Detection
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('identity.identity_dashboard') }}">
-                                <i class="fas fa-id-card"></i>Digital Identity & e-Signature
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('webhooks.test_webhook') }}">
-                                <i class="fas fa-plug"></i>Open API & Webhooks
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('gamification.gamification_dashboard') }}">
-                                <i class="fas fa-trophy"></i>Gamification
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('tax.tax_dashboard') }}">
-                                <i class="fas fa-file-invoice-dollar"></i>Tax & Compliance
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('pwa.pwa_home') }}">
-                                <i class="fas fa-mobile"></i>Mobile App (PWA)
-                            </a></li>
                         </ul>
                     </li>
                     
@@ -597,6 +540,7 @@
                                 <i class="fas fa-chart-line"></i>Reports & Analytics
                             </a></li>
 
+                            {% if current_user.is_authenticated %}
                             <!-- Advanced Features -->
                             <li><div class="dropdown-divider"></div></li>
                             <li><h6 class="dropdown-header">Advanced Features</h6></li>
@@ -624,8 +568,40 @@
                             <li><a class="dropdown-item" href="{{ url_for('investment.advisory') }}">
                                 <i class="fas fa-user-tie"></i>Investment Advisory
                             </a></li>
+                            {% endif %}
 
                             <!-- Communication -->
+                            {% if current_user.is_authenticated %}
+                            <li><div class="dropdown-divider"></div></li>
+                            <li><h6 class="dropdown-header">AI & Automation</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('ai_recommendations.ai_dashboard') }}">
+                                <i class="fas fa-robot"></i>AI Recommendations
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('chat.chat_home') }}">
+                                <i class="fas fa-comments"></i>In-App Chat
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('reconciliation.reconciliation_dashboard') }}">
+                                <i class="fas fa-balance-scale"></i>Reconciliation
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('fraud_detection.fraud_dashboard') }}">
+                                <i class="fas fa-shield-alt"></i>Fraud Detection
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('identity.identity_dashboard') }}">
+                                <i class="fas fa-id-card"></i>Digital Identity & e-Signature
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('webhooks.test_webhook') }}">
+                                <i class="fas fa-plug"></i>Open API & Webhooks
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('gamification.gamification_dashboard') }}">
+                                <i class="fas fa-trophy"></i>Gamification
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('tax.tax_dashboard') }}">
+                                <i class="fas fa-file-invoice-dollar"></i>Tax & Compliance
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('pwa.pwa_home') }}">
+                                <i class="fas fa-mobile"></i>Mobile App (PWA)
+                            </a></li>
+                            {% endif %}
                             <li><div class="dropdown-divider"></div></li>
                             <li><h6 class="dropdown-header">Communication</h6></li>
                             <li><a class="dropdown-item position-relative" href="{{ url_for('notifications.notification_dashboard') }}">
@@ -1433,7 +1409,6 @@ function changeLanguage(languageCode) {
 }
 
 // Auto-logout for inactive users
-<script>
 let inactivityTimer;
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -1445,7 +1420,7 @@ function resetInactivityTimer() {
             resetInactivityTimer(); // Reset timer if user wants to continue
         } else {
             // Auto logout
-            window.location.href = '{{ url_for("auth.logout") }}';
+            window.location.href = "{{ url_for('auth.logout') }}";
         }
     }, INACTIVITY_TIMEOUT);
 }
@@ -1455,10 +1430,14 @@ function resetInactivityTimer() {
     document.addEventListener(event, resetInactivityTimer, true);
 });
 
+// Pass authentication state from Jinja2 to JS
+const isAuthenticated = {{ current_user.is_authenticated | tojson }};
 // Initialize timer when page loads
-if ('{{ current_user.is_authenticated }}' === 'True') {
-    resetInactivityTimer();
-}
+document.addEventListener('DOMContentLoaded', function() {
+    if (isAuthenticated) {
+        resetInactivityTimer();
+    }
+});
 
 // Enterprise-level Feedback functionality
 function openFeedbackModal() {
