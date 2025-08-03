@@ -45,8 +45,22 @@
                             <div class="col-md-6">
                                 <label for="nextMeetingDate" class="form-label">Next Meeting Date</label>
                                 <input type="date" class="form-control" id="nextMeetingDate" name="next_meeting_date" 
-                                       min="{{ moment().format('YYYY-MM-DD') }}" 
                                        title="Select the date for your next chama meeting">
+</form>
+<script>
+// Set min date for nextMeetingDate input to today
+document.addEventListener('DOMContentLoaded', function() {
+    var dateInput = document.getElementById('nextMeetingDate');
+    if (dateInput) {
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        var minDate = yyyy + '-' + mm + '-' + dd;
+        dateInput.setAttribute('min', minDate);
+    }
+});
+</script>
                                 <small class="form-text text-muted">Choose when your chama will meet next</small>
                             </div>
                             <div class="col-md-6">

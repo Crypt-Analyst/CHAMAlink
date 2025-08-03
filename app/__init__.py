@@ -130,6 +130,11 @@ def create_app():
         ('app.routes.feedback', 'feedback_bp', '/feedback'),
         ('app.routes.enterprise', 'enterprise_bp', '/enterprise'),
         ('app.routes.health', 'health_bp', '/health'),
+        # New feature blueprints
+        ('app.routes.marketplace', 'marketplace_bp', '/marketplace'),
+        ('app.routes.lending', 'lending_bp', '/lending'),
+        ('app.routes.analytics_api', 'analytics_api_bp', '/api/analytics'),
+        ('app.routes.language', 'language_bp', '/language'),
     ]
 
     for module_path, blueprint_name, url_prefix in blueprint_imports:

@@ -25,7 +25,8 @@ def dashboard():
         total_users = User.query.count()
         total_chamas = Chama.query.count()
         active_chamas = Chama.query.filter_by(status='active').count()
-        total_members = ChamaMember.query.count()
+        from app.models.chama import chama_members
+        total_members = db.session.query(chama_members).count()
         
         # Revenue Analytics
         subscription_revenue = db.session.query(
@@ -58,10 +59,10 @@ def dashboard():
         chama_performance = db.session.query(
             Chama.id,
             Chama.name,
-            func.count(ChamaMember.id).label('member_count'),
+            func.count(chama_members.c.user_id).label('member_count'),
             Chama.status,
             Chama.created_at
-        ).outerjoin(ChamaMember).group_by(Chama.id).all()
+        ).outerjoin(chama_members, Chama.id == chama_members.c.chama_id).group_by(Chama.id).all()
         
         # User Engagement Analytics
         active_users_7d = User.query.filter(

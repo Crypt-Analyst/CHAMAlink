@@ -16,12 +16,26 @@
                 </div>
                 <div class="col-md-4 text-md-end">
                     <div class="d-flex flex-column flex-md-row gap-2">
-                        <button class="btn btn-primary">
+                        <button class="btn btn-primary" id="mainNewChamaBtn">
                             <i class="fas fa-plus me-2"></i>New Chama
                         </button>
-                        <button class="btn btn-outline-secondary">
+<script>
+// Ensure main New Chama button is clickable
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('mainNewChamaBtn')?.addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('createChamaModal'));
+        modal.show();
+    });
+});
+</script>
+                        <button class="btn btn-outline-secondary" onclick="exportChamas()">
                             <i class="fas fa-download me-2"></i>Export
                         </button>
+<script>
+function exportChamas() {
+    window.location.href = '/founder-dashboard/export-chamas';
+}
+</script>
                     </div>
                 </div>
             </div>
@@ -161,10 +175,10 @@
                                         <small class="text-success">75% of {{ chama.name }}'s monthly target</small>
                                     </div>
                                     <div class="chama-actions">
-                                        <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); viewChamaDetails({{ chama.id }})">
+                                        <button class="btn btn-sm btn-outline-primary view-details-btn" data-chama-id="{{ chama.id }}">
                                             <i class="fas fa-eye me-1"></i>View Details
                                         </button>
-                                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); showContributeModal({{ chama.id }}, '{{ chama.name }}')">
+                                        <button class="btn btn-sm btn-primary contribute-btn" data-chama-id="{{ chama.id }}" data-chama-name="{{ chama.name }}">
                                             <i class="fas fa-hand-holding-usd me-1"></i>Contribute
                                         </button>
                                     </div>
@@ -200,7 +214,7 @@
                                         <i class="fas fa-plus-circle text-success fs-2 mb-3"></i>
                                         <h5>Create a New Chama</h5>
                                         <p class="text-muted small mb-3">Start fresh with your own chama group. Invite members and begin building wealth together.</p>
-                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createChamaModal">
+                                        <button class="btn btn-success" id="onboardingCreateChamaBtn">
                                             <i class="fas fa-plus me-2"></i>Create Chama
                                         </button>
                                     </div>
@@ -210,9 +224,23 @@
                                         <i class="fas fa-user-plus text-primary fs-2 mb-3"></i>
                                         <h5>Join Existing Chama</h5>
                                         <p class="text-muted small mb-3">Get invited to a chama by a friend or search for public chamas in your area.</p>
-                                        <button class="btn btn-primary" onclick="showJoinChamaModal()">
+                                        <button class="btn btn-primary" id="onboardingJoinChamaBtn">
                                             <i class="fas fa-search me-2"></i>Find Chamas
                                         </button>
+<script>
+// Ensure onboarding buttons are always clickable
+document.addEventListener('DOMContentLoaded', function() {
+    // Create Chama button in onboarding
+    document.getElementById('onboardingCreateChamaBtn')?.addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('createChamaModal'));
+        modal.show();
+    });
+    // Join Chama button in onboarding
+    document.getElementById('onboardingJoinChamaBtn')?.addEventListener('click', function() {
+        window.location.href = '/chama/search';
+    });
+});
+</script>
                                     </div>
                                 </div>
                             </div>
@@ -255,7 +283,7 @@
                     <div class="card-body">
                         <div class="transaction-list">
                             {% for transaction in recent_transactions %}
-                            <div class="transaction-item" onclick="viewTransactionDetails({{ transaction.id }})" style="cursor: pointer;">
+                            <div class="transaction-item transaction-details-btn" data-transaction-id="{{ transaction.id }}" style="cursor: pointer;">
                                 <div class="transaction-icon {% if transaction.type == 'contribution' %}bg-success{% elif transaction.type == 'investment' %}bg-warning{% elif transaction.type == 'loan' %}bg-info{% else %}bg-secondary{% endif %}">
                                     <i class="fas {% if transaction.type == 'contribution' %}fa-arrow-down{% elif transaction.type == 'investment' %}fa-arrow-up{% elif transaction.type == 'loan' %}fa-exchange-alt{% else %}fa-minus{% endif %}"></i>
                                 </div>
@@ -298,16 +326,16 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                            <button class="btn btn-primary" onclick="window.location.href='{{ url_for('loans.loan_dashboard') }}'">
+                            <button class="btn btn-primary" id="loanDashboardBtn">
                                 <i class="fas fa-coins me-2"></i>Apply for Loan
                             </button>
-                            <button class="btn btn-outline-warning" onclick="window.location.href='{{ url_for('penalties.penalty_dashboard') }}'">
+                            <button class="btn btn-outline-warning" id="penaltyDashboardBtn">
                                 <i class="fas fa-gavel me-2"></i>View Penalties
                             </button>
-                            <button class="btn btn-outline-info" onclick="window.location.href='{{ url_for('notifications.notification_dashboard') }}'">
+                            <button class="btn btn-outline-info" id="notificationDashboardBtn">
                                 <i class="fas fa-bell me-2"></i>Notifications
                             </button>
-                            <button class="btn btn-outline-secondary" onclick="window.location.href='{{ url_for('settings.account_settings') }}'">
+                            <button class="btn btn-outline-secondary" id="settingsDashboardBtn">
                                 <i class="fas fa-cog me-2"></i>Settings
                             </button>
                         </div>
@@ -476,6 +504,45 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View Details button
+    document.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const chamaId = this.getAttribute('data-chama-id');
+            if (chamaId) viewChamaDetails(chamaId);
+        });
+    });
+    // Contribute button
+    document.querySelectorAll('.contribute-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const chamaId = this.getAttribute('data-chama-id');
+            const chamaName = this.getAttribute('data-chama-name');
+            if (chamaId && chamaName) showContributeModal(chamaId, chamaName);
+        });
+    });
+    // Transaction details
+    document.querySelectorAll('.transaction-details-btn').forEach(item => {
+        item.addEventListener('click', function() {
+            const transactionId = this.getAttribute('data-transaction-id');
+            if (transactionId) viewTransactionDetails(transactionId);
+        });
+    });
+    // Dashboard quick links
+    document.getElementById('loanDashboardBtn')?.addEventListener('click', function() {
+        window.location.href = "{{ url_for('loans.loan_dashboard') }}";
+    });
+    document.getElementById('penaltyDashboardBtn')?.addEventListener('click', function() {
+        window.location.href = "{{ url_for('penalties.penalty_dashboard') }}";
+    });
+    document.getElementById('notificationDashboardBtn')?.addEventListener('click', function() {
+        window.location.href = "{{ url_for('notifications.notification_dashboard') }}";
+    });
+    document.getElementById('settingsDashboardBtn')?.addEventListener('click', function() {
+        window.location.href = "{{ url_for('settings.account_settings') }}";
+    });
+});
 // Add click handler for chama cards navigation (Fix Issue #1)
 document.addEventListener('DOMContentLoaded', function() {
     // Make chama cards clickable
