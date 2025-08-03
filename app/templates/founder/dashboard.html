@@ -28,7 +28,7 @@
                         <button class="btn btn-outline-secondary" onclick="exportChamas()">
                             <i class="fas fa-download me-2"></i>Export Data
                         </button>
-                        {% if current_user.is_authenticated and (current_user.role in ['it', 'admin'] or current_user.is_super_admin or current_user.is_founder) %}
+                        {% if current_user.is_authenticated and (current_user.is_founder or current_user.role == 'it') %}
                         <a href="{{ url_for('it_admin.dashboard') }}" class="btn btn-dark">
                             <i class="fas fa-tools me-2"></i>IT/Admin Dashboard
                         </a>
