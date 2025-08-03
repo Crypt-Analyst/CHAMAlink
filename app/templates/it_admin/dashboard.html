@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}IT/Admin Dashboard{% endblock %}
+{% block content %}
+<h2>IT/Admin Dashboard</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr><th>ID</th><th>Email</th><th>Status</th><th>Role</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ 'Active' if user.is_active else 'Suspended' }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+                {% if not user.is_active %}
+                <a href="{{ url_for('it_admin.approve_user', user_id=user.id) }}" class="btn btn-success btn-sm">Approve</a>
+                {% else %}
+                <a href="{{ url_for('it_admin.suspend_user', user_id=user.id) }}" class="btn btn-warning btn-sm">Suspend</a>
+                {% endif %}
+                <a href="{{ url_for('it_admin.delete_user', user_id=user.id) }}" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for('it_admin.view_logs') }}" class="btn btn-info">View System Logs</a>
+{% endblock %}

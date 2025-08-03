@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, flash, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -31,7 +31,24 @@ mail = Mail()
 csrf = CSRFProtect()
 
 def create_app():
+    from flask_login import current_user, logout_user
     app = Flask(__name__)
+
+    @app.before_request
+    def enforce_session_timeout():
+        # Only check for authenticated users
+        if current_user.is_authenticated:
+            now = datetime.utcnow()
+            last_active = session.get('last_active')
+            timeout = app.config.get('PERMANENT_SESSION_LIFETIME', 1800)
+            if last_active:
+                last_active_dt = datetime.strptime(last_active, '%Y-%m-%dT%H:%M:%S')
+                if (now - last_active_dt).total_seconds() > timeout:
+                    logout_user()
+                    flash('Session expired. Please log in again.', 'warning')
+                    return redirect(url_for('auth.login'))
+            # Update last_active timestamp
+            session['last_active'] = now.strftime('%Y-%m-%dT%H:%M:%S')
 
     # Configuration
     app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "chamalink-secret-key")
@@ -78,10 +95,18 @@ def create_app():
             flash('Please log in to access this page.', 'info')
         return redirect(url_for('auth.login'))
 
-    # Template context processor
+
+    # Template context processor for current time
     @app.context_processor
     def inject_now():
         return {'now': datetime.now}
+
+    # Inject a dummy translation function 't' into Jinja2 context
+    def t(s):
+        return s  # Replace with real translation logic if needed
+    @app.context_processor
+    def inject_t():
+        return dict(t=t)
 
     # Register Blueprints
     try:
@@ -100,6 +125,7 @@ def create_app():
 
     # Register other blueprints with error handling
     blueprint_imports = [
+        ('app.routes.it_admin.routes', 'it_admin_bp', '/it-admin'),
         ('app.routes.chama', 'chama_bp', '/chama'),
         ('app.routes.mpesa', 'mpesa_bp', '/mpesa'),
         ('app.routes.loans', 'loans_bp', '/loans'),
@@ -135,6 +161,16 @@ def create_app():
         ('app.routes.lending', 'lending_bp', '/lending'),
         ('app.routes.analytics_api', 'analytics_api_bp', '/api/analytics'),
         ('app.routes.language', 'language_bp', '/language'),
+        # Advanced features
+        ('app.routes.ai_recommendations', 'ai_recommendations_bp', '/ai'),
+        ('app.routes.chat', 'chat_bp', '/chat'),
+        ('app.routes.reconciliation', 'reconciliation_bp', '/reconciliation'),
+        ('app.routes.fraud_detection', 'fraud_detection_bp', '/fraud'),
+        ('app.routes.identity', 'identity_bp', '/identity'),
+        ('app.routes.webhooks', 'webhooks_bp', '/webhooks'),
+        ('app.routes.gamification', 'gamification_bp', '/gamification'),
+        ('app.routes.tax', 'tax_bp', '/tax'),
+        ('app.routes.pwa', 'pwa_bp', '/pwa'),
     ]
 
     for module_path, blueprint_name, url_prefix in blueprint_imports:

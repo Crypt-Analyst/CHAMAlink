@@ -58,6 +58,30 @@ def submit_feedback():
         # Save feedback
         with open(feedback_file, 'w', encoding='utf-8') as f:
             json.dump(feedback_list, f, indent=2, ensure_ascii=False)
+
+        # Send feedback to system email
+        try:
+            from flask_mail import Message
+            from flask import current_app
+            from app import mail
+            msg = Message(
+                subject=f"New Feedback: {feedback_data['rating']}/5 from {feedback_data.get('user_email', 'anonymous')}",
+                sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@chamalink.com'),
+                recipients=['rahasoft.app@gmail.com'],
+                body=f"""
+New Feedback Submitted:
+Rating: {feedback_data['rating']}/5
+Message: {feedback_data['message']}
+User Email: {feedback_data.get('user_email', 'anonymous')}
+Allow Contact: {feedback_data.get('allow_contact', False)}
+Page URL: {feedback_data.get('page_url', '')}
+User Agent: {feedback_data.get('user_agent', '')}
+Timestamp: {feedback_data.get('timestamp', '')}
+        """
+            )
+            mail.send(msg)
+        except Exception as mail_err:
+            print(f"❌ Error sending feedback email: {mail_err}")
         
         # Log feedback submission
         print(f"📝 New feedback submitted: Rating {feedback_data['rating']}/5 from {feedback_data.get('user_email', 'anonymous')}")

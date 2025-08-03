@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}System Logs{% endblock %}
+{% block content %}
+<h2>System Logs</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr><th>Time</th><th>Event</th><th>User</th><th>Details</th><th>IP</th></tr>
+    </thead>
+    <tbody>
+    {% for log in logs %}
+        <tr>
+            <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') if log.created_at else '' }}</td>
+            <td>{{ log.event }}</td>
+            <td>{{ log.user.email if log.user else log.user_id }}</td>
+            <td>{{ log.details }}</td>
+            <td>{{ log.ip_address }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for('it_admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+{% endblock %}

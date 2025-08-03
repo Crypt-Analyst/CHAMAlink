@@ -7,8 +7,9 @@ from .chama import (
     LoanApplication, LoanApproval, Penalty, PenaltyPayment,
     ChamaMembershipRequest, MembershipApproval, 
     Notification, MpesaTransaction, RegistrationFeePayment,
-    ManualPaymentVerification, Receipt, RecurringPayment, AuditLog, MultiSignatureTransaction
+    ManualPaymentVerification, Receipt, RecurringPayment, MultiSignatureTransaction
 )
+from .audit_log import AuditLog
 from .subscription import (
     SubscriptionPlan, UserSubscription, SubscriptionPayment,
     UserDocument, LoginAttempt, EmailVerification, LoanApprovalToken,
