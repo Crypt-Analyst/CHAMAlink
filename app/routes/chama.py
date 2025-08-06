@@ -130,13 +130,16 @@ def create_chama():
         db.session.add(chama)
         db.session.flush()  # Get the chama ID
         
-        # Add creator as admin member
-        membership = chama_members.insert().values(
-            user_id=current_user.id,
-            chama_id=chama.id,
-            role='creator'
+        # Add creator as admin member using raw SQL as fallback
+        db.session.execute(
+            db.text("INSERT INTO chama_members (user_id, chama_id, role, joined_at) VALUES (:user_id, :chama_id, :role, :joined_at)"),
+            {
+                'user_id': current_user.id,
+                'chama_id': chama.id,
+                'role': 'creator',
+                'joined_at': datetime.utcnow()
+            }
         )
-        db.session.execute(membership)
         db.session.commit()
         
         if request.is_json:
