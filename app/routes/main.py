@@ -150,6 +150,8 @@ def contribute():
         chama_id = data.get('chama_id')
         amount = float(data.get('amount', 0))
         
+        current_app.logger.info(f"Contribution attempt by user {current_user.id}: chama_id={chama_id}, amount={amount}")
+        
         if not chama_id:
             return jsonify({'success': False, 'message': 'Chama ID is required'}), 400
         
@@ -166,31 +168,103 @@ def contribute():
         if not chama:
             return jsonify({'success': False, 'message': 'Chama not found'}), 404
         
+        current_app.logger.info(f"Processing contribution to chama: {chama.name}")
+        
         # Create contribution transaction
         transaction = Transaction(
             type='contribution',
             amount=amount,
             description=f'{data.get("description", "Monthly contribution")}',
             user_id=current_user.id,
-            chama_id=chama_id
+            chama_id=chama_id,
+            status='completed'
         )
         
-        # Update chama balance
-        chama.total_balance += amount
+        # Update chama balance if it exists
+        if hasattr(chama, 'total_balance'):
+            chama.total_balance += amount
         
         # Add transaction to session and commit
         db.session.add(transaction)
         db.session.commit()
         
+        current_app.logger.info(f"Contribution recorded successfully: transaction_id={transaction.id}")
         return jsonify({'success': True, 'message': 'Contribution recorded successfully!'})
             
     except ValueError as e:
         db.session.rollback()
+        current_app.logger.error(f"Value error in contribution: {e}")
         return jsonify({'success': False, 'message': 'Invalid amount format'}), 400
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Contribution error: {e}")
-        return jsonify({'success': False, 'message': 'An error occurred while recording your contribution. Please try again.'}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'An error occurred while recording your contribution: {str(e)}'}), 500
+
+@main.route('/contribute_mpesa', methods=['POST'])
+@login_required
+def contribute_mpesa():
+    """Initiate M-Pesa payment for contribution"""
+    try:
+        data = request.get_json()
+        chama_id = data.get('chama_id')
+        amount = float(data.get('amount', 0))
+        phone_number = data.get('phone_number') or current_user.phone_number
+        
+        current_app.logger.info(f"M-Pesa contribution attempt by user {current_user.id}: chama_id={chama_id}, amount={amount}")
+        
+        # Validate inputs
+        if not chama_id or amount <= 0:
+            return jsonify({'success': False, 'message': 'Invalid chama or amount'}), 400
+        
+        if not phone_number:
+            return jsonify({'success': False, 'message': 'Phone number is required for M-Pesa payment'}), 400
+        
+        # Security check: Ensure user is a member of this chama
+        from app.utils.permissions import user_can_access_chama
+        if not user_can_access_chama(current_user.id, chama_id):
+            return jsonify({'success': False, 'message': 'You do not have access to this chama'}), 403
+        
+        chama = Chama.query.get(chama_id)
+        if not chama:
+            return jsonify({'success': False, 'message': 'Chama not found'}), 404
+        
+        # Import M-Pesa functionality
+        from app.utils.mpesa import get_mpesa_api
+        
+        # Create account reference
+        account_reference = f"CHAMA{chama_id}U{current_user.id}"
+        transaction_desc = f"Contribution to {chama.name}"
+        
+        # Initiate M-Pesa STK push
+        mpesa_result = get_mpesa_api().stk_push(
+            phone_number=phone_number,
+            amount=amount,
+            account_reference=account_reference,
+            transaction_desc=transaction_desc
+        )
+        
+        if mpesa_result.get('success'):
+            current_app.logger.info(f"M-Pesa STK push initiated successfully: {mpesa_result.get('checkout_request_id')}")
+            return jsonify({
+                'success': True,
+                'message': 'Payment initiated successfully! Please check your phone for the M-Pesa prompt.',
+                'checkout_request_id': mpesa_result.get('checkout_request_id'),
+                'customer_message': mpesa_result.get('customer_message')
+            })
+        else:
+            current_app.logger.error(f"M-Pesa STK push failed: {mpesa_result}")
+            return jsonify({
+                'success': False,
+                'message': mpesa_result.get('message', 'Payment initiation failed. Please try again.')
+            }), 400
+            
+    except Exception as e:
+        current_app.logger.error(f"M-Pesa contribution error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': f'Payment initiation failed: {str(e)}'}), 500
 
 @main.route('/dashboard_stats')
 @login_required
