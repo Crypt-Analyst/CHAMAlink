@@ -67,7 +67,7 @@ def submit_feedback():
             msg = Message(
                 subject=f"New Feedback: {feedback_data['rating']}/5 from {feedback_data.get('user_email', 'anonymous')}",
                 sender=current_app.config.get('MAIL_DEFAULT_SENDER', 'noreply@chamalink.com'),
-                recipients=['rahasoft.app@gmail.com'],
+                recipients=['chamalink.system@gmail.com'],
                 body=f"""
 New Feedback Submitted:
 Rating: {feedback_data['rating']}/5

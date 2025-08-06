@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Manage Subscription - CHAMAlink{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h1>My Subscriptions</h1>
+  <table class="table table-bordered mt-4">
+    <thead>
+      <tr>
+        <th>Plan</th>
+        <th>Status</th>
+        <th>Payment Method</th>
+        <th>Started</th>
+        <th>Expires</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sub in subscriptions %}
+      <tr>
+        <td>{{ sub.plan_id }}</td>
+        <td>{{ sub.status }}</td>
+        <td>{{ sub.payment_method|capitalize if sub.payment_method else 'N/A' }}</td>
+        <td>{{ sub.started_at }}</td>
+        <td>{{ sub.expires_at or 'N/A' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

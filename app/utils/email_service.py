@@ -12,7 +12,7 @@ class EmailService:
     def __init__(self):
         self.smtp_server = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
         self.port = int(os.getenv('MAIL_PORT', '587'))
-        self.sender_email = os.getenv('MAIL_USERNAME', 'rahasoft.app@gmail.com')
+        self.sender_email = os.getenv('MAIL_USERNAME', 'chamalink.system@gmail.com')
         self.sender_name = "ChamaLink Support"
         self.password = os.getenv('MAIL_PASSWORD')
         self.use_tls = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'

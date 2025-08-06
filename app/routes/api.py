@@ -547,3 +547,92 @@ def export_security_report():
     # Generate security report
     # In production, this would generate a comprehensive PDF/CSV report
     return jsonify({'message': 'Security report generation would be implemented here'})
+
+@api_bp.route('/system-notification', methods=['POST'])
+@login_required
+def send_system_notification():
+    """Send system notification to all users"""
+    if not current_user.is_super_admin:
+        return jsonify({'error': 'Access denied', 'success': False}), 403
+    
+    try:
+        data = request.get_json()
+        message = data.get('message', '').strip()
+        priority = data.get('priority', 'medium')
+        notification_type = data.get('type', 'system_alert')
+        
+        if not message:
+            return jsonify({'error': 'Message is required', 'success': False}), 400
+        
+        from app.models.user import User
+        from app.models.notification import Notification
+        
+        # Get all active users
+        users = User.query.filter_by(is_active=True).all()
+        
+        if not users:
+            return jsonify({'error': 'No active users found', 'success': False}), 404
+        
+        # Create notifications for all users
+        notifications_created = 0
+        for user in users:
+            try:
+                notification = Notification(
+                    user_id=user.id,
+                    title=f"System Alert" + (f" ({priority.upper()} Priority)" if priority == 'high' else ''),
+                    message=message,
+                    type='system',
+                    is_read=False,
+                    created_date=datetime.utcnow()
+                )
+                db.session.add(notification)
+                notifications_created += 1
+                
+                # Send email for high priority notifications
+                if priority == 'high' and user.email:
+                    try:
+                        from app.utils.email_service import send_email
+                        email_subject = "🚨 High Priority System Alert - CHAMAlink"
+                        email_body = f"""
+                        <h2>System Alert</h2>
+                        <p><strong>Priority:</strong> {priority.upper()}</p>
+                        <p><strong>Message:</strong> {message}</p>
+                        <p><strong>Sent by:</strong> System Administrator ({current_user.full_name})</p>
+                        <p><strong>Time:</strong> {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
+                        <hr>
+                        <p><small>This is an automated system notification from CHAMAlink.</small></p>
+                        """
+                        send_email(user.email, email_subject, email_body)
+                    except Exception as email_error:
+                        print(f"Failed to send email to {user.email}: {email_error}")
+                        
+            except Exception as notification_error:
+                print(f"Failed to create notification for user {user.id}: {notification_error}")
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'System notification sent successfully',
+            'recipients_count': notifications_created
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error sending system notification: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': f'Failed to send system notification: {str(e)}',
+            'success': False
+        }), 500
+
+# Test endpoint for debugging
+@api_bp.route('/test-notification', methods=['GET'])
+def test_notification_endpoint():
+    """Test endpoint to verify API is working"""
+    return jsonify({
+        'success': True,
+        'message': 'API endpoint is working',
+        'timestamp': datetime.now().isoformat()
+    })

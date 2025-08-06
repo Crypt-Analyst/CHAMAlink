@@ -644,27 +644,7 @@ class ManualPaymentVerification(db.Model):
     def __repr__(self):
         return f'<ManualPaymentVerification {self.user.username} - {self.amount}>'
 
-class AuditLog(db.Model):
-    __tablename__ = 'audit_logs'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    chama_id = db.Column(db.Integer, db.ForeignKey('chamas.id'))
-    action = db.Column(db.String(100), nullable=False)
-    entity_type = db.Column(db.String(50))  # transaction, loan, penalty, etc.
-    entity_id = db.Column(db.Integer)
-    old_values = db.Column(db.JSON)
-    new_values = db.Column(db.JSON)
-    ip_address = db.Column(db.String(45))
-    user_agent = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relationships
-    user = db.relationship('User', backref='audit_logs')
-    chama = db.relationship('Chama', backref='audit_logs')
-    
-    def __repr__(self):
-        return f'<AuditLog {self.action} by {self.user.username}>'
+
 
 class Receipt(db.Model):
     __tablename__ = 'receipts'

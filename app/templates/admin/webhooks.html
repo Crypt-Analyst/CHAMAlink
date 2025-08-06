@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Admin - Webhooks{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2>Registered Webhooks</h2>
+  <table class="table table-bordered table-striped mt-4">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>URL</th>
+        <th>Event</th>
+        <th>Active</th>
+        <th>Last Triggered</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for webhook in webhooks %}
+      <tr>
+        <td>{{ webhook.id }}</td>
+        <td>{{ webhook.url }}</td>
+        <td>{{ webhook.event }}</td>
+        <td>{{ 'Yes' if webhook.is_active else 'No' }}</td>
+        <td>{{ webhook.last_triggered or 'Never' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Language Settings{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Select Your Language</h2>
+    <ul class="list-group">
+        <li class="list-group-item"><a href="{{ url_for('language.set_language', lang_code='en') }}">English</a></li>
+        <li class="list-group-item"><a href="{{ url_for('language.set_language', lang_code='sw') }}">Kiswahili</a></li>
+        <li class="list-group-item"><a href="{{ url_for('language.set_language', lang_code='fr') }}">Français</a></li>
+    </ul>
+</div>
+{% endblock %}

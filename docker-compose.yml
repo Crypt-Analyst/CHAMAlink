@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: chamalink_db
+      POSTGRES_USER: chamalink_user
+      POSTGRES_PASSWORD: changeme
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  web:
+    build: .
+    command: gunicorn run:app --bind 0.0.0.0:5000 --workers 2 --timeout 120
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SQLALCHEMY_DATABASE_URI=postgresql://chamalink_user:changeme@db:5432/chamalink_db
+    depends_on:
+      - db
+volumes:
+  db_data:

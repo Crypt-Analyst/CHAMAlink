@@ -1,0 +1,11 @@
+<div id="cookieConsent" style="position:fixed;bottom:0;width:100%;background:#222;color:#fff;padding:10px;z-index:9999;display:none;">
+  <div class="container d-flex justify-content-between align-items-center">
+    <span>We use cookies to ensure you get the best experience. <a href="/privacy" style="color:#0af;">Learn more</a>.</span>
+    <button class="btn btn-light btn-sm" onclick="document.getElementById('cookieConsent').style.display='none';localStorage.setItem('cookieConsent','1')">Got it!</button>
+  </div>
+</div>
+<script>
+  if (!localStorage.getItem('cookieConsent')) {
+    document.getElementById('cookieConsent').style.display = 'block';
+  }
+</script>

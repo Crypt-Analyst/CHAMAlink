@@ -17,6 +17,29 @@
     </div>
     
     <!-- Summary Cards -->
+    {% if total_contributions == 0 and total_loans == 0 and total_penalties == 0 %}
+    <!-- Empty State -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted mb-3">No Financial Data Available</h4>
+                    <p class="text-muted mb-4">You don't have any financial activity yet. Join or create a chama to start building your financial reports.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('chama.create_chama') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create a Chama
+                        </a>
+                        <a href="{{ url_for('chama.my_chamas') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Browse Chamas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Summary Cards -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card border-0 shadow-sm">
@@ -82,7 +105,9 @@
             </div>
         </div>
     </div>
+    {% endif %}
     
+    {% if total_contributions > 0 or total_loans > 0 or total_penalties > 0 %}
     <!-- Charts Section -->
     <div class="row mb-4">
         <div class="col-lg-8 mb-4">
@@ -231,6 +256,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <!-- Chart.js for visualizations -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

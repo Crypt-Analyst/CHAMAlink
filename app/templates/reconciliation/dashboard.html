@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Reconciliation | ChamaLink Enterprise{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-1 text-center">
+            <i class="fas fa-balance-scale fa-3x text-primary"></i>
+        </div>
+        <div class="col-md-11">
+            <h1 class="display-5 fw-bold mb-1">Reconciliation</h1>
+            <p class="lead text-muted">Automate and streamline your group’s financial reconciliation. Enterprise tools for matching transactions, resolving discrepancies, and ensuring financial integrity.</p>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-primary"><i class="fas fa-sync-alt me-2"></i>Automated Matching</h6>
+                    <p class="card-text small">Match deposits, withdrawals, and transfers with ease.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-success"><i class="fas fa-search-dollar me-2"></i>Discrepancy Detection</h6>
+                    <p class="card-text small">Spot and resolve mismatches in your records instantly.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info"><i class="fas fa-file-invoice-dollar me-2"></i>Audit Trail</h6>
+                    <p class="card-text small">Maintain a full audit trail for compliance and transparency.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-balance-scale me-2"></i>Enterprise Reconciliation Features
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Bank and mobile money integration</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Automated statement import</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Discrepancy alerts and resolution tools</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Exportable audit reports</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Role-based access for auditors</li>
+                    </ul>
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Coming soon:</strong> AI-powered reconciliation, advanced analytics, and more!
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-rocket me-2"></i>Quick Actions
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary w-100 mb-2 disabled">Start Reconciliation (Beta)</a>
+                    <a href="#" class="btn btn-outline-primary w-100 mb-2 disabled">Import Statement</a>
+                    <a href="#" class="btn btn-outline-secondary w-100 disabled">Contact Reconciliation Support</a>
+                    <div class="small text-muted mt-3">Enterprise reconciliation features are rolling out. <a href="#" class="text-primary">Contact us</a> to join the pilot.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

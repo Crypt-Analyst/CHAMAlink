@@ -1,0 +1,28 @@
+{
+  "family": "chamalink-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "containerDefinitions": [
+    {
+      "name": "chamalink",
+      "image": "<ECR_IMAGE_URL>",
+      "portMappings": [
+        { "containerPort": 5000, "hostPort": 5000, "protocol": "tcp" }
+      ],
+      "environment": [
+        { "name": "SQLALCHEMY_DATABASE_URI", "value": "<RDS_URI>" },
+        { "name": "SECRET_KEY", "value": "<SECRET_KEY>" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/chamalink",
+          "awslogs-region": "<REGION>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

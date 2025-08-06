@@ -1,0 +1,15 @@
+{
+  "AlarmName": "chamalink-ecs-high-cpu",
+  "MetricName": "CPUUtilization",
+  "Namespace": "AWS/ECS",
+  "Statistic": "Average",
+  "Period": 300,
+  "EvaluationPeriods": 2,
+  "Threshold": 80,
+  "ComparisonOperator": "GreaterThanThreshold",
+  "Dimensions": [
+    { "Name": "ServiceName", "Value": "chamalink-service" },
+    { "Name": "ClusterName", "Value": "chamalink-cluster" }
+  ],
+  "AlarmActions": ["<SNS_TOPIC_ARN>"]
+}

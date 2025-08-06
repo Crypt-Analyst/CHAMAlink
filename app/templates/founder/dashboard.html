@@ -22,9 +22,9 @@
                         <button class="btn btn-warning" onclick="newFeatureAction()">
                             <i class="fas fa-plus me-2"></i>New Feature
                         </button>
-                        <a href="{{ url_for('main.test_email') }}" class="btn btn-info">
-                            <i class="fas fa-envelope me-2"></i>Test Email
-                        </a>
+                        <button onclick="sendSystemNotification()" class="btn btn-info">
+                            <i class="fas fa-bell me-2"></i>System Alert
+                        </button>
                         <button class="btn btn-outline-secondary" onclick="exportChamas()">
                             <i class="fas fa-download me-2"></i>Export Data
                         </button>
@@ -996,82 +996,6 @@ function generateBackup() {
 
 // Notepad functionality
 const notepad = document.getElementById('founderNotepad');
-const charCount = document.getElementById('charCount');
-const notepadStatus = document.getElementById('notepadStatus');
-
-// Load saved note on page load
-window.addEventListener('load', () => {
-    const savedNote = localStorage.getItem('founderNote');
-    if (savedNote) {
-        notepad.value = savedNote;
-        charCount.innerText = savedNote.length;
-    }
-});
-
-// Auto-save note every 30 seconds
-setInterval(() => {
-    if (notepad.value) {
-        localStorage.setItem('founderNote', notepad.value);
-        notepadStatus.innerHTML = '<i class="fas fa-circle text-success"></i> Auto-saved';
-    }
-}, 30000);
-
-// Update character count
-notepad.addEventListener('input', () => {
-    charCount.innerText = notepad.value.length;
-});
-
-function saveNote() {
-    if (notepad.value) {
-        localStorage.setItem('founderNote', notepad.value);
-        alert('📝 Note saved successfully!');
-    } else {
-        alert('Nothing to save!');
-    }
-}
-
-function clearNote() {
-    if (confirm('Clear all notes? This action cannot be undone.')) {
-        notepad.value = '';
-        localStorage.removeItem('founderNote');
-        charCount.innerText = '0';
-        notepadStatus.innerHTML = '<i class="fas fa-circle text-warning"></i> Cleared';
-    }
-}
-
-function insertTemplate(type) {
-    let template = '';
-    
-    switch(type) {
-        case 'meeting':
-            template = `
-                ### Meeting Notes
-                
-                **Date:** 
-                **Time:** 
-                **Attendees:** 
-                
-                **Agenda:** 
-                
-                **Notes:** 
-                
-                **Action Items:** 
-            `;
-            break;
-        case 'todo':
-            template = `
-                ### Todo List
-                
-                - [ ] 
-                - [ ] 
-                - [ ] 
-            `;
-            break;
-        case 'ideas':
-            template = `
-                ### Ideas
-                
-                - 
 // Notepad Functionality
 let autoSaveTimer;
 const AUTOSAVE_DELAY = 30000; // 30 seconds
@@ -1265,6 +1189,48 @@ function saveNoteToServer(content) {
     })
     .catch(error => {
         console.warn('Error saving note to server:', error);
+    });
+}
+
+function sendSystemNotification() {
+    const message = prompt('Enter system notification message:');
+    if (!message) return;
+    
+    const priority = confirm('Is this a high priority alert?') ? 'high' : 'medium';
+    
+    // Show loading state
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+    
+    fetch('/api/system-notification', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: JSON.stringify({ 
+            message: message,
+            priority: priority,
+            type: 'system_alert'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ System notification sent successfully to ${data.recipients_count} users!`);
+        } else {
+            alert(`❌ Failed to send notification: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending notification:', error);
+        alert('❌ Error sending notification. Please try again.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
     });
 }
 </script>

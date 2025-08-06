@@ -267,25 +267,43 @@ def profile():
 def reports():
     """Financial reports page"""
     try:
-        user_chamas = current_user.get_chamas()
+        # Get user chamas safely
+        try:
+            user_chamas = current_user.get_chamas() or []
+        except Exception as e:
+            current_app.logger.warning(f"Error getting user chamas: {e}")
+            user_chamas = []
         
-        # Calculate report data safely
-        total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
-            Transaction.type == 'contribution',
-            Transaction.user_id == current_user.id
-        ).scalar() or 0
+        # Calculate report data safely with better error handling
+        total_contributions = 0
+        total_loans = 0
+        total_penalties = 0
         
-        total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
-            Transaction.type == 'loan',
-            Transaction.user_id == current_user.id
-        ).scalar() or 0
+        try:
+            total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
+                Transaction.type == 'contribution',
+                Transaction.user_id == current_user.id
+            ).scalar() or 0
+        except Exception as e:
+            current_app.logger.warning(f"Error calculating contributions: {e}")
         
-        total_penalties = db.session.query(db.func.sum(Transaction.amount)).filter(
-            Transaction.type == 'penalty',
-            Transaction.user_id == current_user.id
-        ).scalar() or 0
+        try:
+            total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
+                Transaction.type == 'loan',
+                Transaction.user_id == current_user.id
+            ).scalar() or 0
+        except Exception as e:
+            current_app.logger.warning(f"Error calculating loans: {e}")
         
-        # Get monthly transaction data for charts (PostgreSQL compatible)
+        try:
+            total_penalties = db.session.query(db.func.sum(Transaction.amount)).filter(
+                Transaction.type == 'penalty',
+                Transaction.user_id == current_user.id
+            ).scalar() or 0
+        except Exception as e:
+            current_app.logger.warning(f"Error calculating penalties: {e}")
+        
+        # Get monthly transaction data for charts with better error handling
         monthly_data = []
         try:
             monthly_data = db.session.query(
@@ -296,20 +314,24 @@ def reports():
                 Transaction.type == 'contribution'
             ).group_by(db.func.to_char(Transaction.created_at, 'YYYY-MM')).all()
         except Exception as e:
-            current_app.logger.error(f"Monthly data error: {e}")
+            current_app.logger.warning(f"Monthly data error: {e}")
             monthly_data = []
+        
+        # Provide default message if no data
+        if not user_chamas and total_contributions == 0 and total_loans == 0:
+            flash('No financial data available yet. Join or create a chama to see your reports!', 'info')
         
         return render_template('reports.html',
                              user_chamas=user_chamas,
-                             total_contributions=total_contributions,
-                             total_loans=total_loans,
-                             total_penalties=total_penalties,
+                             total_contributions=float(total_contributions),
+                             total_loans=float(total_loans),
+                             total_penalties=float(total_penalties),
                              monthly_data=monthly_data,
                              current_date=datetime.now(),
                              seven_days_ago=(datetime.now() - timedelta(days=7)))
     except Exception as e:
         current_app.logger.error(f"Reports route error: {e}")
-        flash('Error loading reports. Please try again.', 'error')
+        flash('Unable to load reports at this time. Please try again later.', 'error')
         return redirect(url_for('main.dashboard'))
 
 @main.route('/terms')
@@ -520,83 +542,8 @@ def export_all_chamas():
     
     return response
 
-@main.route('/test-email')
-@login_required
-def test_email():
-    """Test email functionality - super admin only"""
-    if not current_user.is_super_admin:
-        flash('Access denied. Super admin privileges required.', 'error')
-        return redirect(url_for('main.dashboard'))
-    
-    try:
-        from flask_mail import Message
-        from app import mail
-        
-        # Create test email
-        msg = Message(
-            subject='ChamaLink Test Email - System Working!',
-            sender=('ChamaLink System', 'noreply@chamalink.co.ke'),
-            recipients=[current_user.email]
-        )
-        
-        msg.html = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
-                <h1 style="color: white; margin: 0;">🎉 Email System Test</h1>
-            </div>
-            
-            <div style="padding: 30px; background: #f8f9fa;">
-                <h2 style="color: #333;">Hello Founder Bilford! 👑</h2>
-                
-                <p style="font-size: 16px; line-height: 1.6; color: #555;">
-                    Great news! Your ChamaLink email system is working perfectly.
-                </p>
-                
-                <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea;">
-                    <h3 style="color: #667eea; margin-top: 0;">📧 Test Details:</h3>
-                    <ul style="color: #666;">
-                        <li><strong>Sent to:</strong> {current_user.email}</li>
-                        <li><strong>User:</strong> {current_user.full_name}</li>
-                        <li><strong>Time:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</li>
-                        <li><strong>Status:</strong> ✅ Email delivery successful</li>
-                    </ul>
-                </div>
-                
-                <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                    <h4 style="color: #0066cc; margin-top: 0;">🚀 What This Means:</h4>
-                    <p style="margin-bottom: 0; color: #004499;">
-                        Your email configuration is working correctly. Users will receive:
-                        <br>• Registration confirmations
-                        <br>• Password reset emails  
-                        <br>• Payment notifications
-                        <br>• LeeBot agent escalation emails
-                        <br>• System notifications
-                    </p>
-                </div>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="http://127.0.0.1:5000/founder-dashboard" 
-                       style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                        👑 Return to Founder Dashboard
-                    </a>
-                </div>
-            </div>
-            
-            <div style="background: #333; color: white; padding: 15px; text-align: center; font-size: 12px;">
-                <p style="margin: 0;">© 2025 ChamaLink - Kenya's Premier Chama Management Platform</p>
-            </div>
-        </div>
-        """
-        
-        # Send the email
-        mail.send(msg)
-        
-        flash(f'✅ Test email sent successfully to {current_user.email}! Check your inbox.', 'success')
-        return redirect(url_for('main.founder_dashboard'))
-        
-    except Exception as e:
-        flash(f'❌ Email test failed: {str(e)}', 'error')
-        return redirect(url_for('main.founder_dashboard'))
+# Test email route has been replaced with production system notification feature
+# System notifications can be sent from the founder dashboard using /api/system-notification
 
 @main.route('/api/transaction/<int:transaction_id>')
 @login_required

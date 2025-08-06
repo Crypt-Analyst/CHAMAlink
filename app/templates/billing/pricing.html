@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Pricing - CHAMAlink{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">Choose Your Plan</h1>
+  <div class="row">
+    {% for plan in plans %}
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">{{ plan.name }}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">{{ plan.currency }} {{ plan.price }} / {{ plan.interval }}</h6>
+          <p class="card-text">{{ plan.description }}</p>
+          <a href="{{ url_for('billing.subscribe', plan_id=plan.id) }}" class="btn btn-primary">Subscribe</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

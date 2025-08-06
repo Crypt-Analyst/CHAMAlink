@@ -1,0 +1,10 @@
+# AWS RDS PostgreSQL Sample Config
+DB_INSTANCE_IDENTIFIER=chamalink-db
+DB_NAME=chamalink_db
+DB_USER=chamalink_user
+DB_PASSWORD=changeme
+DB_PORT=5432
+DB_HOST=<RDS_ENDPOINT>
+
+# SQLALCHEMY_DATABASE_URI example:
+# postgresql://chamalink_user:changeme@<RDS_ENDPOINT>:5432/chamalink_db

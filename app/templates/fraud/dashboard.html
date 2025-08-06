@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Fraud Detection | ChamaLink Enterprise{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-1 text-center">
+            <i class="fas fa-shield-alt fa-3x text-danger"></i>
+        </div>
+        <div class="col-md-11">
+            <h1 class="display-5 fw-bold mb-1">Fraud Detection</h1>
+            <p class="lead text-muted">Protect your chama with advanced, enterprise-grade fraud detection. Monitor transactions, flag suspicious activity, and ensure financial security.</p>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Real-Time Alerts</h6>
+                    <p class="card-text small">Instantly flag and respond to suspicious transactions.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-success"><i class="fas fa-user-secret me-2"></i>Behavior Analysis</h6>
+                    <p class="card-text small">AI-driven analysis to detect unusual member activity.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info"><i class="fas fa-lock me-2"></i>Secure Auditing</h6>
+                    <p class="card-text small">Comprehensive audit trails for all financial actions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-shield-alt me-2"></i>Enterprise Fraud Detection Features
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Automated fraud scoring</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Suspicious pattern recognition</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Customizable alert thresholds</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Role-based fraud investigation tools</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Exportable incident reports</li>
+                    </ul>
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Coming soon:</strong> AI-powered fraud prevention, advanced analytics, and more!
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-rocket me-2"></i>Quick Actions
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-danger w-100 mb-2 disabled">Run Fraud Scan (Beta)</a>
+                    <a href="#" class="btn btn-outline-primary w-100 mb-2 disabled">View Alerts</a>
+                    <a href="#" class="btn btn-outline-secondary w-100 disabled">Contact Fraud Support</a>
+                    <div class="small text-muted mt-3">Enterprise fraud detection is rolling out. <a href="#" class="text-primary">Contact us</a> to join the pilot.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

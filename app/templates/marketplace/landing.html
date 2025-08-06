@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}API Marketplace - CHAMAlink{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">CHAMAlink API Marketplace</h1>
+  <p class="lead">Discover, connect, and manage integrations for your chama. Browse available APIs, webhooks, and third-party services.</p>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">API Documentation</h5>
+          <p class="card-text">Explore our OpenAPI docs and try out endpoints live.</p>
+          <a href="/api/docs" class="btn btn-primary">View API Docs</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Webhooks</h5>
+          <p class="card-text">Register and manage webhook endpoints for real-time notifications.</p>
+          <a href="#" class="btn btn-outline-primary disabled">Manage Webhooks (Coming Soon)</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,2 @@
+# Run database backup every day at 2:00 AM
+0 2 * * * /home/bwire/CHAMAlink/scripts/backup.sh >> /home/bwire/CHAMAlink/backups/backup.log 2>&1

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Open API & Webhooks | ChamaLink Enterprise{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-1 text-center">
+            <i class="fas fa-plug fa-3x text-primary"></i>
+        </div>
+        <div class="col-md-11">
+            <h1 class="display-5 fw-bold mb-1">Open API & Webhooks</h1>
+            <p class="lead text-muted">Integrate your chama with external systems using secure, enterprise-grade APIs and webhooks. Automate workflows, sync data, and enable real-time notifications.</p>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-primary"><i class="fas fa-code-branch me-2"></i>API Endpoints</h6>
+                    <p class="card-text small">Access RESTful APIs for all major modules.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-success"><i class="fas fa-bolt me-2"></i>Real-Time Webhooks</h6>
+                    <p class="card-text small">Receive instant updates on transactions and events.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info"><i class="fas fa-lock me-2"></i>Secure Integrations</h6>
+                    <p class="card-text small">Enterprise security for all API and webhook traffic.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-plug me-2"></i>Enterprise API & Webhook Features
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Comprehensive API documentation</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Custom webhook event triggers</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>API key management and analytics</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Role-based access for developers</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Sandbox and production environments</li>
+                    </ul>
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Coming soon:</strong> Self-service API portal, advanced analytics, and more!
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-rocket me-2"></i>Quick Actions
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary w-100 mb-2 disabled">Create API Key (Beta)</a>
+                    <a href="#" class="btn btn-outline-primary w-100 mb-2 disabled">Test Webhook</a>
+                    <a href="#" class="btn btn-outline-secondary w-100 disabled">Contact API Support</a>
+                    <div class="small text-muted mt-3">Enterprise API features are rolling out. <a href="#" class="text-primary">Contact us</a> to join the pilot.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

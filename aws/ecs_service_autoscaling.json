@@ -1,0 +1,15 @@
+{
+  "ServiceNamespace": "ecs",
+  "ResourceId": "service/chamalink-cluster/chamalink-service",
+  "ScalableDimension": "ecs:service:DesiredCount",
+  "MinCapacity": 2,
+  "MaxCapacity": 10,
+  "TargetTrackingScalingPolicyConfiguration": {
+    "TargetValue": 60.0,
+    "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+    },
+    "ScaleInCooldown": 60,
+    "ScaleOutCooldown": 60
+  }
+}

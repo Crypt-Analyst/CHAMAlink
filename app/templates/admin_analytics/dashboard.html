@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Admin Analytics Dashboard</h2>
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center bg-primary text-white mb-3">
+        <div class="card-body">
+          <h4 class="card-title">Total Users</h4>
+          <p class="display-5">{{ user_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center bg-success text-white mb-3">
+        <div class="card-body">
+          <h4 class="card-title">Admins</h4>
+          <p class="display-5">{{ admin_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center bg-warning text-white mb-3">
+        <div class="card-body">
+          <h4 class="card-title">IT Staff</h4>
+          <p class="display-5">{{ it_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center bg-info text-white mb-3">
+        <div class="card-body">
+          <h4 class="card-title">Audit Logs</h4>
+          <p class="display-5">{{ audit_count }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <h4>Recent Audit Events</h4>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>User</th>
+        <th>Event</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in recent_audits %}
+      <tr>
+        <td>{{ log.created_at }}</td>
+        <td>{{ log.user.full_name if log.user else 'N/A' }}</td>
+        <td>{{ log.event }}</td>
+        <td>{{ log.details }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

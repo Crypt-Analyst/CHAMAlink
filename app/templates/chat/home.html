@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}In-App Chat | ChamaLink Enterprise{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-1 text-center">
+            <i class="fas fa-comments fa-3x text-primary"></i>
+        </div>
+        <div class="col-md-11">
+            <h1 class="display-5 fw-bold mb-1">In-App Chat</h1>
+            <p class="lead text-muted">Secure, real-time communication for your chama. Collaborate, share updates, and keep everyone in sync with enterprise-grade chat features.</p>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-primary"><i class="fas fa-users me-2"></i>Group Messaging</h6>
+                    <p class="card-text small">Chat with all members in secure, persistent channels.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-success"><i class="fas fa-bell me-2"></i>Instant Notifications</h6>
+                    <p class="card-text small">Get notified of important updates and mentions instantly.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title text-info"><i class="fas fa-lock me-2"></i>End-to-End Encryption</h6>
+                    <p class="card-text small">Your conversations are private and secure, always.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-comments me-2"></i>Enterprise Chat Features
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Real-time group and private messaging</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>File and document sharing</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Message search and archiving</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Role-based access and moderation</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Mobile and desktop notifications</li>
+                    </ul>
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Coming soon:</strong> Voice and video chat, AI-powered message summaries, and more!
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-rocket me-2"></i>Quick Actions
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary w-100 mb-2 disabled">Start New Chat (Beta)</a>
+                    <a href="#" class="btn btn-outline-primary w-100 mb-2 disabled">Upload File</a>
+                    <a href="#" class="btn btn-outline-secondary w-100 disabled">Contact Chat Support</a>
+                    <div class="small text-muted mt-3">Enterprise chat features are rolling out. <a href="#" class="text-primary">Contact us</a> to join the pilot.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

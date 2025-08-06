@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>System Health Dashboard</h2>
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h4 class="card-title">CPU Usage</h4>
+          <p class="display-5" id="cpu">--</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h4 class="card-title">Memory Usage</h4>
+          <p class="display-5" id="memory">--</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h4 class="card-title">Disk Usage</h4>
+          <p class="display-5" id="disk">--</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center mb-3">
+        <div class="card-body">
+          <h4 class="card-title">Uptime</h4>
+          <p class="display-5" id="uptime">--</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function fetchMetrics() {
+      fetch("/system-health/api/metrics")
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById('cpu').innerText = data.cpu + '%';
+          document.getElementById('memory').innerText = data.memory + '%';
+          document.getElementById('disk').innerText = data.disk + '%';
+          let uptime = Math.floor(data.uptime/3600) + 'h ' + Math.floor((data.uptime%3600)/60) + 'm';
+          document.getElementById('uptime').innerText = uptime;
+        });
+    }
+    setInterval(fetchMetrics, 3000);
+    fetchMetrics();
+  </script>
+</div>
+{% endblock %}

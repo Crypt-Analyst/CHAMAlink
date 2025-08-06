@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Privacy Policy</h2>
+  <p>Your privacy is important to us. This page explains how we handle your data in compliance with GDPR and other privacy regulations.</p>
+  <ul>
+    <li>We only collect data necessary for your use of CHAMAlink.</li>
+    <li>You can export your data at any time.</li>
+    <li>You can request account deletion at any time.</li>
+    <li>We do not sell your data to third parties.</li>
+  </ul>
+  <a href="{{ url_for('privacy.export_data') }}" class="btn btn-info">Export My Data</a>
+  <form method="post" action="{{ url_for('privacy.delete_account') }}" style="display:inline;">
+    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete your account? This cannot be undone.')">Delete My Account</button>
+  </form>
+</div>
+{% endblock %}

@@ -54,7 +54,9 @@ def my_chamas():
         
     except Exception as e:
         current_app.logger.error(f"Error loading user chamas: {e}")
-        flash('Error loading your chamas. Please try again.', 'error')
+        import traceback
+        traceback.print_exc()
+        flash(f'Error loading your chamas: {str(e)}', 'error')
         return redirect(url_for('main.dashboard'))
 
 @chama_bp.route('/create', methods=['GET', 'POST'])
@@ -146,7 +148,9 @@ def create_chama():
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error creating chama: {e}")
-        error_msg = 'An error occurred while creating the chama. Please try again.'
+        import traceback
+        traceback.print_exc()
+        error_msg = f'An error occurred while creating the chama: {str(e)}'
         if request.is_json:
             return jsonify({'success': False, 'message': error_msg}), 500
         else:

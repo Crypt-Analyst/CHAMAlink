@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Subscribe - CHAMAlink{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h1>Subscribe to {{ plan.name }}</h1>
+  <p class="lead">Price: {{ plan.currency }} {{ plan.price }} / {{ plan.interval }}</p>
+  <form method="post" id="paymentForm">
+    <div class="mb-3">
+      <label for="payment_method" class="form-label">Select Payment Method</label>
+      <select class="form-select" id="payment_method" name="payment_method" required>
+        <option value="mpesa">MPESA</option>
+        <option value="stripe">Stripe (Card)</option>
+        <option value="paypal">PayPal</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="manual">Manual (Admin)</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-success">Confirm Subscription</button>
+    <a href="{{ url_for('billing.pricing') }}" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+  <div id="paymentStatus" class="mt-4"></div>
+  <script>
+    document.getElementById('paymentForm').onsubmit = function(e) {
+      e.preventDefault();
+      var method = document.getElementById('payment_method').value;
+      var statusDiv = document.getElementById('paymentStatus');
+      statusDiv.innerHTML = '<div class="alert alert-info">Processing ' + method.toUpperCase() + ' payment...</div>';
+      setTimeout(function() {
+        statusDiv.innerHTML = '<div class="alert alert-success">Payment successful! Subscription activated.</div>';
+        document.getElementById('paymentForm').submit();
+      }, 1200);
+    };
+  </script>
+</div>
+{% endblock %}
