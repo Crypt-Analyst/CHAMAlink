@@ -76,12 +76,22 @@ def get_user_chama_role(user_id, chama_id):
 
 def user_can_access_chama(user_id, chama_id):
     """Check if a user can access a specific chama"""
-    from app.models import User
-    user = User.query.get(user_id)
-    if not user:
+    try:
+        from app.models import chama_members
+        from app import db
+        
+        # Direct database query to check membership
+        membership = db.session.query(chama_members).filter(
+            chama_members.c.user_id == user_id,
+            chama_members.c.chama_id == chama_id
+        ).first()
+        
+        return membership is not None
+        
+    except Exception as e:
+        from flask import current_app
+        current_app.logger.error(f"Error checking chama access: user_id={user_id}, chama_id={chama_id}, error={e}")
         return False
-    
-    return user.is_member_of_chama(chama_id)
 
 def user_can_admin_chama(user_id, chama_id):
     """Check if a user can administer a specific chama"""

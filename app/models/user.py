@@ -166,6 +166,18 @@ class User(UserMixin, db.Model):
         ).first()
         return membership is not None
     
+    def member_since(self, chama_id):
+        """Get the date when user joined a specific chama"""
+        try:
+            from app.models.chama import chama_members
+            membership = db.session.query(chama_members).filter(
+                chama_members.c.user_id == self.id,
+                chama_members.c.chama_id == chama_id
+            ).first()
+            return membership.joined_at if membership else None
+        except Exception:
+            return None
+    
     # Flask-Login required properties
     def get_id(self):
         """Return the user ID as a string"""

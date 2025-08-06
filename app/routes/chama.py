@@ -167,35 +167,60 @@ def chama_detail(chama_id):
     try:
         chama = Chama.query.get_or_404(chama_id)
         
+        current_app.logger.info(f"Accessing chama details: chama_id={chama_id}, user_id={current_user.id}")
+        
         # Check if user is a member of this chama or is super admin
-        if not current_user.is_super_admin and not current_user.is_member_of_chama(chama_id):
+        from app.utils.permissions import user_can_access_chama
+        if not getattr(current_user, 'is_super_admin', False) and not user_can_access_chama(current_user.id, chama_id):
             flash('You do not have permission to access this chama.', 'error')
             return redirect(url_for('main.dashboard'))
         
-        # Get chama statistics
-        total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
-            Transaction.chama_id == chama_id,
-            Transaction.type == 'contribution'
-        ).scalar() or 0
+        # Get chama statistics with proper error handling
+        try:
+            total_contributions = db.session.query(db.func.sum(Transaction.amount)).filter(
+                Transaction.chama_id == chama_id,
+                Transaction.type == 'contribution'
+            ).scalar() or 0
+        except Exception as e:
+            current_app.logger.warning(f"Error getting contributions: {e}")
+            total_contributions = 0
         
-        total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
-            Transaction.chama_id == chama_id,
-            Transaction.type == 'loan'
-        ).scalar() or 0
+        try:
+            total_loans = db.session.query(db.func.sum(Transaction.amount)).filter(
+                Transaction.chama_id == chama_id,
+                Transaction.type == 'loan'
+            ).scalar() or 0
+        except Exception as e:
+            current_app.logger.warning(f"Error getting loans: {e}")
+            total_loans = 0
         
         # Get recent transactions for this chama
-        recent_transactions = Transaction.query.filter(
-            Transaction.chama_id == chama_id
-        ).order_by(desc(Transaction.created_at)).limit(10).all()
+        try:
+            recent_transactions = Transaction.query.filter(
+                Transaction.chama_id == chama_id
+            ).order_by(desc(Transaction.created_at)).limit(10).all()
+        except Exception as e:
+            current_app.logger.warning(f"Error getting transactions: {e}")
+            recent_transactions = []
         
         # Get upcoming events for this chama
-        upcoming_events = Event.query.filter(
-            Event.chama_id == chama_id,
-            Event.event_date >= date.today()
-        ).order_by(Event.event_date).limit(5).all()
+        try:
+            upcoming_events = Event.query.filter(
+                Event.chama_id == chama_id,
+                Event.event_date >= date.today()
+            ).order_by(Event.event_date).limit(5).all()
+        except Exception as e:
+            current_app.logger.warning(f"Error getting events: {e}")
+            upcoming_events = []
         
         # Get user's role in this chama
-        user_role = get_user_chama_role(current_user.id, chama_id)
+        try:
+            user_role = get_user_chama_role(current_user.id, chama_id)
+        except Exception as e:
+            current_app.logger.warning(f"Error getting user role: {e}")
+            user_role = 'member'  # Default role
+        
+        current_app.logger.info(f"Successfully loaded chama details: {chama.name}")
         
         return render_template('chama/detail.html',
                              chama=chama,
@@ -204,13 +229,11 @@ def chama_detail(chama_id):
                              recent_transactions=recent_transactions,
                              upcoming_events=upcoming_events,
                              user_role=user_role)
+                             
     except Exception as e:
         current_app.logger.error(f"Error accessing chama details: {e}")
-        flash('Error accessing chama details. Please try again.', 'error')
-        return redirect(url_for('main.dashboard'))
-    
-    except Exception as e:
-        current_app.logger.error(f'Error accessing chama details: {str(e)}')
+        import traceback
+        traceback.print_exc()
         flash(f'Error accessing chama details: {str(e)}', 'error')
         return redirect(url_for('main.dashboard'))
 
