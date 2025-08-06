@@ -177,7 +177,7 @@ def approve_minutes(minutes_id):
 
 def create_minutes_notification(minutes):
     """Create notification for all chama members about new minutes"""
-    from app.models.chama import Notification
+    from app.models.notification import Notification
     
     for member in minutes.chama.members:
         notification = Notification(

@@ -44,7 +44,7 @@
                                     </td>
                                     <td>{{ receipt.generated_at.strftime('%Y-%m-%d %H:%M') }}</td>
                                     <td>
-                                        <a href="{{ url_for('chama.detail', chama_id=receipt.chama_id) }}" 
+                                        <a href="{{ url_for('chama.chama_detail', chama_id=receipt.chama_id) }}" 
                                            class="text-decoration-none">
                                             {{ receipt.chama.name }}
                                         </a>

@@ -1,0 +1,373 @@
+<!-- QuickBooks Integration Component for Treasurer Dashboard -->
+<!-- To be included in chama dashboard for treasurers and financial roles -->
+
+<div class="card border-0 shadow-sm mb-4" id="quickbooks-integration-card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="fab fa-quickbooks text-primary"></i> QuickBooks Professional Accounting
+        </h5>
+        <span class="badge badge-secondary" id="quickbooks-connection-badge">Loading...</span>
+    </div>
+    <div class="card-body">
+        <!-- Connection Status Section -->
+        <div id="quickbooks-status-section">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div id="connection-info">
+                        <div class="d-flex align-items-center">
+                            <div class="status-indicator me-3" id="status-indicator">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-1" id="connection-title">Checking Connection...</h6>
+                                <small class="text-muted" id="connection-subtitle">Please wait...</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-right">
+                    <div id="quickbooks-actions">
+                        <!-- Actions will be populated based on user role -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Sync Metrics (for Treasurers) -->
+        <div id="treasurer-metrics" class="mt-4" style="display: none;">
+            <hr>
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="metric">
+                        <h6 class="text-success mb-1" id="synced-transactions">0</h6>
+                        <small class="text-muted">Synced Transactions</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="metric">
+                        <h6 class="text-info mb-1" id="total-synced-amount">KES 0</h6>
+                        <small class="text-muted">Total Amount</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="metric">
+                        <h6 class="text-warning mb-1" id="pending-items">0</h6>
+                        <small class="text-muted">Pending Sync</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Sync Activity -->
+        <div id="recent-sync-activity" class="mt-4" style="display: none;">
+            <hr>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">Recent Sync Activity</h6>
+                <button class="btn btn-link btn-sm p-0" onclick="toggleSyncHistory()">
+                    View All <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div id="sync-history-preview">
+                <!-- Sync history will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sync Progress Modal -->
+<div class="modal fade" id="quickbooksSyncModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="fab fa-quickbooks text-primary"></i> Syncing to QuickBooks
+                </h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p id="sync-progress-message">Preparing financial data...</p>
+                <div class="progress mt-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%" id="sync-progress-bar"></div>
+                </div>
+                <small class="text-muted mt-2 d-block">This may take a few moments</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    loadQuickBooksStatus();
+});
+
+function loadQuickBooksStatus() {
+    {% if chama %}
+    const chamaId = {{ chama.id }};
+    {% else %}
+    const chamaId = null;
+    {% endif %}
+    
+    if (!chamaId) {
+        showQuickBooksError('Chama ID not available');
+        return;
+    }
+    
+    $.get(`/integrations/quickbooks/${chamaId}/status`)
+        .done(function(response) {
+            if (response.success) {
+                updateQuickBooksUI(response.data);
+            } else {
+                showQuickBooksError(response.error);
+            }
+        })
+        .fail(function() {
+            showQuickBooksError('Failed to load QuickBooks status');
+        });
+}
+
+function updateQuickBooksUI(data) {
+    const isConnected = data.connected;
+    const permissions = data.user_permissions;
+    
+    // Update connection badge
+    if (isConnected) {
+        $('#quickbooks-connection-badge')
+            .removeClass('badge-secondary badge-danger')
+            .addClass('badge-success')
+            .text('Connected');
+    } else {
+        $('#quickbooks-connection-badge')
+            .removeClass('badge-secondary badge-success')
+            .addClass('badge-warning')
+            .text('Not Connected');
+    }
+    
+    // Update status indicator and info
+    if (isConnected) {
+        $('#status-indicator').html('<i class="fas fa-check-circle text-success fa-lg"></i>');
+        $('#connection-title').text('QuickBooks Connected');
+        
+        if (data.last_sync) {
+            const lastSync = new Date(data.last_sync);
+            $('#connection-subtitle').text(`Last sync: ${lastSync.toLocaleString()}`);
+        } else {
+            $('#connection-subtitle').text('Ready for synchronization');
+        }
+    } else {
+        $('#status-indicator').html('<i class="fas fa-exclamation-triangle text-warning fa-lg"></i>');
+        $('#connection-title').text('QuickBooks Not Connected');
+        $('#connection-subtitle').text('Contact administrator to set up integration');
+    }
+    
+    // Update actions based on permissions
+    updateQuickBooksActions(permissions, isConnected, data.chama_id);
+    
+    // Show metrics for treasurers and financial roles
+    if (permissions.can_sync || permissions.can_view_logs) {
+        $('#treasurer-metrics').show();
+        loadFinancialMetrics(data.chama_id);
+    }
+    
+    // Show sync activity for users who can view logs
+    if (permissions.can_view_logs && isConnected) {
+        $('#recent-sync-activity').show();
+        loadRecentSyncActivity(data.chama_id);
+    }
+}
+
+function updateQuickBooksActions(permissions, isConnected, chamaId) {
+    let actions = '';
+    
+    if (isConnected) {
+        // Sync action for financial roles
+        if (permissions.can_sync) {
+            actions += `
+                <button class="btn btn-primary btn-sm" onclick="syncChamaToQuickBooks(${chamaId})">
+                    <i class="fas fa-sync-alt"></i> Sync Now
+                </button>
+            `;
+        }
+        
+        // Settings action for creators
+        if (permissions.can_configure) {
+            actions += `
+                <button class="btn btn-outline-secondary btn-sm ml-2" onclick="openQuickBooksSettings(${chamaId})">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+            `;
+        }
+    } else {
+        // Connection action for creators only
+        if (permissions.can_connect) {
+            actions += `
+                <a href="/integrations/accounting/quickbooks/oauth?chama_id=${chamaId}" 
+                   class="btn btn-success btn-sm">
+                    <i class="fab fa-quickbooks"></i> Connect QuickBooks
+                </a>
+            `;
+        } else {
+            actions += `
+                <button class="btn btn-secondary btn-sm" disabled>
+                    <i class="fas fa-lock"></i> Contact Admin
+                </button>
+            `;
+        }
+    }
+    
+    $('#quickbooks-actions').html(actions);
+}
+
+function syncChamaToQuickBooks(chamaId) {
+    // Show sync modal
+    $('#quickbooksSyncModal').modal('show');
+    
+    // Start sync process
+    $('#sync-progress-message').text('Syncing financial data...');
+    $('#sync-progress-bar').css('width', '25%');
+    
+    $.post(`/integrations/quickbooks/${chamaId}/sync`)
+        .done(function(response) {
+            $('#sync-progress-bar').css('width', '75%');
+            $('#sync-progress-message').text('Processing results...');
+            
+            setTimeout(function() {
+                $('#sync-progress-bar').css('width', '100%');
+                
+                if (response.success) {
+                    setTimeout(function() {
+                        $('#quickbooksSyncModal').modal('hide');
+                        showSuccessAlert('Financial data synced successfully to QuickBooks!');
+                        loadQuickBooksStatus(); // Refresh status
+                    }, 1000);
+                } else {
+                    setTimeout(function() {
+                        $('#quickbooksSyncModal').modal('hide');
+                        showErrorAlert(`Sync failed: ${response.error}`);
+                    }, 1000);
+                }
+            }, 1500);
+        })
+        .fail(function() {
+            $('#quickbooksSyncModal').modal('hide');
+            showErrorAlert('Sync failed due to network error');
+        });
+}
+
+function loadFinancialMetrics(chamaId) {
+    // This would load actual metrics from your financial data
+    // For now, showing sample data
+    $('#synced-transactions').text('156');
+    $('#total-synced-amount').text('KES 245,000');
+    $('#pending-items').text('3');
+}
+
+function loadRecentSyncActivity(chamaId) {
+    // This would load recent sync history
+    const sampleActivity = `
+        <div class="small">
+            <div class="d-flex justify-content-between py-1">
+                <span><i class="fas fa-check text-success"></i> Member contributions synced</span>
+                <span class="text-muted">2 hours ago</span>
+            </div>
+            <div class="d-flex justify-content-between py-1">
+                <span><i class="fas fa-check text-success"></i> Expense payments synced</span>
+                <span class="text-muted">1 day ago</span>
+            </div>
+            <div class="d-flex justify-content-between py-1">
+                <span><i class="fas fa-exclamation-triangle text-warning"></i> 3 items pending sync</span>
+                <span class="text-muted">2 days ago</span>
+            </div>
+        </div>
+    `;
+    $('#sync-history-preview').html(sampleActivity);
+}
+
+function showQuickBooksError(message) {
+    $('#status-indicator').html('<i class="fas fa-times-circle text-danger fa-lg"></i>');
+    $('#connection-title').text('Error Loading Status');
+    $('#connection-subtitle').text(message);
+    $('#quickbooks-connection-badge')
+        .removeClass('badge-secondary badge-success badge-warning')
+        .addClass('badge-danger')
+        .text('Error');
+}
+
+function toggleSyncHistory() {
+    // This would open a detailed sync history modal or page
+    window.location.href = `/chama/{{ chama.id }}/quickbooks/history`;
+}
+
+function openQuickBooksSettings(chamaId) {
+    // This would open QuickBooks settings modal or page
+    window.location.href = `/integrations/quickbooks/settings?chama_id=${chamaId}`;
+}
+
+function showSuccessAlert(message) {
+    const alert = `
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `;
+    $('#quickbooks-integration-card').before(alert);
+    
+    setTimeout(() => {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+
+function showErrorAlert(message) {
+    const alert = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `;
+    $('#quickbooks-integration-card').before(alert);
+    
+    setTimeout(() => {
+        $('.alert').fadeOut();
+    }, 5000);
+}
+</script>
+
+<style>
+.metric h6 {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.metric small {
+    font-size: 0.8rem;
+}
+
+.status-indicator {
+    min-width: 40px;
+    text-align: center;
+}
+
+#quickbooks-integration-card .card-header {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.progress {
+    height: 6px;
+}
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+#sync-history-preview .fa {
+    width: 16px;
+}
+</style>

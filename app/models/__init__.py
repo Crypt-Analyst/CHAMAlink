@@ -6,9 +6,11 @@ from .chama import (
     Chama, Transaction, Event, chama_members, ChamaMember, Contribution, Loan, LoanPayment,
     LoanApplication, LoanApproval, Penalty, PenaltyPayment,
     ChamaMembershipRequest, MembershipApproval, 
-    Notification, MpesaTransaction, RegistrationFeePayment,
-    ManualPaymentVerification, Receipt, RecurringPayment, MultiSignatureTransaction
+    MpesaTransaction, RegistrationFeePayment,
+    ManualPaymentVerification, Receipt, RecurringPayment, MultiSignatureTransaction,
+    LeadershipElection, ElectionCandidate, ElectionVote
 )
+from .notification import Notification
 from .audit_log import AuditLog
 from .subscription import (
     SubscriptionPlan, UserSubscription, SubscriptionPayment,
@@ -22,3 +24,4 @@ from .enterprise import (
     PlanType
 )
 from .currency import Currency
+from .quickbooks import QuickBooksIntegration, QuickBooksSyncLog

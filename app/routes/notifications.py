@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from app.models.chama import Notification, Chama, chama_members
+from app.models.chama import Chama, chama_members
+from app.models.notification import Notification
 from app import db
 from datetime import datetime
 from sqlalchemy import desc, and_

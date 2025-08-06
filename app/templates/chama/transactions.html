@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chama.name }} - Transactions{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-exchange-alt me-2"></i>{{ chama.name }} Transactions
+                        </h4>
+                        <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Chama
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {% if transactions.items %}
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Member</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in transactions.items %}
+                                    <tr>
+                                        <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge badge-{% if transaction.type == 'contribution' %}success{% elif transaction.type == 'loan' %}warning{% else %}info{% endif %}">
+                                                {{ transaction.type.title() }}
+                                            </span>
+                                        </td>
+                                        <td>{{ transaction.description or '-' }}</td>
+                                        <td class="text-end">
+                                            <strong>{{ "KES {:,.2f}".format(transaction.amount) }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if transaction.user %}
+                                                {{ transaction.user.username }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{% if transaction.status == 'completed' %}success{% elif transaction.status == 'pending' %}warning{% else %}danger{% endif %}">
+                                                {{ transaction.status.title() }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if transactions.pages > 1 %}
+                        <nav aria-label="Transaction pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if transactions.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('chama.chama_transactions', chama_id=chama.id, page=transactions.prev_num) }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page_num in transactions.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != transactions.page %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ url_for('chama.chama_transactions', chama_id=chama.id, page=page_num) }}">{{ page_num }}</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page_num }}</span>
+                                            </li>
+                                        {% endif %}
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if transactions.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('chama.chama_transactions', chama_id=chama.id, page=transactions.next_num) }}">Next</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                        
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Transactions Yet</h5>
+                            <p class="text-muted">This chama doesn't have any transactions yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

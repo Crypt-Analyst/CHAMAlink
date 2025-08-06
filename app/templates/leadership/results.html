@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Election Results - {{ election.position.title() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="card-title">Election Results: {{ election.position.title() }}</h3>
+                        <div class="text-muted">
+                            {{ election.chama.name }} | 
+                            Election Period: {{ election.created_at.strftime('%Y-%m-%d') }} - 
+                            {{ election.election_end_date.strftime('%Y-%m-%d') }}
+                        </div>
+                    </div>
+                    <div>
+                        {% if user_role in ['admin', 'creator'] %}
+                        <a href="{{ url_for('leadership.manage_leadership', chama_id=election.chama_id) }}" class="btn btn-primary">
+                            <i class="fas fa-cogs"></i> Manage Leadership
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('leadership.view_elections', chama_id=election.chama_id) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Elections
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Election Status -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="alert alert-{{ 'success' if election.status == 'completed' else 'info' }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-{{ 'check-circle' if election.status == 'completed' else 'clock' }}"></i>
+                                        <strong>Status: {{ election.status.title() }}</strong>
+                                        {% if election.status == 'active' %}
+                                        <span class="ml-2">Ends in {{ (election.election_end_date - now()).days }} days</span>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <span class="badge badge-primary">
+                                            Total Votes: {{ results|sum(attribute='vote_count') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Results -->
+                    {% if results %}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>Vote Results</h4>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Candidate</th>
+                                            <th>Votes</th>
+                                            <th>Percentage</th>
+                                            <th>Visual</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% set total_votes = results|sum(attribute='vote_count') %}
+                                        {% for result in results %}
+                                        <tr class="{{ 'table-success' if loop.index == 1 else '' }}">
+                                            <td>
+                                                {% if loop.index == 1 %}
+                                                <i class="fas fa-trophy text-warning"></i> #{{ loop.index }}
+                                                {% else %}
+                                                #{{ loop.index }}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-user-circle fa-2x text-primary mr-2"></i>
+                                                    <div>
+                                                        <strong>{{ result.candidate.first_name }} {{ result.candidate.last_name }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">{{ result.candidate.email }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-{{ 'success' if loop.index == 1 else 'secondary' }} badge-lg">
+                                                    {{ result.vote_count }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% set percentage = (result.vote_count / total_votes * 100) if total_votes > 0 else 0 %}
+                                                {{ "%.1f"|format(percentage) }}%
+                                            </td>
+                                            <td style="width: 200px;">
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-{{ 'success' if loop.index == 1 else 'primary' }}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ percentage }}%"
+                                                         aria-valuenow="{{ percentage }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Election Summary -->
+                        <div class="col-md-4">
+                            <h4>Election Summary</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Position:</strong> {{ election.position.title() }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Total Votes:</strong> {{ total_votes }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Eligible Voters:</strong> {{ election.chama.members|length }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Turnout:</strong> 
+                                        {% set turnout = (total_votes / election.chama.members|length * 100) if election.chama.members|length > 0 else 0 %}
+                                        {{ "%.1f"|format(turnout) }}%
+                                    </div>
+                                    
+                                    {% if results and election.status == 'completed' %}
+                                    <div class="mt-4 p-3 bg-light rounded">
+                                        <h6><i class="fas fa-crown text-warning"></i> Winner</h6>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-circle fa-2x text-success mr-2"></i>
+                                            <div>
+                                                <strong>{{ results[0].candidate.first_name }} {{ results[0].candidate.last_name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ results[0].vote_count }} votes</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% else %}
+                    <!-- No Votes Yet -->
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-ballot-check fa-2x mb-3"></i>
+                        <h5>No Votes Cast Yet</h5>
+                        <p>This election has not received any votes yet.</p>
+                        {% if election.status == 'active' %}
+                        <a href="{{ url_for('leadership.view_elections', chama_id=election.chama_id) }}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-vote-yea"></i> Cast Your Vote
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge-lg {
+    font-size: 1.1em;
+    padding: 8px 12px;
+}
+
+.progress {
+    height: 25px;
+    background-color: #e9ecef;
+}
+
+.table-success {
+    background-color: #d4edda;
+}
+
+.candidate-avatar {
+    color: #007bff;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-refresh results for active elections
+{% if election.status == 'active' %}
+setTimeout(function() {
+    location.reload();
+}, 30000); // Refresh every 30 seconds
+{% endif %}
+</script>
+{% endblock %}

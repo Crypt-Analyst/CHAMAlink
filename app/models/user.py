@@ -110,7 +110,7 @@ class User(UserMixin, db.Model):
     
     def get_unread_notifications_count(self):
         """Get count of unread notifications"""
-        from app.models.chama import Notification
+        from app.models.notification import Notification
         return Notification.query.filter_by(user_id=self.id, is_read=False).count()
 
     @property

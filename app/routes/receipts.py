@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, make_response
 from flask_login import login_required, current_user
-from app.models.chama import Chama, ChamaMember, Contribution, Receipt
+from app.models.chama import Chama, Contribution, Receipt, chama_members
 from app.models.user import User
 from app import db
 from datetime import datetime
@@ -137,9 +137,9 @@ def chama_receipts(chama_id):
     chama = Chama.query.get_or_404(chama_id)
     
     # Check if user is a member
-    member = ChamaMember.query.filter_by(
-        user_id=current_user.id,
-        chama_id=chama_id
+    member = db.session.query(chama_members).filter(
+        chama_members.c.user_id == current_user.id,
+        chama_members.c.chama_id == chama_id
     ).first()
     
     if not member:

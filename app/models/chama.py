@@ -69,12 +69,180 @@ class Chama(db.Model):
     
     @property
     def admins(self):
-        """Get all admins of this chama"""
+        """Get all admins of this chama (creator, chairperson, secretary, treasurer)"""
         from app.models.user import User
         return db.session.query(User).join(chama_members).filter(
             chama_members.c.chama_id == self.id,
-            chama_members.c.role.in_(['admin', 'creator'])
+            chama_members.c.role.in_(['creator', 'chairperson', 'secretary', 'treasurer'])
         ).all()
+    
+    @property
+    def leadership(self):
+        """Get current leadership team"""
+        from app.models.user import User
+        leaders = {}
+        leadership_query = db.session.query(User, chama_members.c.role).join(chama_members).filter(
+            chama_members.c.chama_id == self.id,
+            chama_members.c.role.in_(['creator', 'chairperson', 'secretary', 'treasurer'])
+        ).all()
+        
+        for user, role in leadership_query:
+            leaders[role] = user
+        return leaders
+    
+    @property
+    def chairperson(self):
+        """Get current chairperson"""
+        from app.models.user import User
+        return db.session.query(User).join(chama_members).filter(
+            chama_members.c.chama_id == self.id,
+            chama_members.c.role == 'chairperson'
+        ).first()
+    
+    @property
+    def secretary(self):
+        """Get current secretary"""
+        from app.models.user import User
+        return db.session.query(User).join(chama_members).filter(
+            chama_members.c.chama_id == self.id,
+            chama_members.c.role == 'secretary'
+        ).first()
+    
+    @property
+    def treasurer(self):
+        """Get current treasurer"""
+        from app.models.user import User
+        return db.session.query(User).join(chama_members).filter(
+            chama_members.c.chama_id == self.id,
+            chama_members.c.role == 'treasurer'
+        ).first()
+    
+    def get_leadership(self):
+        """Get current leadership positions"""
+        from app.models.user import User
+        
+        leadership = {}
+        
+        # Get chairperson
+        chairperson = db.session.query(User).join(chama_members).filter(
+            chama_members.c.chama_id == self.id,
+            chama_members.c.role == 'chairperson'
+        ).first()
+        if chairperson:
+            # Get elected_at date for chairperson
+            elected_info = db.session.query(
+                chama_members.c.elected_at
+            ).filter(
+                chama_members.c.chama_id == self.id,
+                chama_members.c.user_id == chairperson.id,
+                chama_members.c.role == 'chairperson'
+            ).first()
+            chairperson.elected_at = elected_info[0] if elected_info else None
+            leadership['chairperson'] = chairperson
+        
+        # Get secretary
+        secretary = db.session.query(User).join(chama_members).filter(
+            chama_members.c.chama_id == self.id,
+            chama_members.c.role == 'secretary'
+        ).first()
+        if secretary:
+            # Get elected_at date for secretary
+            elected_info = db.session.query(
+                chama_members.c.elected_at
+            ).filter(
+                chama_members.c.chama_id == self.id,
+                chama_members.c.user_id == secretary.id,
+                chama_members.c.role == 'secretary'
+            ).first()
+            secretary.elected_at = elected_info[0] if elected_info else None
+            leadership['secretary'] = secretary
+        
+        # Get treasurer
+        treasurer = db.session.query(User).join(chama_members).filter(
+            chama_members.c.chama_id == self.id,
+            chama_members.c.role == 'treasurer'
+        ).first()
+        if treasurer:
+            # Get elected_at date for treasurer
+            elected_info = db.session.query(
+                chama_members.c.elected_at
+            ).filter(
+                chama_members.c.chama_id == self.id,
+                chama_members.c.user_id == treasurer.id,
+                chama_members.c.role == 'treasurer'
+            ).first()
+            treasurer.elected_at = elected_info[0] if elected_info else None
+            leadership['treasurer'] = treasurer
+        
+        return leadership
+    
+    def get_leadership_access(self, user_id):
+        """Get user's leadership access level"""
+        user_role = db.session.query(chama_members.c.role).filter(
+            chama_members.c.user_id == user_id,
+            chama_members.c.chama_id == self.id
+        ).scalar()
+        
+        access_levels = {
+            'creator': {
+                'level': 5,
+                'permissions': ['all_access', 'create_elections', 'manage_members', 'financial_oversight', 'administrative_actions']
+            },
+            'chairperson': {
+                'level': 4,
+                'permissions': ['meeting_management', 'create_elections', 'manage_members', 'administrative_actions']
+            },
+            'treasurer': {
+                'level': 3,
+                'permissions': ['financial_oversight', 'approve_transactions', 'view_all_finances', 'generate_reports']
+            },
+            'secretary': {
+                'level': 3,
+                'permissions': ['meeting_minutes', 'member_communication', 'record_keeping', 'generate_reports']
+            },
+            'member': {
+                'level': 1,
+                'permissions': ['view_own_data', 'contribute', 'vote', 'view_meetings']
+            }
+        }
+        
+        return access_levels.get(user_role, access_levels['member'])
+    
+    def can_user_access_feature(self, user_id, feature):
+        """Check if user can access specific feature"""
+        access = self.get_leadership_access(user_id)
+        return feature in access['permissions'] or 'all_access' in access['permissions']
+    
+    def assign_leadership_role(self, user_id, role, term_months=12):
+        """Assign leadership role to user"""
+        from datetime import timedelta
+        
+        # Remove existing leadership role if any
+        db.session.execute(
+            chama_members.update().where(
+                and_(
+                    chama_members.c.user_id == user_id,
+                    chama_members.c.chama_id == self.id
+                )
+            ).values(
+                role=role,
+                elected_at=datetime.utcnow(),
+                term_end_date=datetime.utcnow() + timedelta(days=term_months*30)
+            )
+        )
+        db.session.commit()
+        
+        # Send notification
+        from app.models.notification import Notification
+        notification = Notification(
+            user_id=user_id,
+            chama_id=self.id,
+            title=f'Leadership Position Assigned',
+            message=f'You have been assigned as {role.title()} of {self.name}',
+            type='leadership_assignment'
+        )
+        db.session.add(notification)
+        db.session.commit()
     
     @property
     def regular_members(self):
@@ -150,14 +318,132 @@ class Chama(db.Model):
 chama_members = db.Table('chama_members',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
     db.Column('chama_id', db.Integer, db.ForeignKey('chamas.id'), primary_key=True),
-    db.Column('role', db.String(20), default='member'),  # member, admin, treasurer
-    db.Column('joined_at', db.DateTime, default=datetime.utcnow)
+    db.Column('role', db.String(20), default='member'),  # member, chairperson, secretary, treasurer, creator
+    db.Column('joined_at', db.DateTime, default=datetime.utcnow),
+    db.Column('elected_at', db.DateTime),  # When they were elected to leadership position
+    db.Column('term_end_date', db.DateTime)  # When their leadership term ends
 )
 
 class ChamaMember:
     """Helper class to work with chama membership"""
     
     @staticmethod
+    def get_by_user_chama(user_id, chama_id):
+        """Get member by user and chama ID"""
+        return db.session.query(chama_members).filter(
+            chama_members.c.user_id == user_id,
+            chama_members.c.chama_id == chama_id
+        ).first()
+
+# Leadership Election Models
+class LeadershipElection(db.Model):
+    """Model for chama leadership elections"""
+    __tablename__ = 'leadership_elections'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    chama_id = db.Column(db.Integer, db.ForeignKey('chamas.id'), nullable=False)
+    position = db.Column(db.String(20), nullable=False)  # chairperson, secretary, treasurer
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    
+    # Election timeline
+    nomination_start = db.Column(db.DateTime, nullable=False)
+    nomination_end = db.Column(db.DateTime, nullable=False)
+    voting_start = db.Column(db.DateTime, nullable=False)
+    voting_end = db.Column(db.DateTime, nullable=False)
+    
+    # Election status
+    status = db.Column(db.String(20), default='upcoming')  # upcoming, nominations, voting, completed, cancelled
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Results
+    winner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    total_votes = db.Column(db.Integer, default=0)
+    
+    # Relationships
+    chama = db.relationship('Chama', backref='elections')
+    creator = db.relationship('User', foreign_keys=[created_by], backref='created_elections')
+    winner = db.relationship('User', foreign_keys=[winner_id], backref='won_elections')
+    
+    def __repr__(self):
+        return f'<LeadershipElection {self.id}: {self.position} for {self.chama.name}>'
+    
+    @property
+    def current_phase(self):
+        """Get current phase of election"""
+        now = datetime.utcnow()
+        if now < self.nomination_start:
+            return 'upcoming'
+        elif now < self.nomination_end:
+            return 'nominations'
+        elif now < self.voting_start:
+            return 'nomination_closed'
+        elif now < self.voting_end:
+            return 'voting'
+        else:
+            return 'completed'
+    
+    def get_candidates(self):
+        """Get all candidates for this election"""
+        return ElectionCandidate.query.filter_by(election_id=self.id).all()
+    
+    def get_results(self):
+        """Get election results"""
+        return db.session.query(
+            ElectionCandidate.id,
+            ElectionCandidate.candidate_id,
+            User.username,
+            db.func.count(ElectionVote.id).label('vote_count')
+        ).join(User, ElectionCandidate.candidate_id == User.id)\
+        .outerjoin(ElectionVote, ElectionCandidate.id == ElectionVote.candidate_id)\
+        .filter(ElectionCandidate.election_id == self.id)\
+        .group_by(ElectionCandidate.id, ElectionCandidate.candidate_id, User.username)\
+        .order_by(db.func.count(ElectionVote.id).desc()).all()
+
+class ElectionCandidate(db.Model):
+    """Model for election candidates"""
+    __tablename__ = 'election_candidates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    election_id = db.Column(db.Integer, db.ForeignKey('leadership_elections.id'), nullable=False)
+    candidate_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    manifesto = db.Column(db.Text)  # Candidate's manifesto/platform
+    nominated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    nominated_by = db.Column(db.Integer, db.ForeignKey('users.id'))  # Who nominated them
+    
+    # Relationships
+    election = db.relationship('LeadershipElection', backref='candidates')
+    candidate = db.relationship('User', foreign_keys=[candidate_id], backref='candidacies')
+    nominator = db.relationship('User', foreign_keys=[nominated_by], backref='nominations_made')
+    
+    def __repr__(self):
+        return f'<ElectionCandidate {self.candidate.username} for {self.election.position}>'
+    
+    def get_vote_count(self):
+        """Get number of votes for this candidate"""
+        return ElectionVote.query.filter_by(candidate_id=self.id).count()
+
+class ElectionVote(db.Model):
+    """Model for election votes"""
+    __tablename__ = 'election_votes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    election_id = db.Column(db.Integer, db.ForeignKey('leadership_elections.id'), nullable=False)
+    candidate_id = db.Column(db.Integer, db.ForeignKey('election_candidates.id'), nullable=False)
+    voter_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    voted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Ensure one vote per person per election
+    __table_args__ = (db.UniqueConstraint('election_id', 'voter_id', name='unique_vote_per_election'),)
+    
+    # Relationships
+    election = db.relationship('LeadershipElection', backref='votes')
+    candidate = db.relationship('ElectionCandidate', backref='votes')
+    voter = db.relationship('User', backref='votes_cast')
+    
+    def __repr__(self):
+        return f'<ElectionVote {self.voter.username} -> {self.candidate.candidate.username}>'
     def get_member_role(user_id, chama_id):
         """Get member role in a chama"""
         membership = db.session.query(chama_members).filter(
@@ -548,28 +834,6 @@ class MembershipApproval(db.Model):
     
     def __repr__(self):
         return f'<MembershipApproval {self.id}: {self.status}>'
-
-class Notification(db.Model):
-    __tablename__ = 'notifications'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    message = db.Column(db.Text, nullable=False)
-    type = db.Column(db.String(50), nullable=False)  # meeting, loan, penalty, etc.
-    is_read = db.Column(db.Boolean, default=False)
-    created_date = db.Column(db.DateTime, default=datetime.utcnow)
-    related_id = db.Column(db.Integer)  # ID of related entity (minutes, announcement, etc.)
-    
-    # Foreign keys
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    chama_id = db.Column(db.Integer, db.ForeignKey('chamas.id'))
-    
-    # Relationships
-    user = db.relationship('User', backref='notifications')
-    chama = db.relationship('Chama', backref='notifications')
-    
-    def __repr__(self):
-        return f'<Notification {self.id}: {self.title}>'
 
 class MpesaTransaction(db.Model):
     __tablename__ = 'mpesa_transactions'

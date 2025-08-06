@@ -1,0 +1,394 @@
+{% extends "layout.html" %}
+{% block title %}QuickBooks Integration{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-calculator text-primary"></i> QuickBooks Integration</h2>
+                    <p class="text-muted">Connect and sync your chama financial data with QuickBooks Online</p>
+                </div>
+                <div>
+                    <button onclick="refreshStatus()" class="btn btn-outline-primary">
+                        <i class="fas fa-sync-alt"></i> Refresh Status
+                    </button>
+                </div>
+            </div>
+
+            <!-- Connection Status Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-link fa-2x text-primary mb-2"></i>
+                            <h5 class="card-title">Connection Status</h5>
+                            <div id="connection-status">
+                                <span class="badge badge-secondary">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-sync-alt fa-2x text-success mb-2"></i>
+                            <h5 class="card-title">Last Sync</h5>
+                            <div id="last-sync">
+                                <span class="text-muted">Never</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="fas fa-users fa-2x text-info mb-2"></i>
+                            <h5 class="card-title">Chamas Connected</h5>
+                            <div id="chamas-connected">
+                                <span class="h4">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QuickBooks Setup -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog"></i> QuickBooks Setup
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>Connect to QuickBooks Online</h6>
+                            <p class="text-muted">
+                                Connect your CHAMAlink system to QuickBooks Online for automatic financial synchronization.
+                                This will create customers for each chama and sync all financial transactions.
+                            </p>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>What gets synced:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Chamas → QuickBooks Customers</li>
+                                    <li>Member contributions → Income journal entries</li>
+                                    <li>Chama expenses → Expense journal entries</li>
+                                    <li>Loans → Asset/Liability entries</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div id="quickbooks-connect-section">
+                                <a href="{{ url_for('integrations.quickbooks_oauth') }}" class="btn btn-primary btn-lg">
+                                    <i class="fab fa-quickbooks"></i> Connect to QuickBooks
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connected Chamas -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list"></i> Connected Chamas
+                    </h5>
+                    <button onclick="syncAll()" class="btn btn-success btn-sm" disabled id="sync-all-btn">
+                        <i class="fas fa-sync-alt"></i> Sync All
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="connected-chamas-list">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> Loading chamas...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sync History -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history"></i> Sync History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="sync-history">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin"></i> Loading sync history...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sync Progress Modal -->
+<div class="modal fade" id="syncModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-sync-alt"></i> Syncing to QuickBooks
+                </h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <p id="sync-progress-text">Preparing sync...</p>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let syncInProgress = false;
+
+$(document).ready(function() {
+    loadQuickBooksStatus();
+    loadConnectedChamas();
+    loadSyncHistory();
+});
+
+function refreshStatus() {
+    loadQuickBooksStatus();
+    loadConnectedChamas();
+    loadSyncHistory();
+}
+
+function loadQuickBooksStatus() {
+    $.get('/integrations/status/quickbooks')
+        .done(function(response) {
+            if (response.success) {
+                const status = response.data;
+                
+                // Update connection status
+                const statusBadge = status.connected 
+                    ? '<span class="badge badge-success">Connected</span>'
+                    : '<span class="badge badge-warning">Not Connected</span>';
+                $('#connection-status').html(statusBadge);
+                
+                // Update last sync
+                if (status.last_sync) {
+                    const syncDate = new Date(status.last_sync);
+                    $('#last-sync').html(`<small class="text-muted">${syncDate.toLocaleString()}</small>`);
+                }
+                
+                // Update connected chamas count
+                $('#chamas-connected').html(`<span class="h4">${status.connected_chamas || 0}</span>`);
+                
+                // Update connect button
+                if (status.connected) {
+                    $('#quickbooks-connect-section').html(`
+                        <div class="alert alert-success mb-2">
+                            <i class="fas fa-check-circle"></i> Connected to QuickBooks
+                        </div>
+                        <button onclick="testConnection()" class="btn btn-outline-primary">
+                            <i class="fas fa-vial"></i> Test Connection
+                        </button>
+                    `);
+                    $('#sync-all-btn').prop('disabled', false);
+                }
+            }
+        })
+        .fail(function() {
+            $('#connection-status').html('<span class="badge badge-danger">Error</span>');
+        });
+}
+
+function loadConnectedChamas() {
+    $.get('/integrations/quickbooks/chamas')
+        .done(function(response) {
+            if (response.success) {
+                const chamas = response.data;
+                let html = '';
+                
+                if (chamas.length === 0) {
+                    html = `
+                        <div class="text-center text-muted">
+                            <i class="fas fa-users"></i>
+                            <p class="mt-2">No chamas connected to QuickBooks yet.</p>
+                            <p class="small">Connect to QuickBooks first, then sync your chamas.</p>
+                        </div>
+                    `;
+                } else {
+                    chamas.forEach(chama => {
+                        const statusBadge = chama.sync_status === 'active' 
+                            ? '<span class="badge badge-success">Active</span>'
+                            : '<span class="badge badge-warning">Inactive</span>';
+                        
+                        const lastSync = chama.last_sync 
+                            ? new Date(chama.last_sync).toLocaleString()
+                            : 'Never';
+                        
+                        html += `
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                <div>
+                                    <h6 class="mb-1">${chama.name}</h6>
+                                    <small class="text-muted">Last sync: ${lastSync}</small>
+                                </div>
+                                <div>
+                                    ${statusBadge}
+                                    <button onclick="syncChama(${chama.id})" class="btn btn-sm btn-outline-primary ml-2">
+                                        <i class="fas fa-sync-alt"></i> Sync
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                $('#connected-chamas-list').html(html);
+            }
+        })
+        .fail(function() {
+            $('#connected-chamas-list').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Failed to load connected chamas.
+                </div>
+            `);
+        });
+}
+
+function loadSyncHistory() {
+    $.get('/integrations/quickbooks/sync-history')
+        .done(function(response) {
+            if (response.success) {
+                const history = response.data;
+                let html = '';
+                
+                if (history.length === 0) {
+                    html = `
+                        <div class="text-center text-muted">
+                            <i class="fas fa-clock"></i>
+                            <p class="mt-2">No sync history available.</p>
+                        </div>
+                    `;
+                } else {
+                    history.forEach(sync => {
+                        const statusClass = sync.status === 'success' ? 'success' : 
+                                          sync.status === 'error' ? 'danger' : 'warning';
+                        
+                        const duration = sync.duration_seconds 
+                            ? `${Math.round(sync.duration_seconds)}s`
+                            : 'N/A';
+                        
+                        html += `
+                            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                <div>
+                                    <span class="badge badge-${statusClass}">${sync.status}</span>
+                                    <span class="ml-2">${sync.sync_type} sync</span>
+                                </div>
+                                <div class="text-right">
+                                    <div><small>${new Date(sync.started_at).toLocaleString()}</small></div>
+                                    <div><small class="text-muted">Duration: ${duration}</small></div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                $('#sync-history').html(html);
+            }
+        });
+}
+
+function syncChama(chamaId) {
+    if (syncInProgress) return;
+    
+    syncInProgress = true;
+    $('#syncModal').modal('show');
+    $('#sync-progress-text').text('Syncing chama to QuickBooks...');
+    
+    $.post(`/integrations/sync/quickbooks/${chamaId}`)
+        .done(function(response) {
+            if (response.success) {
+                showAlert('success', 'Chama synced successfully!');
+                loadConnectedChamas();
+                loadSyncHistory();
+            } else {
+                showAlert('danger', `Sync failed: ${response.error}`);
+            }
+        })
+        .fail(function() {
+            showAlert('danger', 'Sync failed due to network error.');
+        })
+        .always(function() {
+            syncInProgress = false;
+            $('#syncModal').modal('hide');
+        });
+}
+
+function syncAll() {
+    if (syncInProgress) return;
+    
+    syncInProgress = true;
+    $('#sync-all-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Syncing...');
+    
+    $.post('/integrations/sync/accounting/quickbooks')
+        .done(function(response) {
+            if (response.success) {
+                const data = response.data;
+                showAlert('success', `Successfully synced ${data.synced_chamas} chamas!`);
+                loadConnectedChamas();
+                loadSyncHistory();
+            } else {
+                showAlert('danger', `Sync failed: ${response.error}`);
+            }
+        })
+        .fail(function() {
+            showAlert('danger', 'Sync failed due to network error.');
+        })
+        .always(function() {
+            syncInProgress = false;
+            $('#sync-all-btn').prop('disabled', false).html('<i class="fas fa-sync-alt"></i> Sync All');
+        });
+}
+
+function testConnection() {
+    $.get('/integrations/quickbooks/test/1')
+        .done(function(response) {
+            if (response.success) {
+                const data = response.data;
+                if (data.status === 'success') {
+                    showAlert('success', `Connection successful! Connected to: ${data.company_name}`);
+                } else {
+                    showAlert('warning', `Connection test failed: ${data.message}`);
+                }
+            } else {
+                showAlert('danger', `Connection test failed: ${response.error}`);
+            }
+        });
+}
+
+function showAlert(type, message) {
+    const alert = $(`
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `);
+    
+    $('.container-fluid').prepend(alert);
+    
+    setTimeout(() => {
+        alert.fadeOut();
+    }, 5000);
+}
+</script>
+{% endblock %}

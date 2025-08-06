@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Elections - {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Active Elections - {{ chama.name }}</h3>
+                    <div>
+                        {% if user_role in ['admin', 'creator'] %}
+                        <a href="{{ url_for('leadership.manage_leadership', chama_id=chama.id) }}" class="btn btn-primary">
+                            <i class="fas fa-cogs"></i> Manage Leadership
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Chama
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
+                    {% if active_elections %}
+                    <!-- Active Elections -->
+                    {% for election in active_elections %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>{{ election.position.title() }} Election</h5>
+                            <div class="text-muted">
+                                <i class="fas fa-clock"></i> Ends: {{ election.election_end_date.strftime('%Y-%m-%d %H:%M') }}
+                                <span class="ml-3">
+                                    <i class="fas fa-user"></i> Initiated by: {{ election.initiator.first_name }} {{ election.initiator.last_name }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if election.id in user_votes %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> You have already voted in this election.
+                                <a href="{{ url_for('leadership.election_results', election_id=election.id) }}" 
+                                   class="btn btn-sm btn-info ml-2">View Results</a>
+                            </div>
+                            {% else %}
+                            <form class="voting-form" data-election-id="{{ election.id }}">
+                                {{ csrf_token() }}
+                                <h6>Select your candidate:</h6>
+                                <div class="row">
+                                    {% for member in chama.members %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card candidate-card" onclick="selectCandidate(this, {{ member.id }})">
+                                            <div class="card-body text-center">
+                                                <div class="candidate-avatar mb-2">
+                                                    <i class="fas fa-user-circle fa-3x text-primary"></i>
+                                                </div>
+                                                <h6>{{ member.first_name }} {{ member.last_name }}</h6>
+                                                <small class="text-muted">{{ member.email }}</small>
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="radio" 
+                                                           name="candidate_{{ election.id }}" value="{{ member.id }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-success" onclick="castVote({{ election.id }})">
+                                        <i class="fas fa-vote-yea"></i> Cast Vote
+                                    </button>
+                                </div>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% else %}
+                    <!-- No Active Elections -->
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>No Active Elections</h5>
+                        <p>There are currently no active elections in this chama.</p>
+                        {% if user_role in ['admin', 'creator'] %}
+                        <a href="{{ url_for('leadership.manage_leadership', chama_id=chama.id) }}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Start an Election
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.candidate-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.candidate-card:hover {
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.candidate-card.selected {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.candidate-avatar {
+    color: #007bff;
+}
+
+.voting-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectCandidate(cardElement, candidateId) {
+    // Remove selected class from all cards in this election
+    const form = cardElement.closest('.voting-form');
+    form.querySelectorAll('.candidate-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked card
+    cardElement.classList.add('selected');
+    
+    // Select the radio button
+    const radioButton = cardElement.querySelector('input[type="radio"]');
+    radioButton.checked = true;
+}
+
+function castVote(electionId) {
+    const form = document.querySelector(`[data-election-id="${electionId}"]`);
+    const selectedCandidate = form.querySelector(`input[name="candidate_${electionId}"]:checked`);
+    
+    if (!selectedCandidate) {
+        alert('Please select a candidate before voting.');
+        return;
+    }
+    
+    const data = {
+        candidate_id: parseInt(selectedCandidate.value)
+    };
+    
+    if (confirm('Are you sure you want to cast your vote? This action cannot be undone.')) {
+        fetch(`{{ url_for('leadership.cast_vote', election_id=0) }}`.replace('0', electionId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Vote cast successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while casting your vote.');
+        });
+    }
+}
+</script>
+{% endblock %}

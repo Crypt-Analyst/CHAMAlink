@@ -84,7 +84,7 @@
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             {% elif request.status == 'approved' %}
-                                                <a href="{{ url_for('chama.detail', chama_id=request.chama.id) }}" 
+                                                <a href="{{ url_for('chama.chama_detail', chama_id=request.chama.id) }}" 
                                                    class="btn btn-sm btn-outline-primary"
                                                    title="View Chama">
                                                     <i class="fas fa-eye"></i>

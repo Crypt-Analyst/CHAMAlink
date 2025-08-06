@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from app.models.chama import Chama, chama_members, Notification
+from app.models.chama import Chama, chama_members, ChamaMembershipRequest
+from app.models.notification import Notification
 from app.models.meeting_minutes import ChamaAnnouncement
 from app.models.user import User
 from app import db
@@ -15,11 +16,22 @@ def chama_admin(chama_id):
     """Admin dashboard for chama management"""
     chama = Chama.query.get_or_404(chama_id)
     
-    # Check permissions - only admin/creator can access
-    user_role = current_user.get_chama_role(chama_id)
-    if user_role not in ['admin', 'creator'] and not current_user.is_super_admin:
+    # Check permissions - use the same function as other routes
+    from app.utils.permissions import get_user_chama_role
+    user_role = get_user_chama_role(current_user.id, chama_id)
+    
+    current_app.logger.info(f"🔐 Admin access check: User {current_user.id} role in chama {chama_id}: {user_role}")
+    current_app.logger.info(f"🔐 Is super admin: {hasattr(current_user, 'is_super_admin') and current_user.is_super_admin}")
+    current_app.logger.info(f"🔐 Chama creator_id: {chama.creator_id}, User ID: {current_user.id}")
+    
+    # Also check if user is the creator directly
+    is_creator = chama.creator_id == current_user.id
+    current_app.logger.info(f"🔐 Is creator check: {is_creator}")
+    
+    if user_role not in ['admin', 'creator'] and not is_creator and not (hasattr(current_user, 'is_super_admin') and current_user.is_super_admin):
         flash('Access denied. Only admins can access this page.', 'error')
-        return redirect(url_for('chama.detail', chama_id=chama_id))
+        current_app.logger.warning(f"❌ Admin access denied for user {current_user.id} with role {user_role}")
+        return redirect(url_for('chama.chama_detail', chama_id=chama_id))
     
     # Get recent announcements
     announcements = ChamaAnnouncement.query.filter_by(
@@ -28,16 +40,28 @@ def chama_admin(chama_id):
     
     # Get member statistics
     total_members = len(chama.members)
-    pending_members = User.query.join(chama_members).filter(
-        chama_members.c.chama_id == chama_id,
-        chama_members.c.status == 'pending'
+    # Count pending membership requests instead of pending members
+    pending_members = ChamaMembershipRequest.query.filter_by(
+        chama_id=chama_id,
+        status='pending'
     ).count()
+    
+    # Get membership requests
+    membership_requests = ChamaMembershipRequest.query.filter_by(
+        chama_id=chama_id, status='pending'
+    ).order_by(ChamaMembershipRequest.request_date.desc()).all()
+    
+    # Debug logging
+    current_app.logger.info(f"📋 Admin Dashboard for chama {chama_id}: Found {len(membership_requests)} pending requests")
+    for req in membership_requests:
+        current_app.logger.info(f"  -> Request {req.id}: User {req.user_id} ({req.user.email})")
     
     return render_template('admin/dashboard.html',
                          chama=chama,
                          announcements=announcements,
                          total_members=total_members,
                          pending_members=pending_members,
+                         membership_requests=membership_requests,
                          user_role=user_role)
 
 @admin_bp.route('/chama/<int:chama_id>/meeting', methods=['GET', 'POST'])
@@ -50,7 +74,7 @@ def manage_meeting(chama_id):
     user_role = current_user.get_chama_role(chama_id)
     if user_role not in ['admin', 'creator'] and not current_user.is_super_admin:
         flash('Access denied.', 'error')
-        return redirect(url_for('chama.detail', chama_id=chama_id))
+        return redirect(url_for('chama.chama_detail', chama_id=chama_id))
     
     if request.method == 'POST':
         try:
@@ -93,7 +117,7 @@ def announcements(chama_id):
     user_role = current_user.get_chama_role(chama_id)
     if user_role not in ['admin', 'creator'] and not current_user.is_super_admin:
         flash('Access denied.', 'error')
-        return redirect(url_for('chama.detail', chama_id=chama_id))
+        return redirect(url_for('chama.chama_detail', chama_id=chama_id))
     
     # Get announcements
     announcements = ChamaAnnouncement.query.filter_by(chama_id=chama_id).order_by(
@@ -115,7 +139,7 @@ def create_announcement(chama_id):
     user_role = current_user.get_chama_role(chama_id)
     if user_role not in ['admin', 'creator'] and not current_user.is_super_admin:
         flash('Access denied.', 'error')
-        return redirect(url_for('chama.detail', chama_id=chama_id))
+        return redirect(url_for('chama.chama_detail', chama_id=chama_id))
     
     if request.method == 'POST':
         try:
@@ -260,3 +284,96 @@ def send_announcement_notifications(announcement, send_notifications=True, send_
                 print(f"Failed to send email to {user.email}: {e}")
     
     db.session.commit()
+
+@admin_bp.route('/chama/<int:chama_id>/membership-requests')
+@login_required
+def membership_requests(chama_id):
+    """View all membership requests for the chama"""
+    chama = Chama.query.get_or_404(chama_id)
+    
+    # Check permissions
+    user_role = current_user.get_chama_role(chama_id)
+    if user_role not in ['admin', 'creator'] and not current_user.is_super_admin:
+        flash('Access denied. Only admins can access this page.', 'error')
+        return redirect(url_for('chama.chama_detail', chama_id=chama_id))
+    
+    requests = ChamaMembershipRequest.query.filter_by(chama_id=chama_id).order_by(
+        ChamaMembershipRequest.request_date.desc()
+    ).all()
+    
+    return render_template('admin/membership_requests.html',
+                         chama=chama,
+                         requests=requests,
+                         user_role=user_role)
+
+@admin_bp.route('/membership-request/<int:request_id>/approve', methods=['POST'])
+@login_required
+def approve_membership_request(request_id):
+    """Approve a membership request"""
+    membership_request = ChamaMembershipRequest.query.get_or_404(request_id)
+    
+    # Check permissions
+    user_role = current_user.get_chama_role(membership_request.chama_id)
+    if user_role not in ['admin', 'creator'] and not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        # Add user to chama
+        membership = chama_members.insert().values(
+            user_id=membership_request.user_id,
+            chama_id=membership_request.chama_id,
+            role='member'
+        )
+        db.session.execute(membership)
+        
+        # Update request status
+        membership_request.status = 'approved'
+        membership_request.decision_date = datetime.utcnow()
+        
+        # Create notification
+        notification = Notification(
+            user_id=membership_request.user_id,
+            type='membership_approved',
+            title='Membership Approved!',
+            message=f'Your request to join {membership_request.chama.name} has been approved.',
+            chama_id=membership_request.chama_id
+        )
+        db.session.add(notification)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Member approved successfully!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+@admin_bp.route('/membership-request/<int:request_id>/reject', methods=['POST'])
+@login_required
+def reject_membership_request(request_id):
+    """Reject a membership request"""
+    membership_request = ChamaMembershipRequest.query.get_or_404(request_id)
+    
+    # Check permissions
+    user_role = current_user.get_chama_role(membership_request.chama_id)
+    if user_role not in ['admin', 'creator'] and not current_user.is_super_admin:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    try:
+        # Update request status
+        membership_request.status = 'rejected'
+        membership_request.decision_date = datetime.utcnow()
+        
+        # Create notification
+        notification = Notification(
+            user_id=membership_request.user_id,
+            type='membership_rejected',
+            title='Membership Request Rejected',
+            message=f'Your request to join {membership_request.chama.name} has been rejected.',
+            chama_id=membership_request.chama_id
+        )
+        db.session.add(notification)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Request rejected.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500

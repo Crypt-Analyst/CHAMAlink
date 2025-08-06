@@ -41,6 +41,13 @@ class Config:
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = None
 
+    # QuickBooks Integration Configuration
+    QUICKBOOKS_CLIENT_ID = os.environ.get('QUICKBOOKS_CLIENT_ID')
+    QUICKBOOKS_CLIENT_SECRET = os.environ.get('QUICKBOOKS_CLIENT_SECRET')
+    QUICKBOOKS_REDIRECT_URI = os.environ.get('QUICKBOOKS_REDIRECT_URI') or 'http://localhost:5000/integrations/accounting/quickbooks/callback'
+    QUICKBOOKS_ENVIRONMENT = os.environ.get('QUICKBOOKS_ENVIRONMENT', 'sandbox')  # sandbox or production
+    QUICKBOOKS_BASE_URL = os.environ.get('QUICKBOOKS_BASE_URL') or 'https://sandbox-quickbooks.api.intuit.com'
+
 class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True

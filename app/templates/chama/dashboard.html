@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chama.name }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb Navigation -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-light p-3 rounded">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('main.dashboard') }}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('chama.my_chamas') }}">
+                            <i class="fas fa-users"></i> My Chamas
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <i class="fas fa-chart-bar"></i> {{ chama.name }}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Chama Header with Clear Identity -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">
+                                <i class="fas fa-building"></i> {{ chama.name }}
+                                <small class="text-white-75">(ID: {{ chama.id }})</small>
+                            </h2>
+                            <p class="mb-0 text-white-75">{{ chama.description or 'No description available' }}</p>
+                            <small class="text-white-50">
+                                Created by {{ chama.creator.username if chama.creator else 'Unknown' }} 
+                                {% if chama.created_at %}
+                                    on {{ chama.created_at.strftime('%B %d, %Y') }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-dark fs-6">
+                                    <i class="fas fa-user-tag"></i> {{ user_role.title() }}
+                                </span>
+                            </div>
+                            {% if user_role in ['admin', 'creator'] %}
+                                <div>
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-crown"></i> Admin Access
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-success mb-1">{{ "KES {:,.2f}".format(stats.total_balance) }}</h4>
+                                <small class="text-muted">Total Balance</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-primary mb-1">{{ stats.total_members }}</h4>
+                                <small class="text-muted">Total Members</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-info mb-1">{{ "KES {:,.2f}".format(stats.monthly_contributions) }}</h4>
+                                <small class="text-muted">This Month</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                {% if user_role in ['admin', 'creator'] and stats.pending_requests > 0 %}
+                                    <h4 class="text-warning mb-1">{{ stats.pending_requests }}</h4>
+                                    <small class="text-muted">Pending Requests</small>
+                                {% else %}
+                                    <h4 class="text-muted mb-1">{{ chama.monthly_contribution or 0 }}</h4>
+                                    <small class="text-muted">Monthly Target</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Members & Requests -->
+        <div class="col-lg-8">
+            <!-- Members Section -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-users text-primary"></i> Members ({{ stats.total_members }})</h5>
+                        {% if user_role in ['admin', 'creator'] %}
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#inviteMemberModal">
+                                <i class="fas fa-user-plus"></i> Invite Member
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                    {% if user_role in ['admin', 'creator'] %}
+                                        <th>Total Contributions</th>
+                                        <th>Actions</th>
+                                    {% elif user_role == 'member' %}
+                                        <th>Status</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member_data in members_data %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                {{ member_data.user.username[0].upper() }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ member_data.user.username }}</div>
+                                                <small class="text-muted">{{ member_data.user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if member_data.role == 'creator' %}success{% elif member_data.role == 'admin' %}warning{% else %}secondary{% endif %}">
+                                            {{ member_data.role.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ member_data.joined_at.strftime('%b %d, %Y') if member_data.joined_at else 'N/A' }}</small>
+                                    </td>
+                                    {% if user_role in ['admin', 'creator'] %}
+                                        <td>
+                                            <span class="text-success fw-medium">
+                                                KES {{ "{:,.2f}".format(member_data.total_contributions) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if member_data.role not in ['creator'] and member_data.user.id != current_user.id %}
+                                                <div class="btn-group btn-group-sm">
+                                                    {% if member_data.role == 'member' %}
+                                                        <button class="btn btn-outline-warning btn-sm" onclick="promoteToAdmin({{ member_data.user.id }}, '{{ member_data.user.username }}')">
+                                                            <i class="fas fa-user-shield"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                    <button class="btn btn-outline-danger btn-sm" onclick="removeMember({{ member_data.user.id }}, '{{ member_data.user.username }}')">
+                                                        <i class="fas fa-user-minus"></i>
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    {% elif user_role == 'member' %}
+                                        <td>
+                                            {% if member_data.user.id == current_user.id %}
+                                                <span class="badge bg-primary">You</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-dark">Active</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Requests (Leadership Only) -->
+            {% if user_role in ['creator', 'chairperson', 'secretary', 'treasurer'] and pending_requests %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Pending Join Requests ({{ pending_requests|length }})</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for request in pending_requests %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ request.user.username }}</h6>
+                                <small class="text-muted">{{ request.user.email }} • Requested {{ request.request_date.strftime('%b %d, %Y') }}</small>
+                            </div>
+                            <div>
+                                <button class="btn btn-success btn-sm me-2" onclick="approveRequest({{ request.id }}, '{{ request.user.username }}')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectRequest({{ request.id }}, '{{ request.user.username }}')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column - Transactions & Actions -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-bolt text-warning"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#contributeModal">
+                            <i class="fas fa-plus-circle"></i> Make Contribution
+                        </button>
+                        
+                        <!-- Leadership Actions -->
+                        {% if user_role in ['creator', 'chairperson', 'secretary', 'treasurer'] %}
+                            <button class="btn btn-outline-primary" onclick="location.href='{{ url_for('chama.chama_members_list', chama_id=chama.id) }}'">
+                                <i class="fas fa-users"></i> Manage Members
+                            </button>
+                            
+                            <button class="btn btn-outline-success" onclick="location.href='{{ url_for('elections.chama_elections', chama_id=chama.id) }}'">
+                                <i class="fas fa-vote-yea"></i> Elections & Leadership
+                            </button>
+                            
+                            {% if user_role in ['creator', 'treasurer'] %}
+                                <button class="btn btn-outline-info">
+                                    <i class="fas fa-chart-bar"></i> Financial Reports
+                                </button>
+                            {% endif %}
+                            
+                            {% if user_role in ['creator', 'secretary'] %}
+                                <button class="btn btn-outline-info">
+                                    <i class="fas fa-file-alt"></i> Meeting Minutes
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-calendar"></i> Meeting Schedule
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-history text-info"></i> Recent Transactions</h5>
+                        {% if user_role in ['admin', 'creator'] %}
+                            <small class="text-muted">All transactions</small>
+                        {% else %}
+                            <small class="text-muted">Your transactions</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if transactions %}
+                        <div class="list-group list-group-flush">
+                            {% for transaction in transactions[:10] %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="fas fa-{% if transaction.type == 'contribution' %}plus-circle text-success{% elif transaction.type == 'loan' %}arrow-circle-down text-warning{% else %}exchange-alt text-info{% endif %} me-2"></i>
+                                            <span class="fw-medium">{{ transaction.type.title() }}</span>
+                                        </div>
+                                        <small class="text-muted">
+                                            {% if user_role in ['admin', 'creator'] %}
+                                                by {{ transaction.user.username }} • 
+                                            {% endif %}
+                                            {{ transaction.created_date.strftime('%b %d, %Y %I:%M %p') if transaction.created_date else 'N/A' }}
+                                        </small>
+                                        {% if transaction.description %}
+                                            <div><small class="text-muted">{{ transaction.description }}</small></div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold text-{% if transaction.type == 'contribution' %}success{% elif transaction.type == 'loan' %}warning{% else %}primary{% endif %}">
+                                            {% if transaction.type in ['contribution'] %}+{% elif transaction.type in ['loan'] %}-{% endif %}KES {{ "{:,.2f}".format(transaction.amount) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-receipt fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No transactions yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contribute Modal -->
+<div class="modal fade" id="contributeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Make Contribution</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="contributeForm">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount (KES)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitContribution()">Submit Contribution</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-sm {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.875rem;
+}
+
+.card {
+    border-radius: 0.75rem;
+}
+
+.card-header {
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+.text-white-75 {
+    opacity: 0.75;
+}
+
+.btn-group-sm > .btn, .btn-sm {
+    border-radius: 0.375rem;
+}
+</style>
+
+<script>
+// Contribution submission
+function submitContribution() {
+    const form = document.getElementById('contributeForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        amount: parseFloat(formData.get('amount')),
+        description: formData.get('description')
+    };
+    
+    if (!data.amount || data.amount <= 0) {
+        showNotification('Please enter a valid amount', 'error');
+        return;
+    }
+    
+    fetch(`/chama/{{ chama.id }}/contribute`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('contributeModal')).hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Error submitting contribution', 'error');
+        console.error('Error:', error);
+    });
+}
+
+// Member management functions
+{% if user_role in ['admin', 'creator'] %}
+function approveRequest(requestId, username) {
+    if (confirm(`Approve ${username}'s request to join this chama?`)) {
+        fetch(`/chama/membership-requests/${requestId}/approve`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error approving request', 'error');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function rejectRequest(requestId, username) {
+    if (confirm(`Reject ${username}'s request to join this chama?`)) {
+        fetch(`/chama/membership-requests/${requestId}/reject`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error rejecting request', 'error');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function promoteToAdmin(userId, username) {
+    if (confirm(`Promote ${username} to admin?`)) {
+        fetch(`/chama/{{ chama.id }}/members/${userId}/promote-admin`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error promoting member', 'error');
+        });
+    }
+}
+
+function removeMember(userId, username) {
+    if (confirm(`Remove ${username} from this chama?`)) {
+        fetch(`/chama/{{ chama.id }}/members/${userId}/remove`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error removing member', 'error');
+        });
+    }
+}
+{% endif %}
+
+// Auto-refresh for real-time updates
+setInterval(() => {
+    // You can implement real-time updates here if needed
+}, 30000); // Refresh every 30 seconds
+</script>
+{% endblock %}

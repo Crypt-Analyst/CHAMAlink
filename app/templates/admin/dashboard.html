@@ -163,6 +163,85 @@
         </div>
     </div>
 
+    <!-- Membership Requests -->
+    {% if membership_requests %}
+    <div class="mt-8">
+        <div class="bg-white rounded-lg shadow-sm border">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Pending Membership Requests
+                    </h2>
+                    <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-sm font-medium">
+                        {{ membership_requests|length }} pending
+                    </span>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    {% for request in membership_requests %}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center">
+                                <div class="bg-gray-100 rounded-full p-2 mr-3">
+                                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">{{ request.user.email }}</h4>
+                                    <p class="text-sm text-gray-600">{{ request.user.username if request.user.username else 'No username' }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">Requested {{ request.request_date.strftime('%b %d, %Y at %I:%M %p') }}</p>
+                                    {% if request.reason %}
+                                    <p class="text-sm text-gray-700 mt-2 italic">"{{ request.reason }}"</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="approveRequest({{ request.id }})" 
+                                        class="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700 transition">
+                                    ✓ Approve
+                                </button>
+                                <button onclick="rejectRequest({{ request.id }})" 
+                                        class="bg-red-600 text-white px-3 py-1 rounded-md text-sm hover:bg-red-700 transition">
+                                    ✗ Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- No Membership Requests -->
+    <div class="mt-8">
+        <div class="bg-white rounded-lg shadow-sm border">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                    <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Membership Requests
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="text-center text-gray-500">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <p>No pending membership requests</p>
+                    <p class="text-sm mt-1">New requests will appear here for your approval</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Recent Activity -->
     <div class="mt-8">
         <div class="bg-white rounded-lg shadow-sm border">
@@ -171,7 +250,7 @@
             </div>
             <div class="p-6">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <a href="{{ url_for('chama.detail', chama_id=chama.id) }}" 
+                    <a href="{{ url_for('chama.chama_detail', chama_id=chama.id) }}" 
                        class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
                         <svg class="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
@@ -208,4 +287,54 @@
         </div>
     </div>
 </div>
+
+<script>
+function approveRequest(requestId) {
+    if (confirm('Are you sure you want to approve this membership request?')) {
+        fetch(`/admin/membership-request/${requestId}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+        });
+    }
+}
+
+function rejectRequest(requestId) {
+    if (confirm('Are you sure you want to reject this membership request?')) {
+        fetch(`/admin/membership-request/${requestId}/reject`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+        });
+    }
+}
+</script>
 {% endblock %}

@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, jsonify, make_response, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.models import (
-    Chama, ChamaMember, Transaction, Contribution, LoanApplication, 
+    Chama, Transaction, Contribution, LoanApplication, 
     Penalty, MpesaTransaction, User
 )
+from app.models.chama import chama_members as chama_members_table  # Import with alias to avoid conflicts
 from app.utils.permissions import chama_member_required
 from app import db
 from datetime import datetime, timedelta
@@ -21,9 +22,9 @@ def comprehensive_history(chama_id):
     chama = Chama.query.get_or_404(chama_id)
     
     # Check if user is a member
-    member = ChamaMember.query.filter_by(
-        user_id=current_user.id,
-        chama_id=chama_id
+    member = db.session.query(chama_members_table).filter(
+        chama_members_table.c.user_id == current_user.id,
+        chama_members_table.c.chama_id == chama_id
     ).first()
     
     if not member:
@@ -31,9 +32,15 @@ def comprehensive_history(chama_id):
         return redirect(url_for('main.dashboard'))
     
     # Get all chama members for filtering (admin/treasurer only)
-    chama_members = []
+    members_list = []
     if member.role in ['admin', 'treasurer']:
-        chama_members = ChamaMember.query.filter_by(chama_id=chama_id).all()
+        # Get all members with their user details
+        members_with_users = db.session.query(
+            User, chama_members_table.c.role, chama_members_table.c.joined_at
+        ).join(chama_members_table, User.id == chama_members_table.c.user_id).filter(
+            chama_members_table.c.chama_id == chama_id
+        ).all()
+        members_list = members_with_users
     
     # Get comprehensive payment data
     all_payments = get_comprehensive_payment_data(chama_id, member)
@@ -46,7 +53,7 @@ def comprehensive_history(chama_id):
                          member=member,
                          all_payments=all_payments,
                          payment_summary=payment_summary,
-                         chama_members=chama_members)
+                         chama_members=members_list)
 
 @payments_bp.route('/chama/<int:chama_id>/payment-analytics')
 @login_required
@@ -56,9 +63,9 @@ def payment_analytics(chama_id):
     chama = Chama.query.get_or_404(chama_id)
     
     # Check if user is a member
-    member = ChamaMember.query.filter_by(
-        user_id=current_user.id,
-        chama_id=chama_id
+    member = db.session.query(chama_members_table).filter(
+        chama_members_table.c.user_id == current_user.id,
+        chama_members_table.c.chama_id == chama_id
     ).first()
     
     if not member:
@@ -81,9 +88,9 @@ def export_comprehensive_history(chama_id):
     chama = Chama.query.get_or_404(chama_id)
     
     # Check if user is a member
-    member = ChamaMember.query.filter_by(
-        user_id=current_user.id,
-        chama_id=chama_id
+    member = db.session.query(chama_members_table).filter(
+        chama_members_table.c.user_id == current_user.id,
+        chama_members_table.c.chama_id == chama_id
     ).first()
     
     if not member:

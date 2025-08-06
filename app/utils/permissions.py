@@ -33,11 +33,11 @@ def chama_admin_required(f):
         membership = db.session.query(chama_members).filter(
             chama_members.c.user_id == current_user.id,
             chama_members.c.chama_id == chama_id,
-            chama_members.c.role.in_(['admin', 'creator'])
+            chama_members.c.role.in_(['creator', 'chairperson', 'secretary', 'treasurer'])
         ).first()
         
         if not membership:
-            flash('You do not have admin permissions for this chama.', 'error')
+            flash('You do not have leadership permissions for this chama.', 'error')
             return redirect(url_for('main.dashboard'))
         
         return f(*args, **kwargs)
@@ -64,20 +64,24 @@ def admin_required(f):
 
 def get_user_chama_role(user_id, chama_id):
     """Get the role of a user in a specific chama"""
-    from app.models import chama_members
+    from app.models.chama import chama_members
     from app import db
     
-    membership = db.session.query(chama_members).filter(
-        chama_members.c.user_id == user_id,
-        chama_members.c.chama_id == chama_id
-    ).first()
-    
-    return membership.role if membership else None
+    try:
+        membership = db.session.query(chama_members).filter(
+            chama_members.c.user_id == user_id,
+            chama_members.c.chama_id == chama_id
+        ).first()
+        
+        return membership.role if membership else None
+    except Exception as e:
+        print(f"Error in get_user_chama_role: {e}")
+        return None
 
 def user_can_access_chama(user_id, chama_id):
     """Check if a user can access a specific chama"""
     try:
-        from app.models import chama_members
+        from app.models.chama import chama_members
         from app import db
         
         # Direct database query to check membership
