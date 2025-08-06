@@ -2,19 +2,9 @@ services:
   - type: web
     name: chamalink
     env: python
-    region: oregon
-    buildCommand: |
-      pip install -r requirements.txt
-      python -c "import run; print('✅ run.py imports successfully')"
-      python -c "from run import app; print('✅ app imported successfully')"
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 60 run:app
-    healthCheckPath: /
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app
     envVars:
-      - key: FLASK_ENV
-        value: production
-      - key: FLASK_DEBUG
-        value: false
-      - key: SECRET_KEY
-        generateValue: true
-      - key: WTF_CSRF_ENABLED
-        value: true
+      - key: PYTHON_VERSION
+        value: 3.11.9
