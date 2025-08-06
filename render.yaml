@@ -3,7 +3,7 @@ services:
     name: chamalink
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app
+    startCommand: gunicorn --bind 0.0.0.0:$PORT run:app
     plan: free
     envVars:
       - key: FLASK_ENV
@@ -12,3 +12,7 @@ services:
         value: false
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WTF_CSRF_ENABLED
+        value: true
